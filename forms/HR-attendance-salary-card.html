@@ -1,0 +1,413 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>بطاقة رواتب وحضور وانصراف | مصنع المنار للبلاستيك</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    body {
+      background-color: #525659;
+      margin: 0;
+      padding: 20px 0;
+    }
+    .controls-panel {
+      max-width: 850px;
+      margin: 0 auto 20px auto;
+      background: #ffffff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .controls-row:last-child {
+      margin-bottom: 0;
+    }
+    .controls-panel label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .controls-panel input[type="text"],
+    .controls-panel input[type="month"],
+    .controls-panel input[type="date"] {
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .btn-print {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .btn-print:hover {
+      background-color: #0056b3;
+    }
+    .absent-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .day-chip {
+      padding: 4px 8px;
+      border: 1px solid #ccc;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .day-chip.active {
+      background-color: #dc3545;
+      color: white;
+      border-color: #dc3545;
+      font-weight: bold;
+    }
+
+    /* صفحة التقرير A4 */
+    .sheet {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      margin: 0 auto;
+      padding: 12mm 15mm;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .sheet-border {
+      border: 3px solid #000;
+      padding: 12px;
+      min-height: calc(297mm - 24mm);
+      display: flex;
+      flex-direction: column;
+    }
+    .main-title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 900;
+      margin: 0 0 4px 0;
+      letter-spacing: 0.5px;
+    }
+    .sub-title {
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+      margin: 0 0 6px 0;
+    }
+    .card-title {
+      text-align: center;
+      font-size: 19px;
+      font-weight: bold;
+      margin: 0 0 12px 0;
+    }
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .meta-table td {
+      border: none;
+      padding: 4px 2px;
+      vertical-align: middle;
+    }
+    .editable-field {
+      font-weight: normal;
+      outline: none;
+      padding: 0 2px;
+    }
+    .editable-field:focus {
+      background-color: #fffde7;
+    }
+    .linkedin-row {
+      text-align: left;
+      direction: ltr;
+      font-size: 12px;
+      font-weight: bold;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #000;
+      margin-bottom: 8px;
+    }
+
+    /* جدول البصمة الرئيسي */
+    .main-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 12px;
+    }
+    .main-table th, .main-table td {
+      border: 1px solid #000;
+      height: 22px;
+      padding: 2px 4px;
+      vertical-align: middle;
+    }
+    .main-table th {
+      background-color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .absent-row td {
+      background-color: #f9f9f9;
+      color: #666;
+    }
+    .absent-cell {
+      color: #d9534f;
+      font-weight: bold;
+    }
+
+    /* صندوق الملاحظات العام أسفل الجدول */
+    .notes-box {
+      margin-top: 15px;
+      border: 1.5px solid #000;
+      border-radius: 4px;
+      padding: 10px 14px;
+      background: #fafafa;
+    }
+    .notes-box-header {
+      font-size: 13px;
+      font-weight: bold;
+      color: #111;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .notes-box-content {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #222;
+      min-height: 48px;
+      outline: none;
+      background: #fff;
+      border: 1px dashed #999;
+      padding: 6px 10px;
+      border-radius: 3px;
+    }
+    .notes-box-content:focus {
+      background-color: #fffde7;
+      border-color: #007bff;
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      .controls-panel {
+        display: none !important;
+      }
+      .sheet {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        padding: 8mm;
+      }
+      .sheet-border {
+        min-height: auto;
+      }
+      .notes-box-content {
+        border: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls-panel">
+    <div class="controls-row">
+      <div>
+        <label>الشهر والسنة: </label>
+        <input type="month" id="monthPicker">
+      </div>
+      <div>
+        <label for="lastAttendanceDate">آخر يوم في كشف الحضور: </label>
+        <input type="date" id="lastAttendanceDate">
+      </div>
+      <div>
+        <label>رابط LinkedIn: </label>
+        <input type="text" id="linkedinInput" style="width: 280px;" value="https://www.linkedin.com/in/khaled-abdraheem">
+      </div>
+      <button class="btn-print" onclick="window.print()">طباعة / تصدير PDF</button>
+    </div>
+    <div style="border-top: 1px solid #eee; padding-top: 10px;">
+      <label>حدد أيام الغياب (اضغط على اليوم لتعليمه كغياب). الأيام بعد تاريخ آخر يوم لن تظهر في الكشف:</label>
+      <div class="absent-tags-container" id="chipsContainer"></div>
+    </div>
+  </div>
+
+  <div class="sheet">
+    <div class="sheet-border">
+      <div class="main-title" contenteditable="true">AL-MANAR PLASTIC FACTORY</div>
+      <div class="sub-title" contenteditable="true">SASO - ISO 9001:2015</div>
+      <div class="card-title" contenteditable="true">Salary Card &nbsp; بطاقة رواتب</div>
+
+      <table class="meta-table">
+        <tr>
+          <td style="width: 35%;">الاسم: <span contenteditable="true" class="editable-field">خالد طه عبدالرحيم</span></td>
+          <td style="width: 35%; text-align: center;">المهنة: <span contenteditable="true" class="editable-field">مدير انتاج</span></td>
+          <td style="width: 30%; text-align: left;">الجنسية: <span contenteditable="true" class="editable-field">مصري</span></td>
+        </tr>
+        <tr>
+          <td>مكان العمل: <span contenteditable="true" class="editable-field">مصنع المنار للبلاستيك</span></td>
+          <td style="text-align: center;">الفترة من: <span id="periodFrom" class="editable-field" style="direction: ltr; display: inline-block;">01-08-2026</span></td>
+          <td style="text-align: left;">إلى: <span id="periodTo" class="editable-field" style="direction: ltr; display: inline-block;">31-08-2026</span></td>
+        </tr>
+      </table>
+
+      <div class="linkedin-row">
+        LinkedIn: <span id="linkedinDisplay" contenteditable="true" style="font-weight: normal;">https://www.linkedin.com/in/khaled-abdraheem</span>
+      </div>
+
+      <table class="main-table">
+        <thead>
+          <tr>
+            <th style="width: 6%;">م</th>
+            <th style="width: 18%;">التاريخ</th>
+            <th style="width: 16%;">اليوم</th>
+            <th style="width: 15%;">حضور</th>
+            <th style="width: 15%;">انصراف</th>
+            <th style="width: 14%;">إضافي</th>
+            <th style="width: 16%;">التوقيع</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+
+      <!-- خانة الملاحظات العامة في الفراغ أسفل الجدول -->
+      <div class="notes-box">
+        <div class="notes-box-header">📌 ملاحظات:</div>
+        <div class="notes-box-content" contenteditable="true">تم التواجد والجلوس مع المهندس الهندي الموفد من شركة نيو بلاست بعد ساعات الدوام الرسمي (من ساعة إلى ساعتين) في بعض أيام العمل لمتابعة وضبط خطوط الإنتاج.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const daysArabic = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const monthPicker = document.getElementById("monthPicker");
+    const lastAttendanceDate = document.getElementById("lastAttendanceDate");
+    const tableBody = document.getElementById("tableBody");
+    const periodFrom = document.getElementById("periodFrom");
+    const periodTo = document.getElementById("periodTo");
+    const linkedinInput = document.getElementById("linkedinInput");
+    const linkedinDisplay = document.getElementById("linkedinDisplay");
+    const chipsContainer = document.getElementById("chipsContainer");
+
+    let absentDays = new Set();
+
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = String(now.getMonth() + 1).padStart(2, '0');
+    monthPicker.value = `${curYear}-${curMonth}`;
+
+    function setDefaultLastAttendanceDate() {
+      const [year, month] = monthPicker.value.split("-").map(Number);
+      const lastDayOfMonth = new Date(year, month, 0).getDate();
+      const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+      const defaultDay = isCurrentMonth ? now.getDate() : lastDayOfMonth;
+      const monthValue = `${year}-${String(month).padStart(2, "0")}`;
+
+      lastAttendanceDate.min = `${monthValue}-01`;
+      lastAttendanceDate.max = `${monthValue}-${String(lastDayOfMonth).padStart(2, "0")}`;
+      lastAttendanceDate.value = `${monthValue}-${String(defaultDay).padStart(2, "0")}`;
+    }
+
+    function getLastAttendanceDay(year, monthIndex, totalDays) {
+      const selectedDate = lastAttendanceDate.value;
+      if (!selectedDate) return totalDays;
+      const [selectedYear, selectedMonth, selectedDay] = selectedDate.split("-").map(Number);
+      if (selectedYear !== year || selectedMonth !== monthIndex + 1) return totalDays;
+      return Math.min(selectedDay, totalDays);
+    }
+
+    linkedinInput.addEventListener("input", function() {
+      linkedinDisplay.textContent = this.value;
+    });
+
+    function generateMonthData() {
+      const [yearStr, monthStr] = monthPicker.value.split("-");
+      const year = parseInt(yearStr);
+      const monthIndex = parseInt(monthStr) - 1;
+      
+      const totalDays = new Date(year, monthIndex + 1, 0).getDate();
+      const lastDayToInclude = getLastAttendanceDay(year, monthIndex, totalDays);
+      
+      periodFrom.textContent = `01-${monthStr}-${year}`;
+      periodTo.textContent = `${String(lastDayToInclude).padStart(2, '0')}-${monthStr}-${year}`;
+
+      chipsContainer.innerHTML = "";
+      tableBody.innerHTML = "";
+      let serialIndex = 1;
+
+      for (let day = 1; day <= lastDayToInclude; day++) {
+        const dateObj = new Date(year, monthIndex, day);
+        const dayOfWeek = dateObj.getDay();
+
+        // استبعاد الجمعة
+        if (dayOfWeek === 5) continue;
+
+        const dayName = daysArabic[dayOfWeek];
+        const formattedDate = `${String(day).padStart(2, '0')}-${monthStr}-${year}`;
+        const isAbsent = absentDays.has(day);
+
+        // إنشاء Chip لاختيار الغياب فوق
+        const chip = document.createElement("div");
+        chip.className = `day-chip ${isAbsent ? 'active' : ''}`;
+        chip.textContent = `${day} (${dayName})`;
+        chip.onclick = () => {
+          if (absentDays.has(day)) {
+            absentDays.delete(day);
+          } else {
+            absentDays.add(day);
+          }
+          generateMonthData();
+        };
+        chipsContainer.appendChild(chip);
+
+        // إنشاء صف الجدول
+        const tr = document.createElement("tr");
+        if (isAbsent) tr.className = "absent-row";
+
+        tr.innerHTML = `
+          <td>${serialIndex++}</td>
+          <td style="direction: ltr;">${formattedDate}</td>
+          <td>${dayName}</td>
+          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : '7:00 AM'}</td>
+          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : '4:00 PM'}</td>
+          <td contenteditable="true"></td>
+          <td contenteditable="true" class="${isAbsent ? 'absent-cell' : ''}">${isAbsent ? 'غياب' : 'خالد طه'}</td>
+        `;
+        tableBody.appendChild(tr);
+      }
+    }
+
+    monthPicker.addEventListener("change", () => {
+      absentDays.clear();
+      setDefaultLastAttendanceDate();
+      generateMonthData();
+    });
+
+    lastAttendanceDate.addEventListener("change", generateMonthData);
+
+    setDefaultLastAttendanceDate();
+    generateMonthData();
+  </script>
+</body>
+</html>
