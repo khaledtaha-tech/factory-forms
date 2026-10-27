@@ -30,6 +30,198 @@
       display: block;
     }
 
+    /* ==============================================================================
+       PRINT ENGINE: A4 PORTRAIT SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
+       ============================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 6mm 5mm;
+    }
+
+    @media print {
+      *, *::before, *::after {
+        box-sizing: border-box !important;
+      }
+
+      html, body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Outer Container must fit 100% inside printable area with visible 4 borders */
+      .print-container, #print-area, body > div:first-child, .container, .requisition-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 auto !important;
+        padding: 2mm !important;
+        border: 1.5px solid #000 !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+      }
+
+      .page-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: none !important;
+      }
+
+      /* Prevent CSS Grid tracks from expanding beyond 100% in RTL */
+      .grid, .grid-cols-12, .grid-cols-4 {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .grid > *,
+      .grid-cols-12 > *,
+      .grid-cols-4 > * {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* Ensure table never overflows horizontally */
+      table, .table-bordered {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        box-sizing: border-box !important;
+      }
+
+      th, td {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+        box-sizing: border-box !important;
+        padding: 2px 3px !important; /* Compact to fit single page */
+        font-size: 10.5px !important;
+        line-height: 1.2 !important;
+        border-color: #000 !important;
+      }
+
+      .table-bordered tr {
+        height: auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .table-bordered th:nth-child(1), .table-bordered td:nth-child(1) { width: 5% !important; }
+      .table-bordered th:nth-child(2), .table-bordered td:nth-child(2) { width: 14% !important; }
+      .table-bordered th:nth-child(3), .table-bordered td:nth-child(3) { width: 35% !important; }
+      .table-bordered th:nth-child(4), .table-bordered td:nth-child(4) { width: 8% !important; }
+      .table-bordered th:nth-child(5), .table-bordered td:nth-child(5) { width: 11% !important; }
+      .table-bordered th:nth-child(6), .table-bordered td:nth-child(6) { width: 11% !important; }
+      .table-bordered th:nth-child(7), .table-bordered td:nth-child(7) { width: 16% !important; }
+      .table-bordered th.action-col, .table-bordered td.action-col { display: none !important; width: 0 !important; }
+
+      /* Vertical space optimization so the entire form fits on exactly ONE A4 page */
+      .header-section { margin-bottom: 2px !important; padding-bottom: 1px !important; }
+      .meta-grid-section { margin-top: 2px !important; margin-bottom: 2px !important; }
+      .signature-section { margin-top: 3px !important; }
+      .remarks-section { margin-top: 2px !important; padding: 2px !important; }
+      .attachments-section { margin-top: 2px !important; padding: 1.5px 3px !important; }
+      .footer-section { margin-top: 2px !important; padding-top: 1.5px !important; }
+
+      .signature-section > div > div {
+        height: auto !important;
+        min-height: 18mm !important;
+        max-height: 22mm !important;
+        padding: 2px 4px !important;
+        box-sizing: border-box !important;
+      }
+
+      #justification {
+        height: 12mm !important;
+        min-height: 10mm !important;
+        padding: 2px !important;
+        font-size: 11px !important;
+        line-height: 1.2 !important;
+      }
+
+      .table-input, .field-input, input, textarea, select {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .table-input {
+        font-size: 10.5px !important;
+        padding: 1px 2px !important;
+      }
+
+      .quality-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 2px !important;
+        font-size: 8px !important;
+      }
+
+      .quality-box * {
+        font-size: 7.5px !important;
+        line-height: 1.1 !important;
+      }
+
+      #attOtherText {
+        max-width: 120px !important;
+      }
+
+      input[type="checkbox"], input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        border: 1.2px solid #000 !important;
+        border-radius: 2px;
+        display: inline-grid;
+        place-content: center;
+      }
+
+      input[type="checkbox"]:checked::before {
+        content: "✓";
+        font-size: 9px;
+        font-weight: 900;
+        color: #000;
+      }
+
+      input[type="radio"]:checked::before {
+        content: "●";
+        font-size: 8px;
+        color: #000;
+      }
+
+      /* Hide all non-printable elements */
+      .no-print, button, .action-bar, .action-col, #toast, #settingsModal {
+        display: none !important;
+      }
+    }
+
     /* Screen and Sheet Styling */
     .table-bordered {
       border-collapse: collapse;

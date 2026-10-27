@@ -9,6 +9,136 @@
  * ==============================================================================
  */
 
+// Start session for dashboard authentication
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Security Configuration - Master PIN for Central Dashboard
+$adminPin = '2026';
+
+// Handle Logout
+if (isset($_GET['logout'])) {
+    unset($_SESSION['admin_authenticated']);
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
+// Handle PIN Login Submission
+$loginError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
+    $submittedPin = trim($_POST['pin'] ?? '');
+    if ($submittedPin === $adminPin) {
+        $_SESSION['admin_authenticated'] = true;
+        header('Location: index.php');
+        exit;
+    } else {
+        $loginError = 'رمز الدخول (PIN) غير صحيح. يرجى إعادة المحاولة.';
+    }
+}
+
+$isAuthenticated = !empty($_SESSION['admin_authenticated']);
+
+// Render PIN Login Screen if not authenticated
+if (!$isAuthenticated) {
+    ?>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | بوابة النماذج الإلكترونية - مصنع المنار للبلاستيك</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="min-h-full bg-slate-900 text-slate-800 flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-emerald-500 selection:text-white">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <!-- Logo -->
+        <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white mx-auto shadow-lg shadow-emerald-500/20 mb-4">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+        </div>
+        <h2 class="text-2xl font-black text-white tracking-tight">بوابة النماذج والوثائق المركزية</h2>
+        <p class="mt-1.5 text-xs text-slate-400 font-medium">مصنع المنار للبلاستيك | لوحة الإدارة العامة</p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div class="bg-white py-8 px-6 shadow-2xl rounded-3xl sm:px-10 border border-slate-100">
+            <div class="mb-6 text-center">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    منطقة محمية (PIN Protected)
+                </span>
+                <p class="mt-2 text-xs text-slate-500">أدخل رمز الدخول السري للوصول إلى كافة النماذج والوثائق الإدارية.</p>
+            </div>
+
+            <?php if (!empty($loginError)): ?>
+            <div class="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></span>
+            </div>
+            <?php endif; ?>
+
+            <form method="POST" action="index.php" class="space-y-4">
+                <input type="hidden" name="action" value="login">
+                <div>
+                    <label for="pin" class="block text-xs font-bold text-slate-700 mb-1.5">رمز الأمان (PIN Code)</label>
+                    <div class="relative">
+                        <input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" required autofocus
+                               placeholder="••••"
+                               class="w-full text-center tracking-[0.5em] text-xl font-bold py-3 px-4 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition bg-slate-50">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-4 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-md shadow-emerald-600/20 transition active:scale-[0.98]">
+                    تسجيل الدخول للوحة التحكم
+                </button>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-slate-100 text-center">
+                <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/70">
+                    <h3 class="text-xs font-extrabold text-slate-800 mb-1">🏭 هل تريد تقديم طلب شراء لقسمك؟</h3>
+                    <p class="text-[11px] text-slate-500 mb-3">يمكن للأقسام والمصانع إنشاء وطباعة طلبات الشراء مباشرة دون الحاجة لرمز الدخول.</p>
+                    <a href="create-pr.php" class="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-3 rounded-xl text-xs font-bold text-emerald-700 bg-emerald-100/70 hover:bg-emerald-100 border border-emerald-300 transition">
+                        <span>الانتقال لبوابة تقديم طلبات الشراء</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-6 text-center text-xs text-slate-500">
+            جميع الحقوق محفوظة © مصنع المنار للبلاستيك <?= date('Y') ?>
+        </p>
+    </div>
+</body>
+</html>
+    <?php
+    exit;
+}
+
 // إعدادات المسارات
 $formsDirectory = __DIR__ . DIRECTORY_SEPARATOR . 'forms';
 $webFormsPath   = 'forms/';
@@ -287,6 +417,24 @@ $totalForms = count($forms);
                         <span>فحص المجلد نشط</span>
                     </div>
 
+                    <a href="create-pr.php" 
+                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white transition shadow-sm"
+                       title="الانتقال إلى بوابة إنشاء طلبات الشراء">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span>إنشاء طلب شراء</span>
+                    </a>
+
+                    <a href="index.php?logout=1" 
+                       class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition shadow-2xs"
+                       title="تسجيل الخروج من لوحة الإدارة">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="hidden sm:inline">خروج</span>
+                    </a>
+
                     <a href="https://github.com/khaledtaha-tech/factory-forms" target="_blank" rel="noopener noreferrer" 
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
                        title="المستودع البرمجي على GitHub">
@@ -319,6 +467,14 @@ $totalForms = count($forms);
                     <p class="text-sm text-slate-300 leading-relaxed max-w-2xl font-normal">
                         منظومة مركزية ديناميكية تقرأ النماذج من مجلد <code class="px-1.5 py-0.5 rounded bg-white/15 text-emerald-300 font-mono text-xs">forms/</code> مباشرة. يمكنك معاينة أي نموذج في تبويب مستقل وطباعته أو تنزيل نسخة HTML محلياً.
                     </p>
+                    <div class="pt-2 flex flex-wrap items-center gap-3">
+                        <a href="create-pr.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg shadow-emerald-900/30">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>+ إنشاء طلب شراء رسمي جديد</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- إحصائيات النظام -->
