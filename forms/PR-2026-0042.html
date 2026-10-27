@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>طلب شراء داخلي | مصنع المنار للبلاستيك</title>
   
-  <!-- Fonts: Cairo & Inter for high legibility & sharp print -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,197 +28,6 @@
       color: #475569;
       text-transform: uppercase;
       display: block;
-    }
-
-    /* ==============================================================================
-       PRINT ENGINE: A4 PORTRAIT SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
-       ============================================================================== */
-    @page {
-      size: A4 portrait;
-      margin: 6mm 5mm 6mm 5mm;
-    }
-
-    @media print {
-      *, *::before, *::after {
-        box-sizing: border-box !important;
-      }
-
-      html, body {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-        color: #000 !important;
-        height: auto !important;
-        overflow: visible !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      /* Outer Container must fit 100% inside printable area with visible 4 borders */
-      .print-container, #print-area, body > div:first-child, .container, .requisition-sheet {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        margin: 0 auto !important;
-        padding: 2mm !important;
-        border: 1.5px solid #000 !important;
-        box-sizing: border-box !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        page-break-after: avoid !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-      }
-
-      .page-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: visible !important;
-        border: none !important;
-      }
-
-      /* Prevent CSS Grid tracks from expanding beyond 100% in RTL */
-      .grid, .grid-cols-12, .grid-cols-4 {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-      }
-
-      .grid > *,
-      .grid-cols-12 > *,
-      .grid-cols-4 > * {
-        min-width: 0 !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-      }
-
-      /* Ensure table never overflows horizontally */
-      table, .table-bordered {
-        width: 100% !important;
-        max-width: 100% !important;
-        table-layout: fixed !important;
-        border-collapse: collapse !important;
-        box-sizing: border-box !important;
-      }
-
-      th, td {
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-        box-sizing: border-box !important;
-        padding: 3px 4px !important; /* Compact padding to prevent 2nd page spill */
-        font-size: 11px !important;
-        border-color: #000 !important;
-      }
-
-      .table-bordered tr {
-        height: auto !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-
-      .table-bordered th:nth-child(1), .table-bordered td:nth-child(1) { width: 5% !important; }
-      .table-bordered th:nth-child(2), .table-bordered td:nth-child(2) { width: 14% !important; }
-      .table-bordered th:nth-child(3), .table-bordered td:nth-child(3) { width: 35% !important; }
-      .table-bordered th:nth-child(4), .table-bordered td:nth-child(4) { width: 8% !important; }
-      .table-bordered th:nth-child(5), .table-bordered td:nth-child(5) { width: 11% !important; }
-      .table-bordered th:nth-child(6), .table-bordered td:nth-child(6) { width: 11% !important; }
-      .table-bordered th:nth-child(7), .table-bordered td:nth-child(7) { width: 16% !important; }
-      .table-bordered th.action-col, .table-bordered td.action-col { display: none !important; width: 0 !important; }
-
-      /* Vertical space optimization so the entire form fits on exactly ONE A4 page */
-      .header-section { margin-bottom: 4px !important; padding-bottom: 2px !important; }
-      .meta-grid-section { margin-top: 3px !important; margin-bottom: 3px !important; }
-      .signature-section { margin-top: 4px !important; }
-      .remarks-section { margin-top: 4px !important; padding: 2px !important; }
-      .attachments-section { margin-top: 3px !important; padding: 2px !important; }
-      .footer-section { margin-top: 3px !important; padding-top: 2px !important; }
-
-      .signature-section > div > div {
-        height: auto !important;
-        min-height: 18mm !important;
-        max-height: 22mm !important;
-        padding: 2px 4px !important;
-        box-sizing: border-box !important;
-      }
-
-      #justification {
-        height: 12mm !important;
-        min-height: 10mm !important;
-        padding: 2px !important;
-        font-size: 11px !important;
-        line-height: 1.2 !important;
-      }
-
-      .table-input, .field-input, input, textarea, select {
-        min-width: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-      }
-
-      .table-input {
-        font-size: 10.5px !important;
-        padding: 1px 2px !important;
-      }
-
-      .quality-box {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 2px !important;
-        font-size: 8px !important;
-      }
-
-      .quality-box * {
-        font-size: 7.5px !important;
-        line-height: 1.1 !important;
-      }
-
-      #attOtherText {
-        max-width: 120px !important;
-      }
-
-      input[type="checkbox"], input[type="radio"] {
-        appearance: none;
-        -webkit-appearance: none;
-        width: 12px;
-        height: 12px;
-        border: 1.2px solid #000 !important;
-        border-radius: 2px;
-        display: inline-grid;
-        place-content: center;
-      }
-
-      input[type="checkbox"]:checked::before {
-        content: "✓";
-        font-size: 9px;
-        font-weight: 900;
-        color: #000;
-      }
-
-      input[type="radio"]:checked::before {
-        content: "●";
-        font-size: 8px;
-        color: #000;
-      }
-
-      /* Hide all non-printable elements */
-      .no-print, button, .action-bar, .action-col, #toast, #settingsModal {
-        display: none !important;
-      }
     }
 
     /* Screen and Sheet Styling */
@@ -241,7 +50,6 @@
       height: 29px;
     }
 
-    /* Field Inputs */
     .field-input {
       width: 100%;
       border-bottom: 1.5px dashed #94a3b8;
@@ -280,7 +88,6 @@
       user-select: none;
     }
 
-    /* Toast Notification */
     #toast {
       visibility: hidden;
       min-width: 280px;
@@ -305,8 +112,178 @@
       opacity: 1;
       bottom: 35px;
     }
+
+    /* ==============================================================================
+       BULLETPROOF PRINT ENGINE: EXACT A4 PORTRAIT - 100% ONE PAGE - ZERO CLIPPING
+       ============================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 5mm;
+    }
+
+    @media print {
+      *, *::before, *::after {
+        box-sizing: border-box !important;
+      }
+
+      html, body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        height: auto !important;
+        overflow: hidden !important; /* يمنع إنشاء صفحة ثانية نهائياً */
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .no-print, button, .action-bar, .action-col, #toast, #settingsModal, #quickInputPanel {
+        display: none !important;
+      }
+
+      .page-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: none !important;
+      }
+
+      .requisition-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 2.5mm !important;
+        border: 1.5px solid #000 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        height: auto !important;
+      }
+
+      /* ضبط الترويسة العلوية */
+      .header-section {
+        padding-bottom: 2px !important;
+        margin-bottom: 2px !important;
+        border-bottom: 1.5px solid #000 !important;
+      }
+      .header-section h1 { font-size: 20px !important; }
+      .header-section #factoryNameAr { font-size: 17px !important; }
+
+      /* ضبط صندوق الأيزو لمنع التمدد جهة الشمال */
+      .quality-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5px !important;
+        border: 1px solid #000 !important;
+      }
+      .quality-box .grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1px !important;
+      }
+      .quality-box * {
+        font-size: 7px !important;
+        line-height: 1.1 !important;
+      }
+
+      /* بيانات الطلب */
+      .meta-grid-section {
+        margin-top: 2px !important;
+        font-size: 10px !important;
+      }
+      .meta-grid-section .field-input {
+        font-size: 10px !important;
+        padding: 0 2px !important;
+        border-bottom: 1px solid #000 !important;
+      }
+      .meta-grid-section .en-sub {
+        font-size: 7px !important;
+      }
+
+      /* هندسة الجدول */
+      table, .table-bordered {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        margin-top: 2px !important;
+      }
+      .table-bordered th, .table-bordered td {
+        border: 1px solid #000 !important;
+        padding: 1.5px 2px !important;
+        font-size: 9px !important;
+        line-height: 1.15 !important;
+        word-break: break-word !important;
+      }
+      .table-bordered th {
+        background-color: #f1f5f9 !important;
+        font-size: 9px !important;
+      }
+      .table-bordered tbody tr {
+        height: 19px !important;
+      }
+      .table-input {
+        font-size: 9px !important;
+        padding: 0 !important;
+        height: 17px !important;
+      }
+
+      /* المبررات والمرفقات */
+      .remarks-section {
+        margin-top: 2px !important;
+        padding: 2px !important;
+        border: 1px solid #000 !important;
+      }
+      #justification {
+        height: 10mm !important;
+        min-height: 10mm !important;
+        font-size: 9.5px !important;
+        line-height: 1.2 !important;
+        border: none !important;
+        padding: 1px !important;
+      }
+
+      .attachments-section {
+        margin-top: 2px !important;
+        padding: 1px 2px !important;
+        font-size: 9px !important;
+        border-bottom: 1px solid #000 !important;
+      }
+      #attOtherText {
+        width: 100px !important;
+        max-width: 100px !important;
+      }
+
+      /* التوقيعات */
+      .signature-section {
+        margin-top: 2px !important;
+        border: 1px solid #000 !important;
+      }
+      .signature-section > div > div {
+        height: 16mm !important;
+        min-height: 16mm !important;
+        max-height: 16mm !important;
+        padding: 1.5px 3px !important;
+      }
+      .signature-section h4 { font-size: 9.5px !important; margin: 0 !important; }
+      .signature-section span, .signature-section input { font-size: 8px !important; }
+      .signature-section input { height: 14px !important; }
+
+      /* التذييل */
+      .footer-section {
+        margin-top: 2px !important;
+        padding-top: 1px !important;
+        font-size: 7.5px !important;
+        border-top: 1px solid #000 !important;
+      }
+    }
   </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.inset-0{inset:0px}.z-50{z-index:50}.col-span-2{grid-column:span 2 / span 2}.col-span-3{grid-column:span 3 / span 3}.col-span-4{grid-column:span 4 / span 4}.col-span-5{grid-column:span 5 / span 5}.col-span-7{grid-column:span 7 / span 7}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.block{display:block}.inline-block{display:inline-block}.inline{display:inline}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-12{height:3rem}.h-2{height:0.5rem}.h-28{height:7rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-7{height:1.75rem}.h-8{height:2rem}.min-h-screen{min-height:100vh}.w-1\.5{width:0.375rem}.w-10{width:2.5rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-52{width:13rem}.w-6{width:1.5rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-full{width:100%}.w-px{width:1px}.min-w-\[1050px\]{min-width:1050px}.max-w-\[1200px\]{max-width:1200px}.max-w-\[1240px\]{max-width:1240px}.max-w-\[250px\]{max-width:250px}.max-w-lg{max-width:32rem}.flex-grow{flex-grow:1}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-x-2{column-gap:0.5rem}.gap-y-0\.5{row-gap:0.125rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-x > :not([hidden]) ~ :not([hidden]){--tw-divide-x-reverse:0;border-right-width:calc(1px * var(--tw-divide-x-reverse));border-left-width:calc(1px * calc(1 - var(--tw-divide-x-reverse)))}.divide-x-reverse > :not([hidden]) ~ :not([hidden]){--tw-divide-x-reverse:1}.divide-slate-900 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(15 23 42 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-sm{border-radius:0.125rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-\[1\.2px\]{border-width:1.2px}.border-\[1\.5px\]{border-width:1.5px}.border-\[2px\]{border-width:2px}.border-b{border-bottom-width:1px}.border-b-\[1\.8px\]{border-bottom-width:1.8px}.border-b-\[2px\]{border-bottom-width:2px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-emerald-400{--tw-border-opacity:1;border-color:rgb(52 211 153 / var(--tw-border-opacity, 1))}.border-indigo-200{--tw-border-opacity:1;border-color:rgb(199 210 254 / var(--tw-border-opacity, 1))}.border-indigo-400\/30{border-color:rgb(129 140 248 / 0.3)}.border-indigo-400\/40{border-color:rgb(129 140 248 / 0.4)}.border-rose-200{--tw-border-opacity:1;border-color:rgb(254 205 211 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-400{--tw-border-opacity:1;border-color:rgb(148 163 184 / var(--tw-border-opacity, 1))}.border-slate-950{--tw-border-opacity:1;border-color:rgb(2 6 23 / var(--tw-border-opacity, 1))}.bg-amber-600{--tw-bg-opacity:1;background-color:rgb(217 119 6 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-indigo-500\/20{background-color:rgb(99 102 241 / 0.2)}.bg-indigo-500\/30{background-color:rgb(99 102 241 / 0.3)}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-rose-50{--tw-bg-opacity:1;background-color:rgb(255 241 242 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-slate-300{--tw-bg-opacity:1;background-color:rgb(203 213 225 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-50\/50{background-color:rgb(248 250 252 / 0.5)}.bg-slate-50\/70{background-color:rgb(248 250 252 / 0.7)}.bg-slate-900\/60{background-color:rgb(15 23 42 / 0.6)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-slate-950{--tw-gradient-from:#020617 var(--tw-gradient-from-position);--tw-gradient-to:rgb(2 6 23 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-indigo-950{--tw-gradient-to:rgb(30 27 75 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #1e1b4b var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-indigo-600{--tw-gradient-to:#4f46e5 var(--tw-gradient-to-position)}.to-slate-950{--tw-gradient-to:#020617 var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pb-1{padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pb-3{padding-bottom:0.75rem}.pb-4{padding-bottom:1rem}.pr-1{padding-right:0.25rem}.pr-3{padding-right:0.75rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10\.5px\]{font-size:10.5px}.text-\[10px\]{font-size:10px}.text-\[11\.5px\]{font-size:11.5px}.text-\[11px\]{font-size:11px}.text-\[12\.5px\]{font-size:12.5px}.text-\[12px\]{font-size:12px}.text-\[13px\]{font-size:13px}.text-\[8\.5px\]{font-size:8.5px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.text-blue-900{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-indigo-200{--tw-text-opacity:1;color:rgb(199 210 254 / var(--tw-text-opacity, 1))}.text-rose-600{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.text-rose-700{--tw-text-opacity:1;color:rgb(190 18 60 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-amber-700:hover{--tw-bg-opacity:1;background-color:rgb(180 83 9 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-700:hover{--tw-bg-opacity:1;background-color:rgb(67 56 202 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-100:hover{--tw-bg-opacity:1;background-color:rgb(255 228 230 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-50:hover{--tw-bg-opacity:1;background-color:rgb(255 241 242 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-300:hover{--tw-bg-opacity:1;background-color:rgb(203 213 225 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.hover\:from-blue-700:hover{--tw-gradient-from:#1d4ed8 var(--tw-gradient-from-position);--tw-gradient-to:rgb(29 78 216 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-indigo-700:hover{--tw-gradient-to:#4338ca var(--tw-gradient-to-position)}.hover\:text-slate-600:hover{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-rose-600:hover{--tw-text-opacity:1;color:rgb(225 29 72 / var(--tw-text-opacity, 1))}.focus\:border-blue-600:focus{--tw-border-opacity:1;border-color:rgb(37 99 235 / var(--tw-border-opacity, 1))}.focus\:border-transparent:focus{border-color:transparent}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-indigo-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241 / var(--tw-ring-opacity, 1))}@media (min-width: 768px){.md\:p-5{padding:1.25rem}}@media (min-width: 1024px){.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-8{grid-column:span 8 / span 8}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}}</style></head>
+</head>
 <body class="bg-slate-100 min-h-screen text-slate-900 antialiased p-2 md:p-5">
 
   <!-- ================= TOP TOOLBAR (Hidden in Print) ================= -->
@@ -332,7 +309,6 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-2">
-        <!-- Smart Input Toggle Button -->
         <button onclick="toggleQuickInputPanel()" id="btnToggleSmart" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
@@ -340,7 +316,6 @@
           <span id="smartBtnText">الإدخال السريع الذكي للبنود</span>
         </button>
 
-        <!-- New PR (+ Serial) -->
         <button onclick="createNewPR()" title="زيادة السيريال تلقائياً وتجهيز نموذج جديد" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -348,7 +323,6 @@
           <span>طلب جديد (+ سيريال)</span>
         </button>
 
-        <!-- Print / PDF Button -->
         <button onclick="window.print()" title="طباعة فورية في صفحة واحدة A4 دون انقسام" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -356,7 +330,6 @@
           <span>طباعة / PDF (صفحة واحدة)</span>
         </button>
 
-        <!-- Download HTML Standalone -->
         <button onclick="downloadSelfHTML()" title="تنزيل نسخة من هذه الصفحة ببياناتها لتعمل بدون إنترنت" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -364,7 +337,6 @@
           <span>تنزيل ملف HTML</span>
         </button>
 
-        <!-- ISO Settings -->
         <button onclick="toggleSettingsModal(true)" title="تعديل بيانات كود الجودة والسيريال" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold flex items-center gap-1 transition">
           <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -373,7 +345,6 @@
           <span>إعدادات الأيزو</span>
         </button>
 
-        <!-- Quick Add / Remove Rows Widget -->
         <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden bg-slate-50 shadow-sm">
           <button onclick="addRow()" title="إضافة صف جديد للجدول" class="px-3 py-2 hover:bg-slate-200 text-xs font-black text-emerald-700 transition flex items-center gap-1">
             <span class="text-sm font-black">+</span>
@@ -386,7 +357,6 @@
           </button>
         </div>
 
-        <!-- Clear Table -->
         <button onclick="clearAllTableItems()" title="مسح محتويات الجدول بالكامل" class="px-2.5 py-2 hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold transition">
           تفريغ الجدول
         </button>
@@ -454,7 +424,7 @@
 
   <!-- ================= MAIN DOCUMENT (A4 Purchase Requisition) ================= -->
   <main class="page-container max-w-[1240px] mx-auto overflow-x-auto pb-4">
-    <div class="requisition-sheet print-container bg-white border-[2px] border-slate-950 rounded-sm shadow-xl p-4 md:p-5 mx-auto w-full max-w-[1200px] text-slate-950 transition-all">
+    <div class="requisition-sheet bg-white border-[2px] border-slate-950 rounded-sm shadow-xl p-4 md:p-5 mx-auto w-full max-w-[1200px] text-slate-950 transition-all">
       
       <!-- ================= 1. HEADER SECTION ================= -->
       <div class="header-section grid grid-cols-12 pb-2 border-b-[2px] border-slate-950 items-center gap-2">
@@ -509,7 +479,6 @@
 
       <!-- ================= 2. META DATA GRID ================= -->
       <div class="meta-grid-section mt-2 text-[12px]">
-        <!-- Row 1: Requesting Department | PR No | Request Date | Required By -->
         <div class="grid grid-cols-12 gap-3 border-b border-slate-300 pb-2 items-end">
           
           <div class="col-span-4">
@@ -554,7 +523,6 @@
 
         </div>
 
-        <!-- Row 2: Requested by & Priority (مقدم الطلب والأولوية) -->
         <div class="grid grid-cols-12 gap-4 pt-2 pb-2 border-b-[1.8px] border-slate-950 items-center">
           
           <div class="col-span-7">
@@ -591,7 +559,7 @@
         </div>
       </div>
 
-      <!-- ================= 3. ITEMS TABLE (ENLARGED & HIGH LEGIBILITY) ================= -->
+      <!-- ================= 3. ITEMS TABLE ================= -->
       <div class="mt-1.5 flex-grow">
         <table class="table-bordered text-center text-[12px]" id="requisitionTable">
           <thead>
@@ -606,7 +574,7 @@
               </th>
               <th style="width: 35%;" class="py-1 text-right pr-3">
                 وصف الصنف والمواصفات الفنية
-                <span class="en-sub">Item description &amp; technical specifications</span>
+                <span class="en-sub">Item description & technical specifications</span>
               </th>
               <th style="width: 8%;" class="py-1">
                 الوحدة
@@ -629,237 +597,7 @@
               </th>
             </tr>
           </thead>
-          <tbody id="tableBody"><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">1</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="سلة مهملات">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="عدد">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="1">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">2</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="أكياس نفايات">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="ربطة">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="2">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">3</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="بطارية مقاس AA">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="عدد">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="1">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">4</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">5</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">6</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">7</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">8</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">9</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr><tr class="hover:bg-slate-50 transition-colors">
-        <td class="font-black text-slate-950 text-center bg-slate-50/70 row-index">10</td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-950 font-bold item-code" value="">
-        </td>
-        <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" value="">
-        </td>
-        <td>
-          <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono font-black text-center text-blue-900 item-qty" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input font-mono text-center text-slate-800 font-bold item-stock" value="">
-        </td>
-        <td>
-          <input type="text" class="table-input text-right text-slate-700 font-semibold item-remarks" value="">
-        </td>
-        <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">×</button>
-        </td>
-      </tr></tbody>
+          <tbody id="tableBody"></tbody>
         </table>
       </div>
 
@@ -889,22 +627,22 @@
 
       <!-- Units Auto-Complete Datalist -->
       <datalist id="unitsList">
-        <option value="عدد">
-        </option><option value="حبة / Pc">
-        </option><option value="ربطة">
-        </option><option value="كرتون / Box">
-        </option><option value="لفة / Roll">
-        </option><option value="طقم / Set">
-        </option><option value="علبة">
-        </option><option value="كجم / Kg">
-        </option><option value="طن / Ton">
-        </option><option value="متر / Meter">
-        </option><option value="برميل / Drum">
-        </option><option value="لتر / Liter">
-        </option><option value="شيكارة / Bag">
-      </option></datalist>
+        <option value="عدد"></option>
+        <option value="حبة / Pc"></option>
+        <option value="ربطة"></option>
+        <option value="كرتون / Box"></option>
+        <option value="لفة / Roll"></option>
+        <option value="طقم / Set"></option>
+        <option value="علبة"></option>
+        <option value="كجم / Kg"></option>
+        <option value="طن / Ton"></option>
+        <option value="متر / Meter"></option>
+        <option value="برميل / Drum"></option>
+        <option value="لتر / Liter"></option>
+        <option value="شيكارة / Bag"></option>
+      </datalist>
 
-      <!-- ================= 4. PURPOSE / JUSTIFICATION (NO PLACEHOLDER) ================= -->
+      <!-- ================= 4. PURPOSE / JUSTIFICATION ================= -->
       <div class="remarks-section mt-2 border-[1.5px] border-slate-950 rounded-sm p-2 bg-slate-50/50">
         <div class="flex items-center gap-2 mb-1">
           <label class="font-black text-slate-950 text-[12px]">
@@ -915,7 +653,7 @@
         <textarea id="justification" rows="2" class="w-full text-[12px] font-semibold p-1.5 bg-white border border-slate-300 rounded outline-none focus:border-blue-600 transition leading-relaxed"></textarea>
       </div>
 
-      <!-- ================= 5. ATTACHMENTS (NO PLACEHOLDER) ================= -->
+      <!-- ================= 5. ATTACHMENTS ================= -->
       <div class="attachments-section mt-1.5 flex flex-wrap items-center justify-between text-[11px] px-2 py-1.5 bg-white border-b border-slate-400">
         <div class="flex items-center gap-6">
           <span class="font-black text-slate-950">
@@ -934,7 +672,7 @@
             <input type="checkbox" id="attOther">
             <span class="font-bold">أخرى <span class="en-sub inline">Other:</span></span>
           </label>
-          <input type="text" id="attOtherText" class="border-b border-dashed border-slate-400 text-[11px] font-bold px-1 outline-none w-52" value="">
+          <input type="text" id="attOtherText" class="border-b border-dashed border-slate-400 text-[11px] font-bold px-1 outline-none w-32 max-w-[140px]" value="">
         </div>
 
         <div class="text-[10px] text-slate-600 font-mono font-bold">
@@ -942,77 +680,77 @@
         </div>
       </div>
 
-      <!-- ================= 6. OFFICIAL SIGNATURES BLOCK (ENLARGED & BALANCED) ================= -->
+      <!-- ================= 6. OFFICIAL SIGNATURES BLOCK ================= -->
       <div class="signature-section mt-2 border-[1.5px] border-slate-950">
         <div class="grid grid-cols-4 divide-x divide-x-reverse divide-slate-900 text-center">
           
           <!-- 1. Store Verification -->
-          <div class="p-2 flex flex-col justify-between h-28 bg-white">
+          <div class="p-2 flex flex-col justify-between bg-white">
             <div class="border-b border-slate-300 pb-1">
               <h4 class="font-black text-[12px] text-slate-950">مراجعة المخزن</h4>
               <span class="en-sub">Store verification</span>
             </div>
-            <div class="text-right text-[11px] space-y-1.5">
+            <div class="text-right text-[11px] space-y-1 mt-2">
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">الاسم / Name:</span>
+                <span class="font-bold text-slate-800">الاسم:</span>
                 <input type="text" id="storeName" class="table-input font-bold text-[11px]" value="">
               </div>
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">التوقيع / Sign:</span>
+                <span class="font-bold text-slate-800">التوقيع:</span>
                 <span class="text-slate-400">........................</span>
               </div>
             </div>
           </div>
 
           <!-- 2. Production Manager -->
-          <div class="p-2 flex flex-col justify-between h-28 bg-white">
+          <div class="p-2 flex flex-col justify-between bg-white">
             <div class="border-b border-slate-300 pb-1">
               <h4 class="font-black text-[12px] text-slate-950">مدير الإنتاج</h4>
               <span class="en-sub">Production Manager</span>
             </div>
-            <div class="text-right text-[11px] space-y-1.5">
+            <div class="text-right text-[11px] space-y-1 mt-2">
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">الاسم / Name:</span>
+                <span class="font-bold text-slate-800">الاسم:</span>
                 <input type="text" id="pmName" class="table-input font-bold text-[11px]" value="">
               </div>
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">التوقيع / Sign:</span>
+                <span class="font-bold text-slate-800">التوقيع:</span>
                 <span class="text-slate-400">........................</span>
               </div>
             </div>
           </div>
 
           <!-- 3. Purchasing Department -->
-          <div class="p-2 flex flex-col justify-between h-28 bg-white">
+          <div class="p-2 flex flex-col justify-between bg-white">
             <div class="border-b border-slate-300 pb-1">
               <h4 class="font-black text-[12px] text-slate-950">إدارة المشتريات</h4>
               <span class="en-sub">Purchasing department</span>
             </div>
-            <div class="text-right text-[11px] space-y-1.5">
+            <div class="text-right text-[11px] space-y-1 mt-2">
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">الاسم / Name:</span>
+                <span class="font-bold text-slate-800">الاسم:</span>
                 <input type="text" id="purchName" class="table-input font-bold text-[11px]" value="">
               </div>
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">التوقيع / Sign:</span>
+                <span class="font-bold text-slate-800">التوقيع:</span>
                 <span class="text-slate-400">........................</span>
               </div>
             </div>
           </div>
 
           <!-- 4. Management Approval -->
-          <div class="p-2 flex flex-col justify-between h-28 bg-slate-50/70">
+          <div class="p-2 flex flex-col justify-between bg-slate-50/70">
             <div class="border-b border-slate-300 pb-1">
               <h4 class="font-black text-[12px] text-slate-950">اعتماد الإدارة</h4>
               <span class="en-sub">Management approval</span>
             </div>
-            <div class="text-right text-[11px] space-y-1.5">
+            <div class="text-right text-[11px] space-y-1 mt-2">
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">الاسم / Name:</span>
+                <span class="font-bold text-slate-800">الاسم:</span>
                 <input type="text" id="mgmtName" class="table-input font-bold text-[11px]" value="">
               </div>
               <div class="flex items-center gap-1">
-                <span class="font-bold text-slate-800">التوقيع / Sign:</span>
+                <span class="font-bold text-slate-800">التوقيع:</span>
                 <span class="text-slate-400">........................</span>
               </div>
             </div>
@@ -1021,7 +759,7 @@
         </div>
       </div>
 
-      <!-- ================= 7. OFFICIAL FOOTER (LOCKED AT BOTTOM) ================= -->
+      <!-- ================= 7. OFFICIAL FOOTER ================= -->
       <div class="footer-section mt-2 pt-2 border-t border-slate-400 flex items-center justify-between text-[10px] text-slate-700 font-bold">
         <div class="flex items-center gap-2">
           <span class="font-black text-slate-950 tracking-wider">PRODUCTION | PURCHASE REQUISITION</span>
@@ -1198,7 +936,6 @@
       let line = normalizeArabicNumerals(rawLine.trim());
       if (!line) return null;
 
-      // Handle Excel Tab-separated paste
       if (line.includes('\t')) {
         const cols = line.split('\t').map(c => c.trim());
         if (cols.length >= 2) {
@@ -1221,21 +958,18 @@
       let code = '';
       let desc = line;
 
-      // Extract remarks
       const remarksMatch = desc.match(/(?:ملاحظة|ملاحظات|remarks?)\s*[:=]?\s*(.+)$/i);
       if (remarksMatch) {
         remarks = remarksMatch[1].trim();
         desc = desc.replace(remarksMatch[0], '').trim();
       }
 
-      // Extract code
       const codeMatch = desc.match(/(?:كود|code)\s*[:=]?\s*([a-zA-Z0-9_\-]+)/i);
       if (codeMatch) {
         code = codeMatch[1].trim();
         desc = desc.replace(codeMatch[0], '').trim();
       }
 
-      // Pattern 1: Unit then number (عدد 1, ربطة 2)
       const unitFirstRegex = new RegExp(`(?:^|\\s)(${knownUnits.join('|')})\\s*[:=]?\\s*(\\d+(?:\\.\\d+)?)(?:\\s|$)`, 'i');
       const unitFirstMatch = desc.match(unitFirstRegex);
 
@@ -1244,7 +978,6 @@
         qty = unitFirstMatch[2];
         desc = desc.replace(unitFirstMatch[0], ' ').trim();
       } else {
-        // Pattern 2: Number then unit (2 ربطة, 1 عدد)
         const numFirstRegex = new RegExp(`(?:^|\\s)(\\d+(?:\\.\\d+)?)\\s*(${knownUnits.join('|')})(?:\\s|$)`, 'i');
         const numFirstMatch = desc.match(numFirstRegex);
 
@@ -1253,7 +986,6 @@
           unit = numFirstMatch[2];
           desc = desc.replace(numFirstMatch[0], ' ').trim();
         } else {
-          // Lone number
           const loneNumMatch = desc.match(/(?:^|\s)(\d+(?:\.\d+)?)(?:\s|$)/);
           if (loneNumMatch) {
             qty = loneNumMatch[1];
@@ -1302,10 +1034,9 @@
       }
 
       if (replaceExisting) {
-        // Always ensure at least 10 rows are rendered to maintain full sheet height
         const totalRows = Math.max(DEFAULT_ROW_COUNT, items.length);
         renderTable(totalRows, items);
-        showToast(`⚡ تم تعبئة (${items.length}) أصناف بنجاح مع استغلال كامل الورقة!`);
+        showToast(`⚡ تم تعبئة (${items.length}) أصناف بنجاح!`);
       } else {
         const currentData = getCurrentTableData();
         const cleanCurrent = currentData.filter(i => i.desc || i.code || i.qty);
@@ -1332,7 +1063,7 @@
       document.getElementById('smartBtnText').innerText = isHidden ? 'فتح الإدخال الذكي' : 'إخفاء الإدخال الذكي';
     }
 
-    // --- TABLE GENERATION (CLEAN - ZERO PLACEHOLDERS) ---
+    // --- TABLE GENERATION ---
     function createRow(index, data = {}) {
       const tr = document.createElement('tr');
       tr.className = 'hover:bg-slate-50 transition-colors';
@@ -1459,7 +1190,6 @@
       localStorage.setItem(TABLE_KEY, JSON.stringify(data));
     }
 
-    // --- NEW REQUISITION ---
     function createNewPR() {
       config.counter += 1;
       localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
@@ -1476,7 +1206,6 @@
       showToast(`🚀 تم فتح طلب جديد برقم: ${formatSerial(config.prefix, config.counter)}`);
     }
 
-    // --- DOWNLOAD STANDALONE HTML ---
     function downloadSelfHTML() {
       document.querySelectorAll('input').forEach(input => {
         if (input.type === 'checkbox' || input.type === 'radio') {
@@ -1531,7 +1260,6 @@
         reqDateInput.value = new Date().toISOString().split('T')[0];
       }
 
-      // Check saved items or render user's requested 3 items with 10 total full rows
       const savedItems = localStorage.getItem(TABLE_KEY);
       if (savedItems) {
         try {
@@ -1550,13 +1278,10 @@
 
     function initUserItems() {
       const initialItems = [
-        { code: '', desc: 'سلة مهملات', unit: 'عدد', qty: '1', stock: '', remarks: '' },
-        { code: '', desc: 'أكياس نفايات', unit: 'ربطة', qty: '2', stock: '', remarks: '' },
-        { code: '', desc: 'بطارية مقاس AA', unit: 'عدد', qty: '1', stock: '', remarks: '' }
+        { code: '', desc: 'دفاتر ادخال انتاج قسم الميكسر حسب العينة المرفقة', unit: 'عدد', qty: '5', stock: '', remarks: '' }
       ];
-      // Render 10 full rows so the page is 100% utilized
       renderTable(DEFAULT_ROW_COUNT, initialItems);
     }
   </script>
-
-</body></html>
+</body>
+</html>
