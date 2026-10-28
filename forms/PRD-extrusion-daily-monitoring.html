@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PVC PIPE EXTRUSION DAILY MONITORING REPORT | AL MANAR PIPES FACTORY</title>
+
+  <!-- Google Fonts: Inter for crisp industrial tabular layout -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Tabular numbers for clean column alignment */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==============================================================================
+       PRINT ENGINE: STRICT SINGLE-PAGE A4 PORTRAIT ENFORCEMENT
+       ============================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 4mm 5mm;
+    }
+
+    @media print {
+      *, *::before, *::after {
+        box-sizing: border-box !important;
+      }
+
+      html, body {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      /* Hide interactive toolbars and toasts */
+      .no-print, button, .action-bar, #toast {
+        display: none !important;
+      }
+
+      /* Double outer border container */
+      .sheet-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 auto !important;
+        padding: 1.5mm !important;
+        border: 2.5px double #000 !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        background: #fff !important;
+      }
+
+      /* Fixed table layout */
+      table {
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+      }
+
+      th, td {
+        border: 1px solid #000 !important;
+        padding: 1px 2px !important;
+        font-size: 8px !important;
+        line-height: 1.15 !important;
+        box-sizing: border-box !important;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000 !important;
+        font-weight: 800 !important;
+      }
+
+      .hourly-row {
+        height: 18px !important;
+      }
+
+      /* Clean inputs for print */
+      input, textarea, select {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        color: #000 !important;
+        width: 100% !important;
+        text-align: inherit !important;
+      }
+
+      .sign-box {
+        min-height: 14mm !important;
+        height: 14mm !important;
+        padding: 1.5mm !important;
+      }
+    }
+
+    /* Screen preview styling */
+    .sheet-container {
+      width: 100%;
+      max-width: 210mm;
+      min-height: 290mm;
+      margin: 0 auto;
+      padding: 3mm;
+      background: #ffffff;
+      border: 3px double #0f172a;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Custom input focus */
+    .cell-input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      outline: none;
+      border: none;
+      padding: 1px 2px;
+      font-size: inherit;
+      color: inherit;
+      transition: background-color 0.15s ease;
+    }
+    .cell-input:focus {
+      background-color: #e0f2fe;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen py-4 px-2 selection:bg-amber-500 selection:text-white">
+
+  <!-- ==============================================================================
+       TOP ACTION BAR (NON-PRINT)
+       ============================================================================== -->
+  <header class="no-print max-w-[210mm] mx-auto mb-3 bg-white border border-slate-300 rounded-xl px-4 py-2.5 shadow-sm flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <a href="../index.php" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition" title="Return to forms dashboard">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <span>Dashboard</span>
+      </a>
+      <div class="h-4 w-px bg-slate-300 hidden sm:block"></div>
+      <div class="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+        <span>DOC-Ext.-03</span>
+        <span class="text-slate-400">|</span>
+        <span class="text-slate-600">REV 04</span>
+      </div>
+    </div>
+
+    <!-- Smart Hourly Rate Stepper & Controls -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-0.5">
+        <span class="text-[11px] font-bold text-slate-600 px-2">Hourly Target (Pcs/Hr):</span>
+        <button type="button" onclick="stepHourlyRate(-1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Decrease rate">-</button>
+        <input type="number" id="toolbarRateInput" value="47" min="1" max="5000" class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums" oninput="syncHourlyRate(this.value)">
+        <button type="button" onclick="stepHourlyRate(1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Increase rate">+</button>
+      </div>
+
+      <button type="button" onclick="populateSampleData()" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1.5 rounded-lg transition" title="Fill sample operational data">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        <span>Sample Data</span>
+      </button>
+
+      <button type="button" onclick="resetForm()" class="inline-flex items-center gap-1 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1.5 rounded-lg transition" title="Clear all entered production numbers">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        <span>Reset</span>
+      </button>
+
+      <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg shadow-sm transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+        <span>Print A4 / PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==============================================================================
+       MAIN DOCUMENT SHEET (DOUBLE-BORDER A4 CONTAINER)
+       ============================================================================== -->
+  <main class="sheet-container text-slate-900 flex flex-col justify-between">
+    <div>
+      <!-- 1. HEADER SECTION & ISO CONTROL BOX -->
+      <div class="border-b-2 border-slate-900 pb-1.5 mb-1.5">
+        <div class="grid grid-cols-12 items-stretch gap-2">
+          
+          <!-- Factory Name & Identity (Left) -->
+          <div class="col-span-4 flex flex-col justify-between">
+            <div>
+              <h1 class="text-[13px] font-black tracking-tight uppercase text-slate-950 leading-tight">
+                AL MANAR PIPES FACTORY
+              </h1>
+              <p class="text-[8.5px] font-semibold text-slate-600 uppercase tracking-wider">
+                Production Execution & Quality Follow-Up
+              </p>
+            </div>
+            <div class="inline-block mt-0.5">
+              <span class="text-[7.5px] font-black bg-slate-900 text-white px-1.5 py-0.5 rounded-xs tracking-wider uppercase">
+                Extrusion Division - Plant #1
+              </span>
+            </div>
+          </div>
+
+          <!-- Document Title (Center) -->
+          <div class="col-span-5 text-center flex flex-col justify-center border-x border-slate-300 px-2">
+            <h2 class="text-[11px] font-black uppercase tracking-tight text-slate-900 leading-tight">
+              PVC PIPE EXTRUSION DAILY MONITORING REPORT
+            </h2>
+            <p class="text-[8px] font-bold text-slate-700 uppercase tracking-widest mt-0.5">
+              24-Hour Continuous Production & Operational Log
+            </p>
+          </div>
+
+          <!-- ISO Document Control Box (Right) -->
+          <div class="col-span-3 text-[7.5px] font-bold">
+            <table class="w-full border border-slate-900 text-left">
+              <tbody>
+                <tr class="border-b border-slate-400">
+                  <td class="bg-slate-100 font-extrabold px-1 py-0.5 w-16 uppercase text-slate-800">Doc Code:</td>
+                  <td class="px-1 py-0.5 font-black text-slate-950 uppercase">DOC-Ext.-03</td>
+                </tr>
+                <tr class="border-b border-slate-400">
+                  <td class="bg-slate-100 font-extrabold px-1 py-0.5 uppercase text-slate-800">Revision:</td>
+                  <td class="px-1 py-0.5 font-black text-slate-950">04</td>
+                </tr>
+                <tr class="border-b border-slate-400">
+                  <td class="bg-slate-100 font-extrabold px-1 py-0.5 uppercase text-slate-800">Date:</td>
+                  <td class="px-1 py-0.5 font-bold">
+                    <input type="date" id="reportDate" class="w-full text-[8px] font-bold bg-transparent outline-none">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="bg-slate-100 font-extrabold px-1 py-0.5 uppercase text-slate-800">Page:</td>
+                  <td class="px-1 py-0.5 font-black text-slate-950">1 of 1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. PRODUCTION PARAMETERS BAR (TOP METADATA INPUTS) -->
+      <div class="border border-slate-900 bg-slate-50/80 mb-1.5 p-1 text-[8px]">
+        <div class="grid grid-cols-12 gap-1.5 items-center">
+          
+          <!-- Product Specification -->
+          <div class="col-span-4 border-r border-slate-300 pr-1.5">
+            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [2] Product Specification:
+            </label>
+            <input type="text" id="productSpec" value="[307] - uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate" title="Product Specification">
+          </div>
+
+          <!-- Line No -->
+          <div class="col-span-2 border-r border-slate-300 pr-1.5">
+            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [3] Line No:
+            </label>
+            <input type="text" id="lineNo" value="L-01 - KTS 350 TDH" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
+          </div>
+
+          <!-- Standard Speed -->
+          <div class="col-span-2 border-r border-slate-300 pr-1.5">
+            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [4] Std Speed:
+            </label>
+            <input type="text" id="stdSpeed" value="4 M/Min" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
+          </div>
+
+          <!-- Nominal Capacity -->
+          <div class="col-span-1 border-r border-slate-300 pr-1.5">
+            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [5] Capacity:
+            </label>
+            <input type="text" id="nomCapacity" value="300 Kg/h" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
+          </div>
+
+          <!-- Nominal Weight -->
+          <div class="col-span-1 border-r border-slate-300 pr-1.5">
+            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [6] Nom Wt:
+            </label>
+            <input type="text" id="nomWeight" value="6.00" oninput="recalcShiftSummaries()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none tabular-nums" title="Nominal Weight in Kg/Pc">
+          </div>
+
+          <!-- Hourly Target Baseline (Pcs/Hr) -->
+          <div class="col-span-2 bg-amber-100/70 border border-amber-300 rounded-xs px-1 py-0.5 flex flex-col justify-center">
+            <div class="flex items-center justify-between">
+              <label class="text-[7px] font-black text-amber-900 uppercase">
+                [7] Hourly Rate:
+              </label>
+              <span class="text-[7px] text-amber-800 font-bold">Pcs/Hr</span>
+            </div>
+            <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center">
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 3. TABLE ARCHITECTURE: 24 HOURLY ROWS & SHIFT SUMMARIES -->
+      <div class="border border-slate-900 overflow-hidden">
+        <table class="w-full border-collapse text-[8px] tabular-nums" id="monitoringTable">
+          <thead>
+            <tr class="bg-slate-200 text-slate-950 font-extrabold border-b border-slate-900 text-center">
+              <th class="w-[8%] py-1 px-1 border-r border-slate-400">Hour</th>
+              <th class="w-[10.5%] py-1 px-1 border-r border-slate-400" title="Cumulative Standard Target">Std Prod<br><span class="font-normal text-[7px]">(Pcs - Cum.)</span></th>
+              <th class="w-[10.5%] py-1 px-1 border-r border-slate-400" title="Actual Good Output">Good Prod<br><span class="font-normal text-[7px]">(Pcs)</span></th>
+              <th class="w-[15%] py-1 px-1 border-r border-slate-400">Down Time Cause / Reason</th>
+              <th class="w-[8.5%] py-1 px-1 border-r border-slate-400">Down Time<br><span class="font-normal text-[7px]">(Min)</span></th>
+              <th class="w-[8.5%] py-1 px-1 border-r border-slate-900">Reject<br><span class="font-normal text-[7px]">(Kg)</span></th>
+              <th class="w-[23%] py-1 px-1 border-r border-slate-400 text-left bg-slate-300/80">Shift Summary &amp; KPI Metrics</th>
+              <th class="w-[16%] py-1 px-1 bg-slate-300/80">Value / Output</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- ROWS 1-12: SHIFT 1 (DAY: 06:30 - 18:30) -->
+
+            <!-- Row 1: 06:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="1">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">06:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">47</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 1 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Shift 1 Standard Target (Pcs):</td>
+              <td class="text-right font-black text-slate-900 px-1 bg-slate-50" id="s1_target">564</td>
+            </tr>
+
+            <!-- Row 2: 07:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="2">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">07:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">94</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 2 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Good Production (Pcs):</td>
+              <td class="text-right font-black text-emerald-800 px-1 bg-slate-50" id="s1_good">0</td>
+            </tr>
+
+            <!-- Row 3: 08:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="3">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">08:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">141</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 3 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Production Weight (Kg):</td>
+              <td class="text-right font-black text-slate-950 px-1 bg-slate-50" id="s1_weight">0.00</td>
+            </tr>
+
+            <!-- Row 4: 09:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="4">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">09:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">188</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 4 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Reject Production (Kg):</td>
+              <td class="text-right font-black text-rose-800 px-1 bg-slate-50" id="s1_reject">0.00</td>
+            </tr>
+
+            <!-- Row 5: 10:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="5">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">10:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">235</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 5 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Scrap Allowance (%):</td>
+              <td class="text-right font-black text-slate-900 px-1 bg-slate-50" id="s1_scrap">0.00%</td>
+            </tr>
+
+            <!-- Row 6: 11:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="6">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">11:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">282</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 6 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Down Time (Min):</td>
+              <td class="text-right font-black text-slate-950 px-1 bg-slate-50" id="s1_downtime">0</td>
+            </tr>
+
+            <!-- Row 7: 12:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="7">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">12:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">329</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Metric 7 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Operational Efficiency (%):</td>
+              <td class="text-right font-black text-blue-900 px-1 bg-slate-50" id="s1_eff">0.0%</td>
+            </tr>
+
+            <!-- Row 8: 13:30 (Spans Remarks for Rows 8-12) -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="8">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">13:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">376</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 1 Supervisor Remarks (Rowspan 5) -->
+              <td colspan="2" rowspan="5" class="align-top p-1 bg-slate-50/70 border-b border-slate-900">
+                <div class="flex items-center justify-between border-b border-slate-300 pb-0.5 mb-1">
+                  <span class="font-extrabold text-[7.5px] uppercase tracking-wide text-slate-800">
+                    Shift 1 Supervisor Remarks &amp; Handover Notes:
+                  </span>
+                  <span class="text-[7px] text-slate-500 font-semibold">Day Shift (06:30 - 18:30)</span>
+                </div>
+                <textarea id="s1_remarks" class="w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter day shift production notes, resin lot, machine status, handover observations..."></textarea>
+              </td>
+            </tr>
+
+            <!-- Row 9: 14:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="9">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">14:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">423</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 10: 15:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="10">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">15:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">470</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 11: 16:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="1" data-row="11">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">16:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">517</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 12: 17:30 (Last Day Shift Row) -->
+            <tr class="hourly-row border-b-2 border-slate-900 hover:bg-slate-50" data-shift="1" data-row="12">
+              <td class="text-center font-bold bg-amber-50/50 border-r border-slate-300">17:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">564</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- ROWS 13-24: SHIFT 2 (NIGHT: 18:30 - 06:30) -->
+
+            <!-- Row 13: 18:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="13">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">18:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">611</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 1 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Shift 2 Standard Target (Pcs):</td>
+              <td class="text-right font-black text-slate-900 px-1 bg-slate-50" id="s2_target">564</td>
+            </tr>
+
+            <!-- Row 14: 19:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="14">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">19:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">658</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 2 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Good Production (Pcs):</td>
+              <td class="text-right font-black text-emerald-800 px-1 bg-slate-50" id="s2_good">0</td>
+            </tr>
+
+            <!-- Row 15: 20:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="15">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">20:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">705</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 3 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Production Weight (Kg):</td>
+              <td class="text-right font-black text-slate-950 px-1 bg-slate-50" id="s2_weight">0.00</td>
+            </tr>
+
+            <!-- Row 16: 21:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="16">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">21:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">752</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 4 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Reject Production (Kg):</td>
+              <td class="text-right font-black text-rose-800 px-1 bg-slate-50" id="s2_reject">0.00</td>
+            </tr>
+
+            <!-- Row 17: 22:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="17">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">22:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">799</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 5 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Scrap Allowance (%):</td>
+              <td class="text-right font-black text-slate-900 px-1 bg-slate-50" id="s2_scrap">0.00%</td>
+            </tr>
+
+            <!-- Row 18: 23:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="18">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">23:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">846</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 6 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Total Down Time (Min):</td>
+              <td class="text-right font-black text-slate-950 px-1 bg-slate-50" id="s2_downtime">0</td>
+            </tr>
+
+            <!-- Row 19: 00:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="19">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">00:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">893</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Metric 7 -->
+              <td class="border-r border-slate-300 px-1 font-bold text-slate-800 bg-slate-50 text-left">Operational Efficiency (%):</td>
+              <td class="text-right font-black text-blue-900 px-1 bg-slate-50" id="s2_eff">0.0%</td>
+            </tr>
+
+            <!-- Row 20: 01:30 (Spans Remarks for Rows 20-24) -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="20">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">01:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">940</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+              <!-- Shift 2 Supervisor Remarks (Rowspan 5) -->
+              <td colspan="2" rowspan="5" class="align-top p-1 bg-slate-50/70 border-b border-slate-900">
+                <div class="flex items-center justify-between border-b border-slate-300 pb-0.5 mb-1">
+                  <span class="font-extrabold text-[7.5px] uppercase tracking-wide text-slate-800">
+                    Shift 2 Supervisor Remarks &amp; Handover Notes:
+                  </span>
+                  <span class="text-[7px] text-slate-500 font-semibold">Night Shift (18:30 - 06:30)</span>
+                </div>
+                <textarea id="s2_remarks" class="w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter night shift production notes, cooling bath temp, vacuum calibration, maintenance interventions..."></textarea>
+              </td>
+            </tr>
+
+            <!-- Row 21: 02:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="21">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">02:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">987</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 22: 03:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="22">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">03:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">1,034</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 23: 04:30 -->
+            <tr class="hourly-row border-b border-slate-300 hover:bg-slate-50" data-shift="2" data-row="23">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">04:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">1,081</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+
+            <!-- Row 24: 05:30 (Last Night Shift Row) -->
+            <tr class="hourly-row border-b border-slate-900 hover:bg-slate-50" data-shift="2" data-row="24">
+              <td class="text-center font-bold bg-indigo-50/50 border-r border-slate-300">05:30</td>
+              <td class="text-right font-extrabold text-slate-800 pr-1.5 border-r border-slate-300 std-cell">1,128</td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-black good-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-300 p-0"><input type="text" class="cell-input text-left text-[7.5px] cause-input" placeholder="..."></td>
+              <td class="border-r border-slate-300 p-0"><input type="number" class="cell-input text-right font-bold downtime-input" placeholder="0" oninput="recalcShiftSummaries()"></td>
+              <td class="border-r border-slate-900 p-0"><input type="number" step="0.1" class="cell-input text-right font-bold reject-input" placeholder="0.0" oninput="recalcShiftSummaries()"></td>
+            </tr>
+          </tbody>
+
+          <!-- 4. 24-HOUR CUMULATIVE GRAND TOTAL SUMMARY ROW -->
+          <tfoot>
+            <tr class="bg-slate-200 text-slate-950 font-black text-[8px] border-t-2 border-slate-900">
+              <td class="text-center py-1 px-1 border-r border-slate-400">24H TOTAL</td>
+              <td class="text-right pr-1.5 border-r border-slate-400" id="total_std_target">1,128</td>
+              <td class="text-right pr-1 border-r border-slate-400 text-emerald-900" id="total_good_pcs">0</td>
+              <td class="text-center border-r border-slate-400 font-bold text-[7.5px] text-slate-700">All Lines Operational</td>
+              <td class="text-right pr-1 border-r border-slate-400" id="total_downtime_min">0</td>
+              <td class="text-right pr-1 border-r border-slate-900 text-rose-900" id="total_reject_kg">0.00</td>
+              <td colspan="2" class="px-2 py-1 bg-slate-300 text-right">
+                <span class="text-slate-700 font-bold">Total Good Wt:</span>
+                <span class="font-black text-slate-950 mx-1" id="total_good_weight">0.00 Kg</span>
+                <span class="text-slate-400 mx-1">|</span>
+                <span class="text-slate-700 font-bold">Overall Eff:</span>
+                <span class="font-black text-blue-900 ml-1" id="total_efficiency">0.0%</span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- 5. BOTTOM SUPERVISOR SIGN-OFF SECTION & FOOTER -->
+    <div class="mt-2 pt-1 border-t-2 border-slate-900">
+      <div class="grid grid-cols-2 gap-2 text-[8px]">
+        
+        <!-- Day Shift Supervisor Sign-off -->
+        <div class="border border-slate-900 p-1.5 bg-slate-50 sign-box flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-slate-300 pb-0.5">
+            <span class="font-black text-slate-900 uppercase tracking-wide">Day Shift Supervisor</span>
+            <span class="text-[7px] text-slate-500 font-bold">06:30 - 18:30</span>
+          </div>
+          <div class="grid grid-cols-12 gap-1 items-center mt-1">
+            <label class="col-span-3 font-extrabold text-slate-700 uppercase text-[7px]">Supervisor Name:</label>
+            <div class="col-span-9">
+              <input type="text" id="dayLeadName" placeholder="Enter supervisor full name..." class="w-full font-bold text-[8px] bg-transparent outline-none border-b border-dotted border-slate-400 pb-0.5">
+            </div>
+          </div>
+          <div class="grid grid-cols-12 gap-1 items-center mt-1">
+            <label class="col-span-3 font-extrabold text-slate-700 uppercase text-[7px]">Official Sign:</label>
+            <div class="col-span-9">
+              <input type="text" id="daySignature" placeholder="Signed / Approved" class="w-full font-bold text-[8px] bg-transparent outline-none border-b border-dotted border-slate-400 pb-0.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Night Shift Supervisor Sign-off -->
+        <div class="border border-slate-900 p-1.5 bg-slate-50 sign-box flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-slate-300 pb-0.5">
+            <span class="font-black text-slate-900 uppercase tracking-wide">Night Shift Supervisor</span>
+            <span class="text-[7px] text-slate-500 font-bold">18:30 - 06:30</span>
+          </div>
+          <div class="grid grid-cols-12 gap-1 items-center mt-1">
+            <label class="col-span-3 font-extrabold text-slate-700 uppercase text-[7px]">Supervisor Name:</label>
+            <div class="col-span-9">
+              <input type="text" id="nightLeadName" placeholder="Enter supervisor full name..." class="w-full font-bold text-[8px] bg-transparent outline-none border-b border-dotted border-slate-400 pb-0.5">
+            </div>
+          </div>
+          <div class="grid grid-cols-12 gap-1 items-center mt-1">
+            <label class="col-span-3 font-extrabold text-slate-700 uppercase text-[7px]">Official Sign:</label>
+            <div class="col-span-9">
+              <input type="text" id="nightSignature" placeholder="Signed / Approved" class="w-full font-bold text-[8px] bg-transparent outline-none border-b border-dotted border-slate-400 pb-0.5">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Legal & System Verification Footer Line -->
+      <div class="mt-1 pt-1 border-t border-slate-300 flex items-center justify-between text-[7px] text-slate-500 font-semibold tracking-wider uppercase">
+        <span>AL MANAR PIPES FACTORY | QUALITY ASSURANCE &amp; PRODUCTION CONTROL DEPT.</span>
+        <span>FORM REF: DOC-Ext.-03 (REV. 04) | A4 PORTRAIT SINGLE-PAGE PRINT</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==============================================================================
+       NOTIFICATION TOAST (NON-PRINT)
+       ============================================================================== -->
+  <div id="toast" class="no-print fixed bottom-4 right-4 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none z-50 flex items-center gap-2">
+    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <!-- ==============================================================================
+       INTERACTIVE JAVASCRIPT ENGINE
+       ============================================================================== -->
+  <script>
+    const STORAGE_KEY = 'AL_MANAR_EXTRUSION_DAILY_MONITORING_DATA';
+
+    // Format numbers with thousands commas
+    function formatNumber(num) {
+      if (isNaN(num)) return '0';
+      return Number(num).toLocaleString('en-US');
+    }
+
+    // Toast notification
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2500);
+    }
+
+    // Step hourly rate via stepper buttons
+    function stepHourlyRate(delta) {
+      const current = parseInt(document.getElementById('toolbarRateInput').value) || 47;
+      const next = Math.max(1, current + delta);
+      syncHourlyRate(next);
+      showToast(`Hourly Target updated to ${next} Pcs/Hr`);
+    }
+
+    // Synchronize toolbar and metadata rate inputs and recalculate cumulative columns
+    function syncHourlyRate(value) {
+      const rate = parseInt(value) || 0;
+      document.getElementById('toolbarRateInput').value = rate;
+      document.getElementById('hourlyTargetMeta').value = rate;
+
+      // Recalculate 24 hourly rows cumulative standard baseline
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach((row, index) => {
+        const cumulative = (index + 1) * rate;
+        const stdCell = row.querySelector('.std-cell');
+        if (stdCell) {
+          stdCell.textContent = formatNumber(cumulative);
+        }
+      });
+
+      // Update Shift Targets
+      const s1Target = rate * 12;
+      const s2Target = rate * 12;
+      const totalTarget = rate * 24;
+
+      document.getElementById('s1_target').textContent = formatNumber(s1Target);
+      document.getElementById('s2_target').textContent = formatNumber(s2Target);
+      document.getElementById('total_std_target').textContent = formatNumber(totalTarget);
+
+      recalcShiftSummaries();
+      saveToStorage();
+    }
+
+    // Parse numeric value safely
+    function parseNum(val) {
+      const n = parseFloat(val);
+      return isNaN(n) ? 0 : n;
+    }
+
+    // Recalculate all shift summaries, scrap allowances, and efficiencies
+    function recalcShiftSummaries() {
+      const rate = parseInt(document.getElementById('toolbarRateInput').value) || 47;
+      const nomWeight = parseNum(document.getElementById('nomWeight').value) || 6.0;
+
+      let s1Good = 0, s1Downtime = 0, s1Reject = 0;
+      let s2Good = 0, s2Downtime = 0, s2Reject = 0;
+
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach(row => {
+        const shift = row.getAttribute('data-shift');
+        const good = parseNum(row.querySelector('.good-input').value);
+        const downtime = parseNum(row.querySelector('.downtime-input').value);
+        const reject = parseNum(row.querySelector('.reject-input').value);
+
+        if (shift === '1') {
+          s1Good += good;
+          s1Downtime += downtime;
+          s1Reject += reject;
+        } else if (shift === '2') {
+          s2Good += good;
+          s2Downtime += downtime;
+          s2Reject += reject;
+        }
+      });
+
+      // Shift 1 metrics
+      const s1Target = rate * 12;
+      const s1Weight = s1Good * nomWeight;
+      const s1TotalWt = s1Weight + s1Reject;
+      const s1ScrapPct = s1TotalWt > 0 ? ((s1Reject / s1TotalWt) * 100).toFixed(2) + '%' : '0.00%';
+      const s1EffPct = s1Target > 0 ? ((s1Good / s1Target) * 100).toFixed(1) + '%' : '0.0%';
+
+      document.getElementById('s1_good').textContent = formatNumber(s1Good);
+      document.getElementById('s1_weight').textContent = formatNumber(s1Weight.toFixed(2));
+      document.getElementById('s1_reject').textContent = formatNumber(s1Reject.toFixed(2));
+      document.getElementById('s1_scrap').textContent = s1ScrapPct;
+      document.getElementById('s1_downtime').textContent = formatNumber(s1Downtime);
+      document.getElementById('s1_eff').textContent = s1EffPct;
+
+      // Shift 2 metrics
+      const s2Target = rate * 12;
+      const s2Weight = s2Good * nomWeight;
+      const s2TotalWt = s2Weight + s2Reject;
+      const s2ScrapPct = s2TotalWt > 0 ? ((s2Reject / s2TotalWt) * 100).toFixed(2) + '%' : '0.00%';
+      const s2EffPct = s2Target > 0 ? ((s2Good / s2Target) * 100).toFixed(1) + '%' : '0.0%';
+
+      document.getElementById('s2_good').textContent = formatNumber(s2Good);
+      document.getElementById('s2_weight').textContent = formatNumber(s2Weight.toFixed(2));
+      document.getElementById('s2_reject').textContent = formatNumber(s2Reject.toFixed(2));
+      document.getElementById('s2_scrap').textContent = s2ScrapPct;
+      document.getElementById('s2_downtime').textContent = formatNumber(s2Downtime);
+      document.getElementById('s2_eff').textContent = s2EffPct;
+
+      // 24-Hour Grand Totals
+      const totalGood = s1Good + s2Good;
+      const totalDowntime = s1Downtime + s2Downtime;
+      const totalReject = s1Reject + s2Reject;
+      const totalGoodWeight = totalGood * nomWeight;
+      const totalTarget = rate * 24;
+      const totalEffPct = totalTarget > 0 ? ((totalGood / totalTarget) * 100).toFixed(1) + '%' : '0.0%';
+
+      document.getElementById('total_good_pcs').textContent = formatNumber(totalGood);
+      document.getElementById('total_downtime_min').textContent = formatNumber(totalDowntime);
+      document.getElementById('total_reject_kg').textContent = formatNumber(totalReject.toFixed(2));
+      document.getElementById('total_good_weight').textContent = formatNumber(totalGoodWeight.toFixed(2)) + ' Kg';
+      document.getElementById('total_efficiency').textContent = totalEffPct;
+
+      saveToStorage();
+    }
+
+    // Populate realistic sample data
+    function populateSampleData() {
+      const sampleGoods = [
+        47, 46, 47, 45, 46, 40, 47, 47, 46, 47, 45, 46, // Day: 549 pcs
+        47, 47, 46, 47, 44, 46, 47, 47, 45, 47, 46, 47  // Night: 556 pcs
+      ];
+
+      const sampleDowntimes = [
+        0, 0, 0, 5, 0, 15, 0, 0, 0, 0, 5, 0,
+        0, 0, 0, 0, 10, 0, 0, 0, 5, 0, 0, 0
+      ];
+
+      const sampleCauses = [
+        '', '', '', 'Filter screen wash', '', 'Printer head cleaning', '', '', '', '', 'Haul-off belt check', '',
+        '', '', '', '', 'Cooling water filter swap', '', '', '', 'Bell mouth air check', '', '', ''
+      ];
+
+      const sampleRejects = [
+        0, 0.5, 0, 1.2, 0, 3.5, 0, 0, 0.8, 0, 1.0, 0,
+        0, 0, 0.6, 0, 2.4, 0, 0, 0, 1.5, 0, 0, 0
+      ];
+
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach((row, i) => {
+        row.querySelector('.good-input').value = sampleGoods[i] || '';
+        row.querySelector('.downtime-input').value = sampleDowntimes[i] || '';
+        row.querySelector('.cause-input').value = sampleCauses[i] || '';
+        row.querySelector('.reject-input').value = sampleRejects[i] ? sampleRejects[i].toFixed(1) : '';
+      });
+
+      document.getElementById('s1_remarks').value = 'Day shift ran smoothly. Raw material batch #RM-2026-102. Die head heat zones calibrated within +/-1 C. Routine printer maintenance at 11:30. Handed over with clear haul-off speed.';
+      document.getElementById('s2_remarks').value = 'Night shift operated under nominal vacuum conditions. Cooling tank temperature maintained at 18 C. Standard socketing checks passed EN 1452 pressure test sample #04.';
+      document.getElementById('dayLeadName').value = 'Eng. Ahmed Mostafa';
+      document.getElementById('daySignature').value = 'A. Mostafa';
+      document.getElementById('nightLeadName').value = 'Eng. Mahmoud Zaki';
+      document.getElementById('nightSignature').value = 'M. Zaki';
+
+      recalcShiftSummaries();
+      showToast('Sample operational data populated successfully!');
+    }
+
+    // Reset Form
+    function resetForm() {
+      if (!confirm('Are you sure you want to clear all entered production values?')) return;
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach(row => {
+        row.querySelector('.good-input').value = '';
+        row.querySelector('.downtime-input').value = '';
+        row.querySelector('.cause-input').value = '';
+        row.querySelector('.reject-input').value = '';
+      });
+
+      document.getElementById('s1_remarks').value = '';
+      document.getElementById('s2_remarks').value = '';
+      document.getElementById('dayLeadName').value = '';
+      document.getElementById('daySignature').value = '';
+      document.getElementById('nightLeadName').value = '';
+      document.getElementById('nightSignature').value = '';
+
+      localStorage.removeItem(STORAGE_KEY);
+      recalcShiftSummaries();
+      showToast('Form has been cleared.');
+    }
+
+    // Local Storage persistence
+    function saveToStorage() {
+      try {
+        const data = {
+          date: document.getElementById('reportDate').value,
+          rate: document.getElementById('toolbarRateInput').value,
+          spec: document.getElementById('productSpec').value,
+          line: document.getElementById('lineNo').value,
+          speed: document.getElementById('stdSpeed').value,
+          capacity: document.getElementById('nomCapacity').value,
+          weight: document.getElementById('nomWeight').value,
+          s1_remarks: document.getElementById('s1_remarks').value,
+          s2_remarks: document.getElementById('s2_remarks').value,
+          dayLead: document.getElementById('dayLeadName').value,
+          daySign: document.getElementById('daySignature').value,
+          nightLead: document.getElementById('nightLeadName').value,
+          nightSign: document.getElementById('nightSignature').value,
+          rows: []
+        };
+
+        const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+        rows.forEach(row => {
+          data.rows.push({
+            good: row.querySelector('.good-input').value,
+            cause: row.querySelector('.cause-input').value,
+            downtime: row.querySelector('.downtime-input').value,
+            reject: row.querySelector('.reject-input').value
+          });
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        // Ignore storage exceptions
+      }
+    }
+
+    // Restore from LocalStorage
+    function restoreFromStorage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        const data = JSON.parse(saved);
+
+        if (data.rate) syncHourlyRate(data.rate);
+        if (data.date) document.getElementById('reportDate').value = data.date;
+        if (data.spec) document.getElementById('productSpec').value = data.spec;
+        if (data.line) document.getElementById('lineNo').value = data.line;
+        if (data.speed) document.getElementById('stdSpeed').value = data.speed;
+        if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
+        if (data.weight) document.getElementById('nomWeight').value = data.weight;
+        if (data.s1_remarks) document.getElementById('s1_remarks').value = data.s1_remarks;
+        if (data.s2_remarks) document.getElementById('s2_remarks').value = data.s2_remarks;
+        if (data.dayLead) document.getElementById('dayLeadName').value = data.dayLead;
+        if (data.daySign) document.getElementById('daySignature').value = data.daySign;
+        if (data.nightLead) document.getElementById('nightLeadName').value = data.nightLead;
+        if (data.nightSign) document.getElementById('nightSignature').value = data.nightSign;
+
+        if (Array.isArray(data.rows)) {
+          const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+          rows.forEach((row, i) => {
+            if (data.rows[i]) {
+              row.querySelector('.good-input').value = data.rows[i].good || '';
+              row.querySelector('.cause-input').value = data.rows[i].cause || '';
+              row.querySelector('.downtime-input').value = data.rows[i].downtime || '';
+              row.querySelector('.reject-input').value = data.rows[i].reject || '';
+            }
+          });
+        }
+      } catch (e) {
+        // Ignore restore exceptions
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set default date to today YYYY-MM-DD
+      const dateInput = document.getElementById('reportDate');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+
+      // Check stored data
+      restoreFromStorage();
+
+      // Recalculate baseline and totals
+      syncHourlyRate(document.getElementById('toolbarRateInput').value || 47);
+    });
+  </script>
+</body>
+</html>
