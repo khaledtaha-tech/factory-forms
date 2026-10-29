@@ -53,24 +53,31 @@
         print-color-adjust: exact !important;
       }
 
-      /* Hide interactive toolbars, modals, and toasts */
-      .no-print, button, .action-bar, #toast, #catalogModal {
+      /* Hide interactive toolbars, modals, tabs, and toasts */
+      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer {
         display: none !important;
       }
 
-      /* Double outer border container */
+      /* Double outer border container - Strictly fill A4 vertical height */
       .sheet-container {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
+        min-height: 285mm !important;
+        height: 285mm !important;
+        max-height: 287mm !important;
         margin: 0 auto !important;
         padding: 1.5mm !important;
         border: 2.5px double #000 !important;
         box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         page-break-after: avoid !important;
         background: #fff !important;
+        overflow: hidden !important;
       }
 
       /* Fixed table layout */
@@ -95,8 +102,9 @@
         font-weight: 800 !important;
       }
 
-      .hourly-row {
-        height: 18px !important;
+      .hourly-row, .hourly-row td {
+        height: 25px !important;
+        padding: 1px 2px !important;
       }
 
       /* Clean inputs and selects for print - seamless borderless text */
@@ -121,10 +129,35 @@
         display: none !important;
       }
 
+      textarea#s1_remarks, textarea#s2_remarks, .shift-remarks-textarea {
+        height: calc(100% - 18px) !important;
+        min-height: 95px !important;
+      }
+
       .sign-box {
-        min-height: 14mm !important;
-        height: 14mm !important;
+        min-height: 16mm !important;
+        height: 16mm !important;
         padding: 1.5mm !important;
+      }
+
+      /* Batch printing styles */
+      #batchPrintContainer {
+        display: none;
+      }
+      body.batch-mode #singleSheetContainer {
+        display: none !important;
+      }
+      body.batch-mode #batchPrintContainer {
+        display: block !important;
+      }
+      body.batch-mode .batch-sheet {
+        page-break-after: always !important;
+        break-after: page !important;
+        margin-bottom: 0 !important;
+      }
+      body.batch-mode .batch-sheet:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
     }
 
@@ -132,12 +165,25 @@
     .sheet-container {
       width: 100%;
       max-width: 210mm;
-      min-height: 290mm;
+      min-height: 285mm;
       margin: 0 auto;
       padding: 3mm;
       background: #ffffff;
       border: 3px double #0f172a;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    .hourly-row, .hourly-row td {
+      height: 25px;
+    }
+
+    .shift-remarks-textarea {
+      min-height: 95px;
+      height: 100%;
     }
 
     /* Custom input focus */
@@ -201,17 +247,38 @@
         <span>Reset</span>
       </button>
 
-      <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg shadow-sm transition">
+      <button type="button" onclick="printCurrentMachine()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg shadow-sm transition" title="Print Current Machine (1 Page A4)">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-        <span>Print A4 / PDF</span>
+        <span>Print Machine (1 Page)</span>
+      </button>
+
+      <button type="button" onclick="printAllLinesBatch()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg shadow-sm transition" title="Batch Print All Lines (A4 Per Machine)">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+        <span>Print All Lines (Batch)</span>
       </button>
     </div>
   </header>
 
   <!-- ==============================================================================
+       MULTI-MACHINE DAILY TABS (NON-PRINT)
+       ============================================================================== -->
+  <div id="machineTabsContainer" class="no-print max-w-[210mm] mx-auto mb-2.5 bg-white border border-slate-300 rounded-xl p-2.5 shadow-xs">
+    <div class="flex items-center justify-between mb-2 px-1">
+      <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        <span>\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c (Machine Lines):</span>
+      </span>
+      <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
+    </div>
+    <div id="machineTabsList" class="flex flex-wrap gap-1.5">
+      <!-- Tabs populated dynamically via renderMachineTabs() -->
+    </div>
+  </div>
+
+  <!-- ==============================================================================
        MAIN DOCUMENT SHEET (DOUBLE-BORDER A4 CONTAINER)
        ============================================================================== -->
-  <main class="sheet-container text-slate-900 flex flex-col justify-between">
+  <main id="singleSheetContainer" class="sheet-container text-slate-900 flex flex-col justify-between">
     <div>
       <!-- 1. HEADER SECTION & ISO CONTROL BOX -->
       <div class="border-b-2 border-slate-900 pb-1.5 mb-1.5">
@@ -259,7 +326,7 @@
                 <tr class="border-b border-slate-400">
                   <td class="bg-slate-100 font-extrabold px-1 py-0.5 uppercase text-slate-800">Date:</td>
                   <td class="px-1 py-0.5 font-bold">
-                    <input type="date" id="reportDate" class="w-full text-[8px] font-bold bg-transparent outline-none">
+                    <input type="date" id="reportDate" onchange="handleDateChange()" class="border border-slate-300 font-bold px-2 py-1 rounded text-xs w-full bg-white text-slate-900 cursor-pointer shadow-2xs">
                   </td>
                 </tr>
                 <tr>
@@ -282,7 +349,7 @@
             <label for="itemCodeSelect" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [1] Item Code:
             </label>
-            <select id="itemCodeSelect" onchange="handleItemCodeChange()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none cursor-pointer" title="Select Item Code">
+            <select id="itemCodeSelect" onchange="handleItemCodeChange()" class="border border-emerald-400 bg-emerald-50 font-bold px-2 py-1 rounded text-xs text-emerald-900 cursor-pointer w-full shadow-2xs" title="Select Item Code">
               <!-- Dynamically populated from catalog -->
             </select>
           </div>
@@ -301,7 +368,7 @@
             <label for="lineSelect" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [3] Line No:
             </label>
-            <select id="lineSelect" onchange="handleLineChange()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none cursor-pointer" title="Select Machine Line">
+            <select id="lineSelect" onchange="handleLineChange()" class="border border-blue-400 bg-blue-50 font-bold px-2 py-1 rounded text-xs text-blue-900 cursor-pointer w-full shadow-2xs" title="Select Machine Line">
               <!-- Dynamically populated from catalog -->
             </select>
             <input type="hidden" id="lineNo" value="L-01 - KTS 350 TDH">
@@ -471,7 +538,7 @@
                   </span>
                   <span class="text-[7px] text-slate-500 font-semibold">Day Shift (06:30 - 18:30)</span>
                 </div>
-                <textarea id="s1_remarks" class="w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter day shift production notes, resin lot, machine status, handover observations..."></textarea>
+                <textarea id="s1_remarks" class="shift-remarks-textarea w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter day shift production notes, resin lot, machine status, handover observations..."></textarea>
               </td>
             </tr>
 
@@ -624,7 +691,7 @@
                   </span>
                   <span class="text-[7px] text-slate-500 font-semibold">Night Shift (18:30 - 06:30)</span>
                 </div>
-                <textarea id="s2_remarks" class="w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter night shift production notes, cooling bath temp, vacuum calibration, maintenance interventions..."></textarea>
+                <textarea id="s2_remarks" class="shift-remarks-textarea w-full h-16 resize-none bg-transparent font-medium text-[8px] leading-snug outline-none" placeholder="Enter night shift production notes, cooling bath temp, vacuum calibration, maintenance interventions..."></textarea>
               </td>
             </tr>
 
@@ -744,6 +811,11 @@
       </div>
     </div>
   </main>
+
+  <!-- ==============================================================================
+       BATCH PRINT CONTAINER (CLONED PAGES FOR MULTI-MACHINE PRINTING)
+       ============================================================================== -->
+  <div id="batchPrintContainer" class="hidden"></div>
 
   <!-- ==============================================================================
        CATALOG MANAGER MODAL (STRICTLY NON-PRINT)
@@ -1023,6 +1095,69 @@
       }
     }
 
+    const DEFAULT_LINES = [
+      'L-01 - KTS 350 TDH',
+      'L-02 - Twin Screw',
+      'L-03 - Kabra 90',
+      'L-04 - KTS 350',
+      'L-05 - KTS 200',
+      'L-06 - KTS 700'
+    ];
+
+    function getAvailableLines() {
+      const catalog = getCatalog();
+      const catLines = catalog.map(e => String(e.machineLine || '').trim()).filter(Boolean);
+      const combined = [...DEFAULT_LINES];
+      catLines.forEach(l => {
+        if (!combined.includes(l)) {
+          combined.push(l);
+        }
+      });
+      return combined;
+    }
+
+    function renderMachineTabs() {
+      const container = document.getElementById('machineTabsList');
+      if (!container) return;
+      const lines = getAvailableLines();
+      const lineSelect = document.getElementById('lineSelect');
+      const currentLine = (lineSelect && lineSelect.value) ? lineSelect.value : lines[0];
+
+      container.innerHTML = '';
+      lines.forEach(line => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.line = line;
+        btn.onclick = () => switchMachineLine(line);
+        const isActive = line === currentLine;
+        btn.className = isActive
+          ? 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1 cursor-pointer'
+          : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1 cursor-pointer';
+
+        btn.innerHTML = `<span>${line}</span>`;
+        container.appendChild(btn);
+      });
+
+      const badge = document.getElementById('activeMachineBadge');
+      if (badge) {
+        badge.textContent = currentLine;
+      }
+    }
+
+    function updateActiveTabUI(activeLine) {
+      const buttons = document.querySelectorAll('#machineTabsList button');
+      buttons.forEach(btn => {
+        const isMatch = btn.dataset.line === activeLine;
+        btn.className = isMatch
+          ? 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1 cursor-pointer'
+          : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1 cursor-pointer';
+      });
+      const badge = document.getElementById('activeMachineBadge');
+      if (badge) {
+        badge.textContent = activeLine;
+      }
+    }
+
     // Populate Item Code and Machine Line dropdowns
     function populateDropdowns(preserveItemCode, preserveLine) {
       const catalog = getCatalog();
@@ -1031,10 +1166,10 @@
       if (!itemSelect || !lineSelect) return;
 
       const uniqueCodes = [...new Set(catalog.map(e => String(e.itemCode).trim()).filter(Boolean))];
-      const uniqueLines = [...new Set(catalog.map(e => String(e.machineLine).trim()).filter(Boolean))];
+      const availableLines = getAvailableLines();
 
       const currentItem = preserveItemCode || itemSelect.value || uniqueCodes[0] || '307';
-      const currentLine = preserveLine || lineSelect.value || uniqueLines[0] || 'L-01 - KTS 350 TDH';
+      const currentLine = preserveLine || lineSelect.value || availableLines[0] || 'L-01 - KTS 350 TDH';
 
       // Rebuild Item Code options
       itemSelect.innerHTML = '';
@@ -1048,13 +1183,15 @@
 
       // Rebuild Machine Line options
       lineSelect.innerHTML = '';
-      uniqueLines.forEach(line => {
+      availableLines.forEach(line => {
         const opt = document.createElement('option');
         opt.value = line;
         opt.textContent = line;
         if (line === currentLine) opt.selected = true;
         lineSelect.appendChild(opt);
       });
+
+      renderMachineTabs();
     }
 
     // Step 1: Item Code Selection changed
@@ -1108,32 +1245,10 @@
 
     // Step 2: Machine Line Selection changed
     function handleLineChange() {
-      const catalog = getCatalog();
-      const itemCodeEl = document.getElementById('itemCodeSelect');
       const lineSelectEl = document.getElementById('lineSelect');
-      if (!itemCodeEl || !lineSelectEl) return;
-
-      const itemCode = itemCodeEl.value.trim();
+      if (!lineSelectEl) return;
       const line = lineSelectEl.value.trim();
-
-      // Mirror lineNo alias
-      const lineNoAlias = document.getElementById('lineNo');
-      if (lineNoAlias) lineNoAlias.value = line;
-
-      // Look up combination (Item Code + Selected Line) in catalog
-      const exactMatch = catalog.find(e => 
-        String(e.itemCode).trim() === itemCode && String(e.machineLine).trim() === line
-      );
-
-      if (exactMatch) {
-        syncHourlyRate(exactMatch.hourlyRate);
-        showToast(`Target Rate: ${exactMatch.hourlyRate} Pcs/Hr (${itemCode} on ${line})`);
-      } else {
-        // If no specific combination exists, allow manual hourly rate entry without breaking stepper
-        showToast(`No preset rate for ${itemCode} on ${line}. Manual rate allowed.`);
-      }
-
-      saveToStorage();
+      switchMachineLine(line);
     }
 
     // Manual edit on Length & Nominal Weight field
@@ -1712,172 +1827,441 @@
       showToast('Sample operational data populated successfully!');
     }
 
-    function resetForm() {
-      if (!confirm('Are you sure you want to clear all entered production values?')) return;
+    function getDailyStorageKey(reportDate, machineLine) {
+      const d = reportDate || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : '') || new Date().toISOString().split('T')[0];
+      const l = machineLine || (document.getElementById('lineSelect') ? document.getElementById('lineSelect').value : '') || 'L-01 - KTS 350 TDH';
+      return `almanar_daily_${d}_${l}`;
+    }
+
+    function serializeCurrentForm() {
+      const itemSelect = document.getElementById('itemCodeSelect');
+      const lineSelect = document.getElementById('lineSelect');
+      const prodSpec = document.getElementById('prodSpec');
+      const prodLenWt = document.getElementById('prodLengthWeight');
+      const nomWt = document.getElementById('nomWeight');
+
+      const data = {
+        date: document.getElementById('reportDate').value,
+        rate: document.getElementById('toolbarRateInput').value,
+        itemCode: itemSelect ? itemSelect.value : '',
+        spec: prodSpec ? prodSpec.value : '',
+        line: lineSelect ? lineSelect.value : '',
+        lengthWeight: prodLenWt ? prodLenWt.value : '',
+        speed: document.getElementById('stdSpeed').value,
+        capacity: document.getElementById('nomCapacity').value,
+        weight: nomWt ? nomWt.value : '',
+        s1_remarks: document.getElementById('s1_remarks').value,
+        s2_remarks: document.getElementById('s2_remarks').value,
+        dayLead: document.getElementById('dayLeadName').value,
+        daySign: document.getElementById('daySignature').value,
+        nightLead: document.getElementById('nightLeadName').value,
+        nightSign: document.getElementById('nightSignature').value,
+        rows: []
+      };
+
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
       rows.forEach(row => {
-        row.querySelector('.good-input').value = '';
-        row.querySelector('.downtime-input').value = '';
-        row.querySelector('.cause-input').value = '';
-        row.querySelector('.reject-input').value = '';
+        data.rows.push({
+          good: row.querySelector('.good-input').value,
+          cause: row.querySelector('.cause-input').value,
+          downtime: row.querySelector('.downtime-input').value,
+          reject: row.querySelector('.reject-input').value
+        });
       });
 
-      document.getElementById('s1_remarks').value = '';
-      document.getElementById('s2_remarks').value = '';
-      document.getElementById('dayLeadName').value = '';
-      document.getElementById('daySignature').value = '';
-      document.getElementById('nightLeadName').value = '';
-      document.getElementById('nightSignature').value = '';
-
-      localStorage.removeItem(STORAGE_KEY);
-
-      // Re-trigger two-tier lookup for default
-      populateDropdowns('307', 'L-01 - KTS 350 TDH');
-      handleItemCodeChange();
-
-      recalcShiftSummaries();
-      showToast('Form has been cleared.');
+      return data;
     }
 
-    // Local Storage persistence
     function saveToStorage() {
       try {
-        const itemSelect = document.getElementById('itemCodeSelect');
-        const lineSelect = document.getElementById('lineSelect');
-        const prodSpec = document.getElementById('prodSpec');
-        const prodLenWt = document.getElementById('prodLengthWeight');
-        const nomWt = document.getElementById('nomWeight');
-
-        const data = {
-          date: document.getElementById('reportDate').value,
-          rate: document.getElementById('toolbarRateInput').value,
-          itemCode: itemSelect ? itemSelect.value : '',
-          spec: prodSpec ? prodSpec.value : '',
-          line: lineSelect ? lineSelect.value : '',
-          lengthWeight: prodLenWt ? prodLenWt.value : '',
-          speed: document.getElementById('stdSpeed').value,
-          capacity: document.getElementById('nomCapacity').value,
-          weight: nomWt ? nomWt.value : '',
-          s1_remarks: document.getElementById('s1_remarks').value,
-          s2_remarks: document.getElementById('s2_remarks').value,
-          dayLead: document.getElementById('dayLeadName').value,
-          daySign: document.getElementById('daySignature').value,
-          nightLead: document.getElementById('nightLeadName').value,
-          nightSign: document.getElementById('nightSignature').value,
-          rows: []
-        };
-
-        const rows = document.querySelectorAll('#tableBody tr.hourly-row');
-        rows.forEach(row => {
-          data.rows.push({
-            good: row.querySelector('.good-input').value,
-            cause: row.querySelector('.cause-input').value,
-            downtime: row.querySelector('.downtime-input').value,
-            reject: row.querySelector('.reject-input').value
-          });
-        });
-
+        const data = serializeCurrentForm();
+        const key = getDailyStorageKey(data.date, data.line);
+        localStorage.setItem(key, JSON.stringify(data));
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch (e) {
-        // Ignore storage exceptions
+        console.error('Storage save error:', e);
       }
     }
 
-    // Restore from LocalStorage
-    function restoreFromStorage() {
-      try {
-        // First populate dropdowns
-        populateDropdowns();
+    function applyFormData(data, targetLine) {
+      const dateInput = document.getElementById('reportDate');
+      if (data.date && dateInput) dateInput.value = data.date;
 
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) {
-          // If no saved data, run initial two-tier lookup
-          handleItemCodeChange();
-          return;
-        }
+      const line = targetLine || data.line || 'L-01 - KTS 350 TDH';
+      const itemCode = data.itemCode || '307';
 
-        const data = JSON.parse(saved);
+      populateDropdowns(itemCode, line);
 
-        if (data.itemCode && data.line) {
-          populateDropdowns(data.itemCode, data.line);
-        } else if (data.itemCode) {
-          populateDropdowns(data.itemCode);
-        }
+      const lineSelect = document.getElementById('lineSelect');
+      if (lineSelect) lineSelect.value = line;
+      const lineNoAlias = document.getElementById('lineNo');
+      if (lineNoAlias) lineNoAlias.value = line;
 
-        if (data.date) document.getElementById('reportDate').value = data.date;
-        if (data.spec) {
-          const prodSpec = document.getElementById('prodSpec');
-          if (prodSpec) prodSpec.value = data.spec;
-          const prodSpecAlias = document.getElementById('productSpec');
-          if (prodSpecAlias) prodSpecAlias.value = data.spec;
-        }
-        if (data.lengthWeight) {
-          const prodLenWt = document.getElementById('prodLengthWeight');
-          if (prodLenWt) prodLenWt.value = data.lengthWeight;
-        }
-        if (data.weight) {
-          const nomWt = document.getElementById('nomWeight');
-          if (nomWt) nomWt.value = data.weight;
-          const nomWtAlias = document.getElementById('nominalWeight');
-          if (nomWtAlias) nomWtAlias.value = data.weight;
-        }
-        if (data.speed) document.getElementById('stdSpeed').value = data.speed;
-        if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
-        if (data.s1_remarks) document.getElementById('s1_remarks').value = data.s1_remarks;
-        if (data.s2_remarks) document.getElementById('s2_remarks').value = data.s2_remarks;
-        if (data.dayLead) document.getElementById('dayLeadName').value = data.dayLead;
-        if (data.daySign) document.getElementById('daySignature').value = data.daySign;
-        if (data.nightLead) document.getElementById('nightLeadName').value = data.nightLead;
-        if (data.nightSign) document.getElementById('nightSignature').value = data.nightSign;
+      if (data.spec) {
+        const prodSpec = document.getElementById('prodSpec');
+        if (prodSpec) prodSpec.value = data.spec;
+        const prodSpecAlias = document.getElementById('productSpec');
+        if (prodSpecAlias) prodSpecAlias.value = data.spec;
+      }
+      if (data.lengthWeight) {
+        const prodLenWt = document.getElementById('prodLengthWeight');
+        if (prodLenWt) prodLenWt.value = data.lengthWeight;
+      }
+      if (data.weight) {
+        const nomWt = document.getElementById('nomWeight');
+        if (nomWt) nomWt.value = data.weight;
+        const nomWtAlias = document.getElementById('nominalWeight');
+        if (nomWtAlias) nomWtAlias.value = data.weight;
+      }
+      if (data.speed) document.getElementById('stdSpeed').value = data.speed;
+      if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
+      if (data.s1_remarks !== undefined) document.getElementById('s1_remarks').value = data.s1_remarks;
+      if (data.s2_remarks !== undefined) document.getElementById('s2_remarks').value = data.s2_remarks;
+      if (data.dayLead !== undefined) document.getElementById('dayLeadName').value = data.dayLead;
+      if (data.daySign !== undefined) document.getElementById('daySignature').value = data.daySign;
+      if (data.nightLead !== undefined) document.getElementById('nightLeadName').value = data.nightLead;
+      if (data.nightSign !== undefined) document.getElementById('nightSignature').value = data.nightSign;
 
-        if (data.rate) {
-          syncHourlyRate(data.rate);
-        } else {
-          handleItemCodeChange();
-        }
-
-        if (Array.isArray(data.rows)) {
-          const rows = document.querySelectorAll('#tableBody tr.hourly-row');
-          rows.forEach((row, i) => {
-            if (data.rows[i]) {
-              row.querySelector('.good-input').value = data.rows[i].good || '';
-              row.querySelector('.cause-input').value = data.rows[i].cause || '';
-              row.querySelector('.downtime-input').value = data.rows[i].downtime || '';
-              row.querySelector('.reject-input').value = data.rows[i].reject || '';
-            }
-          });
-        }
-      } catch (e) {
-        // Fallback to default
+      if (data.rate) {
+        syncHourlyRate(data.rate);
+      } else {
         handleItemCodeChange();
       }
+
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach((row, i) => {
+        const rowData = (data.rows && data.rows[i]) ? data.rows[i] : null;
+        row.querySelector('.good-input').value = rowData ? (rowData.good || '') : '';
+        row.querySelector('.cause-input').value = rowData ? (rowData.cause || '') : '';
+        row.querySelector('.downtime-input').value = rowData ? (rowData.downtime || '') : '';
+        row.querySelector('.reject-input').value = rowData ? (rowData.reject || '') : '';
+      });
+
+      recalcShiftSummaries();
+      updateActiveTabUI(line);
+    }
+
+    function initializeCleanMachine(line, date) {
+      const catalog = getCatalog();
+      const match = catalog.find(e => String(e.machineLine).trim() === line);
+      const itemCode = match ? match.itemCode : (catalog[0] ? catalog[0].itemCode : '307');
+
+      const cleanData = {
+        date: date || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : new Date().toISOString().split('T')[0]),
+        rate: match ? match.hourlyRate : 47,
+        itemCode: itemCode,
+        spec: match ? match.itemName : '',
+        line: line,
+        lengthWeight: match ? match.lengthWeight : '',
+        speed: '4 M/Min',
+        capacity: '300 Kg/h',
+        weight: match ? extractNominalWeight(match.lengthWeight).toFixed(2) : '6.00',
+        s1_remarks: '',
+        s2_remarks: '',
+        dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
+        daySign: '',
+        nightLead: document.getElementById('nightLeadName') ? document.getElementById('nightLeadName').value : '',
+        nightSign: '',
+        rows: []
+      };
+
+      applyFormData(cleanData, line);
+      saveToStorage();
+    }
+
+    function switchMachineLine(targetLine) {
+      const lineSelect = document.getElementById('lineSelect');
+      const currentLine = lineSelect ? lineSelect.value : '';
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+
+      if (currentLine) {
+        saveToStorage();
+      }
+
+      const targetKey = getDailyStorageKey(currentDate, targetLine);
+      const saved = localStorage.getItem(targetKey);
+
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          applyFormData(data, targetLine);
+          showToast(`Switched to ${targetLine}`);
+        } catch (e) {
+          initializeCleanMachine(targetLine, currentDate);
+          showToast(`Switched to ${targetLine}`);
+        }
+      } else {
+        initializeCleanMachine(targetLine, currentDate);
+        showToast(`Switched to ${targetLine}`);
+      }
+    }
+
+    function handleDateChange() {
+      const dateInput = document.getElementById('reportDate');
+      const newDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const lineSelect = document.getElementById('lineSelect');
+      const currentLine = lineSelect ? lineSelect.value : 'L-01 - KTS 350 TDH';
+
+      const targetKey = getDailyStorageKey(newDate, currentLine);
+      const saved = localStorage.getItem(targetKey);
+
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          applyFormData(data, currentLine);
+          showToast(`Date: ${newDate} (Restored)`);
+        } catch (e) {
+          initializeCleanMachine(currentLine, newDate);
+          showToast(`Date: ${newDate} (New sheet)`);
+        }
+      } else {
+        initializeCleanMachine(currentLine, newDate);
+        showToast(`Date: ${newDate} (New sheet)`);
+      }
+    }
+
+    function resetForm() {
+      if (!confirm('Are you sure you want to clear this machine line daily form?')) return;
+      const lineSelect = document.getElementById('lineSelect');
+      const currentLine = lineSelect ? lineSelect.value : 'L-01 - KTS 350 TDH';
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+
+      const key = getDailyStorageKey(currentDate, currentLine);
+      localStorage.removeItem(key);
+
+      initializeCleanMachine(currentLine, currentDate);
+      showToast(`Form for ${currentLine} has been cleared.`);
+    }
+
+    function printCurrentMachine() {
+      saveToStorage();
+      document.body.classList.remove('batch-mode');
+      window.print();
+    }
+
+    function printAllLinesBatch() {
+      saveToStorage();
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const lines = getAvailableLines();
+      const batchContainer = document.getElementById('batchPrintContainer');
+      const singleSheet = document.getElementById('singleSheetContainer');
+      if (!batchContainer || !singleSheet) return;
+
+      batchContainer.innerHTML = '';
+
+      lines.forEach((line) => {
+        const clone = singleSheet.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.classList.add('batch-sheet');
+
+        const key = getDailyStorageKey(currentDate, line);
+        const saved = localStorage.getItem(key);
+        let data = null;
+        if (saved) {
+          try { data = JSON.parse(saved); } catch (e) {}
+        }
+        if (!data) {
+          const catalog = getCatalog();
+          const match = catalog.find(e => String(e.machineLine).trim() === line);
+          data = {
+            date: currentDate,
+            rate: match ? match.hourlyRate : 47,
+            itemCode: match ? match.itemCode : (catalog[0] ? catalog[0].itemCode : '307'),
+            spec: match ? match.itemName : '',
+            line: line,
+            lengthWeight: match ? match.lengthWeight : '',
+            speed: '4 M/Min',
+            capacity: '300 Kg/h',
+            weight: match ? extractNominalWeight(match.lengthWeight).toFixed(2) : '6.00',
+            s1_remarks: '',
+            s2_remarks: '',
+            dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
+            daySign: '',
+            nightLead: document.getElementById('nightLeadName') ? document.getElementById('nightLeadName').value : '',
+            nightSign: '',
+            rows: []
+          };
+        }
+
+        const dateEl = clone.querySelector('#reportDate');
+        if (dateEl) dateEl.setAttribute('value', data.date || currentDate);
+
+        const itemEl = clone.querySelector('#itemCodeSelect');
+        if (itemEl) itemEl.innerHTML = `<option value="${data.itemCode}" selected>${data.itemCode}</option>`;
+
+        const lineEl = clone.querySelector('#lineSelect');
+        if (lineEl) lineEl.innerHTML = `<option value="${data.line}" selected>${data.line}</option>`;
+
+        const specEl = clone.querySelector('#prodSpec');
+        if (specEl) specEl.setAttribute('value', data.spec || '');
+
+        const lenWtEl = clone.querySelector('#prodLengthWeight');
+        if (lenWtEl) lenWtEl.setAttribute('value', data.lengthWeight || '');
+
+        const speedEl = clone.querySelector('#stdSpeed');
+        if (speedEl) speedEl.setAttribute('value', data.speed || '4 M/Min');
+
+        const capEl = clone.querySelector('#nomCapacity');
+        if (capEl) capEl.setAttribute('value', data.capacity || '300 Kg/h');
+
+        const rate = parseInt(data.rate) || 47;
+        const rateEl = clone.querySelector('#hourlyTargetMeta');
+        if (rateEl) rateEl.setAttribute('value', rate);
+
+        const s1RemEl = clone.querySelector('#s1_remarks');
+        if (s1RemEl) s1RemEl.textContent = data.s1_remarks || '';
+        const s2RemEl = clone.querySelector('#s2_remarks');
+        if (s2RemEl) s2RemEl.textContent = data.s2_remarks || '';
+
+        const dLeadEl = clone.querySelector('#dayLeadName');
+        if (dLeadEl) dLeadEl.setAttribute('value', data.dayLead || '');
+        const dSignEl = clone.querySelector('#daySignature');
+        if (dSignEl) dSignEl.setAttribute('value', data.daySign || '');
+        const nLeadEl = clone.querySelector('#nightLeadName');
+        if (nLeadEl) nLeadEl.setAttribute('value', data.nightLead || '');
+        const nSignEl = clone.querySelector('#nightSignature');
+        if (nSignEl) nSignEl.setAttribute('value', data.nightSign || '');
+
+        const cloneRows = clone.querySelectorAll('tr.hourly-row');
+        let totalGood = 0;
+        let totalDowntime = 0;
+        let totalReject = 0;
+        let s1Good = 0, s1Down = 0, s1Rej = 0;
+        let s2Good = 0, s2Down = 0, s2Rej = 0;
+
+        cloneRows.forEach((row, i) => {
+          const rowData = (data.rows && data.rows[i]) ? data.rows[i] : null;
+          const cumTarget = (i + 1) * rate;
+          const stdCell = row.querySelector('.std-cell');
+          if (stdCell) stdCell.textContent = formatNumber(cumTarget);
+
+          const goodVal = rowData ? (rowData.good || '') : '';
+          const causeVal = rowData ? (rowData.cause || '') : '';
+          const downVal = rowData ? (rowData.downtime || '') : '';
+          const rejVal = rowData ? (rowData.reject || '') : '';
+
+          const goodInput = row.querySelector('.good-input');
+          if (goodInput) goodInput.setAttribute('value', goodVal);
+          const causeInput = row.querySelector('.cause-input');
+          if (causeInput) causeInput.setAttribute('value', causeVal);
+          const downInput = row.querySelector('.downtime-input');
+          if (downInput) downInput.setAttribute('value', downVal);
+          const rejInput = row.querySelector('.reject-input');
+          if (rejInput) rejInput.setAttribute('value', rejVal);
+
+          const numGood = parseNum(goodVal);
+          const numDown = parseNum(downVal);
+          const numRej = parseNum(rejVal);
+
+          totalGood += numGood;
+          totalDowntime += numDown;
+          totalReject += numRej;
+
+          if (i < 12) {
+            s1Good += numGood; s1Down += numDown; s1Rej += numRej;
+          } else {
+            s2Good += numGood; s2Down += numDown; s2Rej += numRej;
+          }
+        });
+
+        const s1Target = rate * 12;
+        const s2Target = rate * 12;
+        const totalTarget = rate * 24;
+
+        const s1TgtEl = clone.querySelector('#s1_target');
+        if (s1TgtEl) s1TgtEl.textContent = formatNumber(s1Target);
+        const s2TgtEl = clone.querySelector('#s2_target');
+        if (s2TgtEl) s2TgtEl.textContent = formatNumber(s2Target);
+        const totTgtEl = clone.querySelector('#total_std_target');
+        if (totTgtEl) totTgtEl.textContent = formatNumber(totalTarget);
+
+        const nomWeightVal = extractNominalWeight(data.lengthWeight);
+        const s1GoodKg = s1Good * nomWeightVal;
+        const s2GoodKg = s2Good * nomWeightVal;
+        const totGoodKg = totalGood * nomWeightVal;
+
+        const s1ScrapPct = s1GoodKg > 0 ? ((s1Rej / (s1GoodKg + s1Rej)) * 100).toFixed(2) : '0.00';
+        const s2ScrapPct = s2GoodKg > 0 ? ((s2Rej / (s2GoodKg + s2Rej)) * 100).toFixed(2) : '0.00';
+
+        const s1EffPct = s1Target > 0 ? ((s1Good / s1Target) * 100).toFixed(1) : '0.0';
+        const s2EffPct = s2Target > 0 ? ((s2Good / s2Target) * 100).toFixed(1) : '0.0';
+        const totEffPct = totalTarget > 0 ? ((totalGood / totalTarget) * 100).toFixed(1) : '0.0';
+
+        const s1GoodEl = clone.querySelector('#s1_good_pcs'); if (s1GoodEl) s1GoodEl.textContent = formatNumber(s1Good);
+        const s1GoodKgEl = clone.querySelector('#s1_good_weight'); if (s1GoodKgEl) s1GoodKgEl.textContent = formatNumber(s1GoodKg.toFixed(2));
+        const s1RejEl = clone.querySelector('#s1_reject'); if (s1RejEl) s1RejEl.textContent = formatNumber(s1Rej.toFixed(2));
+        const s1ScrapEl = clone.querySelector('#s1_scrap'); if (s1ScrapEl) s1ScrapEl.textContent = `${s1ScrapPct}%`;
+        const s1DownEl = clone.querySelector('#s1_downtime'); if (s1DownEl) s1DownEl.textContent = formatNumber(s1Down);
+        const s1EffEl = clone.querySelector('#s1_eff'); if (s1EffEl) s1EffEl.textContent = `${s1EffPct}%`;
+
+        const s2GoodEl = clone.querySelector('#s2_good_pcs'); if (s2GoodEl) s2GoodEl.textContent = formatNumber(s2Good);
+        const s2GoodKgEl = clone.querySelector('#s2_good_weight'); if (s2GoodKgEl) s2GoodKgEl.textContent = formatNumber(s2GoodKg.toFixed(2));
+        const s2RejEl = clone.querySelector('#s2_reject'); if (s2RejEl) s2RejEl.textContent = formatNumber(s2Rej.toFixed(2));
+        const s2ScrapEl = clone.querySelector('#s2_scrap'); if (s2ScrapEl) s2ScrapEl.textContent = `${s2ScrapPct}%`;
+        const s2DownEl = clone.querySelector('#s2_downtime'); if (s2DownEl) s2DownEl.textContent = formatNumber(s2Down);
+        const s2EffEl = clone.querySelector('#s2_eff'); if (s2EffEl) s2EffEl.textContent = `${s2EffPct}%`;
+
+        const totGoodEl = clone.querySelector('#total_good_pcs'); if (totGoodEl) totGoodEl.textContent = formatNumber(totalGood);
+        const totDownEl = clone.querySelector('#total_downtime_min'); if (totDownEl) totDownEl.textContent = formatNumber(totalDowntime);
+        const totRejEl = clone.querySelector('#total_reject_kg'); if (totRejEl) totRejEl.textContent = formatNumber(totalReject.toFixed(2));
+        const totGoodWtEl = clone.querySelector('#total_good_weight'); if (totGoodWtEl) totGoodWtEl.textContent = `${formatNumber(totGoodKg.toFixed(2))} Kg`;
+        const totEffEl = clone.querySelector('#total_efficiency'); if (totEffEl) totEffEl.textContent = `${totEffPct}%`;
+
+        batchContainer.appendChild(clone);
+      });
+
+      document.body.classList.add('batch-mode');
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          document.body.classList.remove('batch-mode');
+          batchContainer.innerHTML = '';
+        }, 500);
+      }, 100);
     }
 
     // Initialize on page load
     window.addEventListener('DOMContentLoaded', () => {
-      // Set default date to today YYYY-MM-DD
       const dateInput = document.getElementById('reportDate');
       if (dateInput && !dateInput.value) {
         dateInput.value = new Date().toISOString().split('T')[0];
       }
 
-      // Check stored data and restore
-      restoreFromStorage();
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const initialLine = 'L-01 - KTS 350 TDH';
 
-      // Recalculate baseline and totals
-      syncHourlyRate(document.getElementById('toolbarRateInput').value || 47);
+      const initialKey = getDailyStorageKey(currentDate, initialLine);
+      const saved = localStorage.getItem(initialKey) || localStorage.getItem(STORAGE_KEY);
 
-      // Decode Unicode escaped UI text
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          applyFormData(data, data.line || initialLine);
+        } catch (e) {
+          initializeCleanMachine(initialLine, currentDate);
+        }
+      } else {
+        initializeCleanMachine(initialLine, currentDate);
+      }
+
+      renderMachineTabs();
       decodeUnicodeUI();
 
-      // Close modal on ESC key
+      window.addEventListener('afterprint', () => {
+        document.body.classList.remove('batch-mode');
+        const batchContainer = document.getElementById('batchPrintContainer');
+        if (batchContainer) batchContainer.innerHTML = '';
+      });
+
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeCatalogModal();
         }
       });
 
-      // Close modal when clicking on dark backdrop
       const modal = document.getElementById('catalogModal');
       if (modal) {
         modal.addEventListener('click', (e) => {
