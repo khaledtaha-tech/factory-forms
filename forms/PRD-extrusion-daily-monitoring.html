@@ -1148,78 +1148,23 @@
     }
 
     // ==============================================================================
-    // METRIC SPECIFICATION DB & HARMONIZATION ENGINE
+    // INDUSTRIAL SPECIFICATION HARMONIZATION ENGINE (5-STAGE PIPELINE)
     // ==============================================================================
 
     const SASO_ISO_METRIC_DB = {
-      63: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 1.5 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 1.9 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 3.0 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 4.7 }
-      },
-      75: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 1.5 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 2.2 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 3.6 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 5.6 }
-      },
-      90: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 1.8 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 2.7 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 4.3 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 6.7 }
-      },
-      110: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 2.2 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 3.2 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 5.3 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 8.2 }
-      },
-      125: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 2.5 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 3.7 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 6.0 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 9.3 }
-      },
-      140: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 2.8 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 4.1 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 6.7 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 10.4 }
-      },
-      160: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 3.2 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 4.7 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 7.7 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 11.9 }
-      },
-      200: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 3.9 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 5.9 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 9.6 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 14.9 }
-      },
-      225: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 4.4 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 6.6 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 10.8 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 16.7 }
-      },
-      250: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 4.9 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 7.3 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 11.9 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 18.6 }
-      },
-      315: {
-        pn4: { classNom: 'Class 2 / PN 4', wt: 6.2 },
-        pn6: { classNom: 'Class 3 / PN 6', wt: 9.2 },
-        pn10: { classNom: 'Class 4 / PN 10', wt: 15.0 },
-        pn16: { classNom: 'Class 5 / PN 16', wt: 23.3 }
-      }
+      "25":  { "PN6": 1.2, "PN10": 1.5, "PN12.5": 1.5, "PN16": 1.9 },
+      "32":  { "PN6": 1.6, "PN10": 1.6, "PN16": 2.4 },
+      "50":  { "PN6": 1.6, "PN10": 2.4, "PN16": 3.7 },
+      "63":  { "PN6": 2.0, "PN10": 3.0, "PN16": 4.7 },
+      "75":  { "PN6": 2.2, "PN10": 3.6, "PN16": 5.6 },
+      "90":  { "PN6": 2.7, "PN10": 4.3, "PN16": 6.7 },
+      "110": { "PN6": 3.2, "PN10": 5.3, "PN16": 8.1, "PN20": 8.1 },
+      "160": { "PN6": 4.0, "PN8": 5.0, "PN10": 7.7, "PN16": 11.8 },
+      "200": { "PN6": 4.9, "PN8": 6.2, "PN10": 9.6, "PN16": 14.7, "PN20": 14.7 },
+      "250": { "PN6": 6.2, "PN10": 11.9, "PN16": 18.4 },
+      "315": { "PN6": 7.7, "PN10": 15.0, "PN12.5": 15.0, "PN16": 23.2 }
     };
-    const UPVC_DENSITY = 1.43;
+    const UPVC_DENSITY = 1.43; // Reference density in g/cm3
 
     // Helper to decode unicode escapes (\u06xx) in DOM text nodes
     function decodeUnicodeUI() {
@@ -1238,141 +1183,133 @@
       }
     }
 
-    // Clean and normalize pipe specification string based on SASO / ISO / DIN standards
     function cleanPipeString(raw) {
-      if (!raw || typeof raw !== 'string') return null;
-      let str = raw.trim();
+      if (!raw) return { spec: '', lengthWeight: '' };
+      let str = String(raw).trim();
 
-      let joint = 'R/R';
-      if (/\b(P\s*[\/\s]*E|PE|PLAIN\s*END)\b/i.test(str)) {
-        joint = 'P/E';
-      } else if (/\b(R\s*[\/\s]*R|RR|RUBBER\s*RING)\b/i.test(str)) {
-        joint = 'R/R';
+      // Stage 1: Strip manufacturer noise & unglue tokens
+      str = str.replace(/\b(MANARCO|AL\s*MANAR|FACTORY|PLASTIC|MPF\s*DAMMAM|PVC\s*1120)\b/gi, ' ');
+      str = str.replace(/\bPN[-]?(\d+(\.\d+)?)X(\d+(\.\d+)?)MM\b/gi, 'PN$1 $3mm');
+      str = str.replace(/(\d+)\*(\d+(\.\d+)?)MM/gi, '$1mm $2mm');
+      str = str.replace(/\bASTMD[-]?\s*(\d+)\b/gi, 'ASTM D-$1');
+      str = str.replace(/\bDIN[-]?\s*(\d+)\b/gi, 'DIN $1');
+
+      // Stage 2: Industrial abbreviation normalization
+      let joint = 'Solvent Socket';
+      if (/\b(R[\s\/]*R|RR|RUBBER\s*RING)\b/i.test(str)) {
+        joint = 'Rubber Ring';
+      } else if (/\b(P[\s\/]*E|PE|PLAIN\s*END|W[\s\/]*P)\b/i.test(str)) {
+        joint = 'Plain End';
+      } else if (/\b(S[\s\/]*S|SS|SOLVENT\s*SOCKET)\b/i.test(str)) {
+        joint = 'Solvent Socket';
       }
 
+      // Detect Length (default 6.0M)
       let lengthMeters = 6.0;
-      const lenMatch = str.match(/(?:^|[^\d])(3|4|5|5\.8|6|12)\s*(?:M|MTR|METERS?)(?=[^\d]|$)/i);
-      if (lenMatch) {
+      const lenMatch = str.match(/\b(\d+(?:\.\d+)?)\s*(?:MTR|MTRS|METER|M)\b/i);
+      if (lenMatch && parseFloat(lenMatch[1]) > 0 && parseFloat(lenMatch[1]) <= 12) {
         lengthMeters = parseFloat(lenMatch[1]);
       }
 
-      let pn = null;
-      const pnMatch = str.match(/\bPN\s*[-_]?\s*(\d+(?:\.\d+)?)\b/i);
-      if (pnMatch) {
-        pn = parseFloat(pnMatch[1]);
+      // Extract Rating first so SCH-40 or SDR-26 isn't confused with OD or WT
+      let rating = '';
+      const ratingMatch = str.match(/\b(PN[-]?\s*(?:4|6|8|10|12\.5|16|20)|SCH[-.]?\s*(?:40|80)|SDR[-]?\s*(?:21|26)|DWV)\b/i);
+      if (ratingMatch) {
+        rating = ratingMatch[1].toUpperCase().replace(/\s+/, '').replace('-', '');
       } else {
-        const classMatch = str.match(/\bCLASS\s*[-_]?\s*([2-5])\b/i);
-        if (classMatch) {
-          const c = parseInt(classMatch[1]);
-          if (c === 2) pn = 4;
-          else if (c === 3) pn = 6;
-          else if (c === 4) pn = 10;
-          else if (c === 5) pn = 16;
-        }
+        rating = 'PN6';
       }
 
+      // Extract Standard
+      let standard = 'SASO-ISO 1452-2';
+      if (/ASTM/i.test(str) || /SCH/i.test(str) || /SDR/i.test(str)) {
+        const astmMatch = str.match(/ASTM\s*D[-]?\s*(\d+)/i);
+        standard = astmMatch ? ('ASTM D-' + astmMatch[1]) : 'ASTM D-1785';
+      } else if (/DIN/i.test(str)) {
+        standard = 'DIN 8062';
+      }
+
+      // Stage 3: Feature Extraction (OD, WT)
       let od = null;
-      const odMatch = str.match(/(?:^|[^\d])(63|75|90|110|125|140|160|200|225|250|315)(?:\s*MM)?(?=[^\d]|$)/i);
-      if (odMatch) {
-        od = parseInt(odMatch[1]);
+      let odDisplay = '';
+
+      // Check inch sizes first (e.g., 1/2", 3/4", 1", 1.5", 2", 2.5", 3", 4", 6", 8")
+      const inchMatch = str.match(/(?:^|[^\d])(1\/2|3\/4|1|1\.5|2|2\.5|3|4|6|8)\s*["'']{1,2}/);
+      if (inchMatch) {
+        odDisplay = inchMatch[1] + '"';
+      } else {
+        // Check metric diameters: look for standard pipe diameters
+        let strForMetric = str.replace(/SCH[-.]?\s*40/gi, '').replace(/SDR[-.]?\s*26/gi, '');
+        const metricMatch = strForMetric.match(/(?:^|[^\d])(20|25|32|40|50|63|75|90|110|125|140|160|200|225|250|315)(?:\s*MM)?(?=[^\d]|$)/i);
+        if (metricMatch) {
+          od = parseFloat(metricMatch[1]);
+          odDisplay = metricMatch[1] + 'mm';
+        }
       }
 
+      // Extract WT: Decimal thickness (e.g. 2.2, 3.2, 5.3, 11.9) or explicit "x WT mm"
       let wt = null;
-      let remainingForWt = str;
-      if (odMatch) {
-        remainingForWt = str.replace(odMatch[0], ' ');
+      let strForWt = str;
+      if (od) {
+        strForWt = strForWt.replace(new RegExp('(?:^|[^\\d])' + od + '(?:\\s*MM)?(?=[^\\d]|$)', 'i'), ' ');
       }
-      const wtMatch = remainingForWt.match(/(?:^|[^\d])(\d+\.\d+)\s*(?:MM)?(?=[^\d]|$)/i);
-      if (wtMatch) {
-        wt = parseFloat(wtMatch[1]);
-      }
-
-      if (!od || !SASO_ISO_METRIC_DB[od]) {
-        return null;
-      }
-
-      const odData = SASO_ISO_METRIC_DB[od];
-
-      if (!pn && wt) {
-        for (const pKey of ['pn4', 'pn6', 'pn10', 'pn16']) {
-          if (Math.abs(odData[pKey].wt - wt) <= 0.25) {
-            pn = parseInt(pKey.replace('pn', ''));
-            break;
-          }
+      const wtDecimalMatch = strForWt.match(/(?:^|[^\d])(\d+\.\d+)\s*(?:MM)?(?=[^\d]|$)/i);
+      if (wtDecimalMatch) {
+        wt = parseFloat(wtDecimalMatch[1]);
+      } else {
+        const wtIntMatch = strForWt.match(/(?:^|[^\d])([1-9]|1\d|2\d)\s*(?:MM)(?=[^\d]|$)/i);
+        if (wtIntMatch) {
+          wt = parseFloat(wtIntMatch[1]);
         }
       }
 
-      if (pn && !wt) {
-        const pKey = 'pn' + pn;
-        if (odData[pKey]) {
-          wt = odData[pKey].wt;
-        }
+      // Infer WT from lookup table if missing for metric OD
+      if (!wt && od && SASO_ISO_METRIC_DB[String(od)] && SASO_ISO_METRIC_DB[String(od)][rating]) {
+        wt = SASO_ISO_METRIC_DB[String(od)][rating];
       }
 
-      if (!pn && !wt) {
-        pn = 6;
-        wt = odData.pn6.wt;
-      } else if (!wt && pn) {
-        const pKey = 'pn' + pn;
-        wt = odData[pKey] ? odData[pKey].wt : (od * 0.04);
+      // Stage 4: Theoretical Weight Calculation
+      let calculatedWeightStr = `${lengthMeters.toFixed(1)}M - Std Kg/Pc`;
+      if (od && wt) {
+        const linearWeightKgM = Math.PI * (od - wt) * wt * (UPVC_DENSITY / 1000);
+        const pieceWeightKg = linearWeightKgM * lengthMeters;
+        calculatedWeightStr = `${lengthMeters.toFixed(1)}M - ${pieceWeightKg.toFixed(2)} Kg/Pc`;
       }
 
-      const linearWeight = Math.PI * (od - wt) * wt * (UPVC_DENSITY / 1000);
-      const pieceWeight = linearWeight * lengthMeters;
-
-      const pnKey = 'pn' + (pn || 6);
-      const classNom = (odData[pnKey] && odData[pnKey].classNom) ? odData[pnKey].classNom : ('PN ' + (pn || 6));
-
-      const cleanName = 'uPVC PIPE ' + od + 'MM ' + wt.toFixed(1) + 'MM ' + joint + ' ' + classNom + ' DIN 8061/8062';
-      const lengthWeight = lengthMeters + 'M - ' + pieceWeight.toFixed(2) + ' Kg/Pc';
-      const nominalWeight = parseFloat(pieceWeight.toFixed(2));
+      // Stage 5: Canonical Assembly
+      const wtStr = wt ? `x ${wt.toFixed(1)}mm` : '';
+      const canonicalSpec = `uPVC PIPE ${odDisplay || '75mm'} ${wtStr} ${rating} ${standard} ${joint} ${lengthMeters.toFixed(1)}M`.replace(/\s+/g, ' ').trim();
 
       return {
-        cleanName: cleanName,
-        lengthWeight: lengthWeight,
-        nominalWeight: nominalWeight
+        spec: canonicalSpec,
+        cleanName: canonicalSpec,
+        lengthWeight: calculatedWeightStr
       };
     }
 
-    // Harmonize all specification strings and calculate standard nominal weights
     function harmonizeCatalogSpecifications() {
-      const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
-      let updatedCount = 0;
-
-      if (tbody) {
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach(tr => {
-          const nameInput = tr.querySelector('.catalog-name');
-          const lenWtInput = tr.querySelector('.catalog-len-wt');
-          if (nameInput) {
-            const match = cleanPipeString(nameInput.value);
-            if (match) {
-              nameInput.value = match.cleanName;
-              if (lenWtInput) {
-                lenWtInput.value = match.lengthWeight;
-              }
-              updatedCount++;
-            }
-          }
-        });
+      const rows = document.querySelectorAll('#catalogTableBody tr');
+      if (!rows || rows.length === 0) {
+        showToast("\u26a0\ufe0f \u0644\u0627 \u062a\u0648\u062c\u062f \u0623\u0635\u0646\u0641 \u0644\u062a\u0635\u062d\u064a\u062d\u0647\u0627");
+        return;
       }
 
-      // Also harmonize storage catalog
-      const catalog = getCatalog();
-      let storageUpdated = false;
-      catalog.forEach(item => {
-        const match = cleanPipeString(item.itemName);
-        if (match) {
-          item.itemName = match.cleanName;
-          item.lengthWeight = match.lengthWeight;
-          storageUpdated = true;
+      let count = 0;
+      rows.forEach(tr => {
+        const specInput = tr.querySelector('.cat-item-name') || tr.querySelector('.catalog-name');
+        const lwInput = tr.querySelector('.cat-item-lw') || tr.querySelector('.catalog-len-wt');
+        if (specInput) {
+          const res = cleanPipeString(specInput.value);
+          specInput.value = res.spec;
+          if (lwInput && res.lengthWeight) {
+            lwInput.value = res.lengthWeight;
+          }
+          count++;
         }
       });
-      if (storageUpdated) {
-        saveCatalog(catalog);
-      }
 
-      showToast('\u2728 \u062a\u0645 \u062a\u0648\u062d\u064a\u062f \u0645\u0633\u0645\u064a\u0627\u062a \u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0627\u062a \u0648\u0627\u0644\u0623\u0648\u0632\u0627\u0646 \u0628\u0646\u062c\u0627\u062d');
+      saveCatalogChanges(true);
+      showToast(`\u2713 \u062a\u0645 \u062a\u0648\u062d\u064a\u062f \u0648\u062a\u0635\u062d\u064a\u062d (${count}) \u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d`);
     }
 
     // ==============================================================================
@@ -1412,19 +1349,19 @@
         tr.className = 'border-b border-slate-200 hover:bg-slate-50 transition';
         tr.innerHTML = `
           <td class="p-1.5 border border-slate-200">
-            <input type="text" class="catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemCode)}">
+            <input type="text" class="cat-item-code catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemCode)}">
           </td>
           <td class="p-1.5 border border-slate-200">
-            <input type="text" class="catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemName)}">
+            <input type="text" class="cat-item-name catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemName)}">
           </td>
           <td class="p-1.5 border border-slate-200">
-            <input type="text" class="catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.lengthWeight)}">
+            <input type="text" class="cat-item-lw catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.lengthWeight)}">
           </td>
           <td class="p-1.5 border border-slate-200">
-            <input type="text" class="catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.machineLine)}">
+            <input type="text" class="cat-item-line catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.machineLine)}">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
-            <input type="number" min="1" max="5000" class="catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.hourlyRate}">
+            <input type="number" min="1" max="5000" class="cat-item-rate catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.hourlyRate}">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
             <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
@@ -1444,19 +1381,19 @@
       tr.className = 'border-b border-slate-200 bg-amber-50/40 hover:bg-slate-50 transition';
       tr.innerHTML = `
         <td class="p-1.5 border border-slate-200">
-          <input type="text" class="catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="310">
+          <input type="text" class="cat-item-code catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="310">
         </td>
         <td class="p-1.5 border border-slate-200">
-          <input type="text" class="catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="uPVC PIPE ...">
+          <input type="text" class="cat-item-name catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="uPVC PIPE ...">
         </td>
         <td class="p-1.5 border border-slate-200">
-          <input type="text" class="catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="6M - 12.00 Kg/Pc">
+          <input type="text" class="cat-item-lw catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="6M - 12.00 Kg/Pc">
         </td>
         <td class="p-1.5 border border-slate-200">
-          <input type="text" class="catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="L-01 - KTS 350 TDH">
+          <input type="text" class="cat-item-line catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="L-01 - KTS 350 TDH">
         </td>
         <td class="p-1.5 border border-slate-200 text-center">
-          <input type="number" min="1" max="5000" class="catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" placeholder="40" value="40">
+          <input type="number" min="1" max="5000" class="cat-item-rate catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" placeholder="40" value="40">
         </td>
         <td class="p-1.5 border border-slate-200 text-center">
           <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
@@ -1465,7 +1402,7 @@
         </td>
       `;
       tbody.appendChild(tr);
-      tr.querySelector('.catalog-code').focus();
+      tr.querySelector('.cat-item-code').focus();
       decodeUnicodeUI();
     }
 
@@ -1474,18 +1411,18 @@
       if (tr) tr.remove();
     }
 
-    function saveCatalogChanges() {
+    function saveCatalogChanges(keepModalOpen) {
       const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
       if (!tbody) return;
       const rows = tbody.querySelectorAll('tr');
       const newCatalog = [];
 
       rows.forEach(tr => {
-        const codeInput = tr.querySelector('.catalog-code');
-        const nameInput = tr.querySelector('.catalog-name');
-        const lenWtInput = tr.querySelector('.catalog-len-wt');
-        const lineInput = tr.querySelector('.catalog-line');
-        const rateInput = tr.querySelector('.catalog-rate');
+        const codeInput = tr.querySelector('.cat-item-code') || tr.querySelector('.catalog-code');
+        const nameInput = tr.querySelector('.cat-item-name') || tr.querySelector('.catalog-name');
+        const lenWtInput = tr.querySelector('.cat-item-lw') || tr.querySelector('.catalog-len-wt');
+        const lineInput = tr.querySelector('.cat-item-line') || tr.querySelector('.catalog-line');
+        const rateInput = tr.querySelector('.cat-item-rate') || tr.querySelector('.catalog-rate');
 
         const code = codeInput ? codeInput.value.trim() : '';
         const name = nameInput ? nameInput.value.trim() : '';
@@ -1517,8 +1454,10 @@
       populateDropdowns(currentItem, currentLine);
       handleItemCodeChange();
 
-      closeCatalogModal();
-      showToast('\u2713 \u062a\u0645 \u062d\u0641\u0638 \u062a\u063a\u064a\u064a\u0631\u0627\u062a \u0627\u0644\u0643\u062a\u0627\u0644\u0648\u062c \u0628\u0646\u062c\u0627\u062d');
+      if (!keepModalOpen) {
+        closeCatalogModal();
+        showToast('\u2713 \u062a\u0645 \u062d\u0641\u0638 \u062a\u063a\u064a\u064a\u0631\u0627\u062a \u0627\u0644\u0643\u062a\u0627\u0644\u0648\u062c \u0628\u0646\u062c\u0627\u062d');
+      }
     }
     const saveCatalogFromModal = saveCatalogChanges;
 
@@ -1549,9 +1488,9 @@
     function findRowValue(row, patterns) {
       const keys = Object.keys(row);
       for (const pattern of patterns) {
-        const cleanPattern = pattern.trim().toLowerCase().replace(/[\s_\-\/\\()]+/g, '');
+        const cleanPattern = pattern.trim().toLowerCase().replace(/[\s_\-\/\\()%*.]+/g, '');
         for (const key of keys) {
-          const cleanKey = key.trim().toLowerCase().replace(/[\s_\-\/\\()]+/g, '');
+          const cleanKey = key.trim().toLowerCase().replace(/[\s_\-\/\\()%*.]+/g, '');
           if (cleanKey === cleanPattern) {
             const val = row[key];
             if (val !== undefined && val !== null && String(val).trim() !== '') {
@@ -1563,7 +1502,7 @@
       return '';
     }
 
-    // Handle Excel file upload and parsing
+    // Handle Excel file upload and parsing tailored for Machine_Mold_Standards workbook
     function handleExcelImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -1579,14 +1518,18 @@
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          if (!firstSheetName) {
+          if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
             alert('The uploaded Excel workbook contains no sheets.');
             event.target.value = '';
             return;
           }
 
-          const worksheet = workbook.Sheets[firstSheetName];
+          let targetSheetName = workbook.SheetNames.find(name => name.trim().toLowerCase() === 'machine_mold_standards');
+          if (!targetSheetName) {
+            targetSheetName = workbook.SheetNames[0];
+          }
+
+          const worksheet = workbook.Sheets[targetSheetName];
           const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
           if (!rawRows || rawRows.length === 0) {
@@ -1598,44 +1541,79 @@
           const parsedCatalog = [];
 
           rawRows.forEach(row => {
-            const itemCode = findRowValue(row, ['Item_Code', 'itemcode', '\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641', '\u0643\u0648\u062f', 'code', 'item_code']);
-            const itemName = findRowValue(row, ['Item_Name_Spec', 'itemnamespec', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641', '\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', 'name', 'spec', 'item_name']);
-            const lengthWeight = findRowValue(row, ['Length_Weight', 'lengthweight', '\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646', '\u0637\u0648\u0644 \u0648\u0648\u0632\u0646', '\u0627\u0644\u0648\u0632\u0646', 'weight', 'len_wt', 'length_weight']);
-            const machineLine = findRowValue(row, ['Machine_Line', 'machineline', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629/\u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629', '\u0627\u0644\u062e\u0637', 'line', 'machine_line', 'machine']);
-            const rateStr = findRowValue(row, ['Hourly_Rate', 'hourlyrate', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c', '\u0627\u0644\u0645\u0639\u062f\u0644', 'rate', 'hourly_rate', 'hourly']);
-            const hourlyRate = parseInt(rateStr) || 0;
+            const machineLine = findRowValue(row, [
+              'Machine Line', 'Machine_Line', 'MachineLine', 'machineline', 'line', 'machine_line', 'machine',
+              '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629/\u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629', '\u0627\u0644\u062e\u0637'
+            ]);
 
-            if (itemCode && machineLine && hourlyRate > 0) {
-              parsedCatalog.push({
-                itemCode: itemCode,
-                itemName: itemName || itemCode,
-                lengthWeight: lengthWeight || '',
-                machineLine: machineLine,
-                hourlyRate: hourlyRate
-              });
+            const itemCode = findRowValue(row, [
+              'Product Code', 'Product_Code', 'ProductCode', 'Item_Code', 'itemcode', 'code', 'item_code',
+              '\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641', '\u0643\u0648\u062f'
+            ]);
+
+            const itemName = findRowValue(row, [
+              'Raw Description', 'Raw_Description', 'RawDescription', 'Item_Name_Spec', 'Description', 'itemnamespec', 'spec', 'name', 'item_name',
+              '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641', '\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629'
+            ]);
+
+            let rateStr = findRowValue(row, [
+              'Approved Real Rate (Pcs/h)', 'Approved Real Rate', 'Approved_Real_Rate', 'ApprovedRealRate', 'Real Rate'
+            ]);
+            if (!rateStr) {
+              rateStr = findRowValue(row, [
+                'Printed SOP Target (85%)', 'Printed SOP Target', 'Printed_SOP_Target', 'PrintedSOPTarget', 'SOP Target'
+              ]);
             }
+            if (!rateStr) {
+              rateStr = findRowValue(row, [
+                'Hourly_Rate', 'Hourly Rate', 'hourlyrate', 'rate', 'hourly_rate', 'hourly',
+                '\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c', '\u0627\u0644\u0645\u0639\u062f\u0644'
+              ]);
+            }
+            const hourlyRate = Math.round(parseFloat(rateStr)) || parseInt(rateStr) || 0;
+
+            let lengthWeight = findRowValue(row, [
+              'Length_Weight', 'Length Weight', 'lengthweight', 'Length & Nominal Wt', 'len_wt', 'length_weight',
+              '\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646', '\u0637\u0648\u0644 \u0648\u0648\u0632\u0646', '\u0627\u0644\u0648\u0632\u0646', 'weight'
+            ]);
+            if (!lengthWeight) {
+              lengthWeight = '6M - Auto Kg/Pc';
+            }
+
+            // Filter out empty header rows or invalid records where neither Product Code nor Description is present
+            if (!itemCode && !itemName) {
+              return;
+            }
+
+            parsedCatalog.push({
+              itemCode: itemCode || ('P-' + (parsedCatalog.length + 1)),
+              itemName: itemName || itemCode,
+              lengthWeight: lengthWeight,
+              machineLine: machineLine || 'L-01',
+              hourlyRate: hourlyRate > 0 ? hourlyRate : 30
+            });
           });
 
           if (parsedCatalog.length === 0) {
-            alert('No valid catalog rows found. Please ensure headers include: Item_Code, Machine_Line, and Hourly_Rate.');
+            alert('No valid catalog rows found. Please ensure headers include Product Code or Raw Description.');
             event.target.value = '';
             return;
           }
 
-          // 1. Overwrite active catalog array
+          // Store imported array into localStorage
           saveCatalog(parsedCatalog);
 
-          // 2. Re-render modal table rows
+          // Immediately re-render modal table rows
           renderCatalogTable();
 
-          // 3. Refresh dropdowns and active form parameters
+          // Populate form dropdowns (#itemCodeSelect, #lineSelect)
           const firstItem = parsedCatalog[0].itemCode;
           const firstLine = parsedCatalog[0].machineLine;
           populateDropdowns(firstItem, firstLine);
           handleItemCodeChange();
 
-          // 4. Trigger notification toast
-          showToast('\u2713 \u062a\u0645 \u0627\u0633\u062a\u064a\u0631\u0627\u062f (' + parsedCatalog.length + ') \u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d \u0645\u0646 \u0645\u0644\u0641 \u0627\u0644\u0625\u0643\u0633\u064a\u0644');
+          // Display toast notification
+          showToast(`\u2713 \u062a\u0645 \u0627\u0633\u062a\u064a\u0631\u0627\u062f (${parsedCatalog.length}) \u0635\u0646\u0641 \u0645\u0646 \u0645\u0644\u0641 Machine_Mold_Standards \u0628\u0646\u062c\u0627\u062d`);
         } catch (err) {
           console.error('Excel Import Error:', err);
           alert('Error parsing Excel file: ' + err.message);
@@ -1673,14 +1651,14 @@
       // Auto-fit column widths
       worksheet['!cols'] = [
         { wch: 15 }, // Item_Code
-        { wch: 48 }, // Item_Name_Spec
+        { wch: 52 }, // Item_Name_Spec
         { wch: 22 }, // Length_Weight
         { wch: 26 }, // Machine_Line
         { wch: 18 }  // Hourly_Rate
       ];
 
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Extrusion_Catalog');
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Machine_Mold_Standards');
 
       XLSX.writeFile(workbook, 'almanar_extrusion_catalog_export.xlsx');
       showToast('\ud83d\udce5 \u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0645\u0644\u0641 \u0627\u0644\u0625\u0643\u0633\u064a\u0644 \u0628\u0646\u062c\u0627\u062d');
