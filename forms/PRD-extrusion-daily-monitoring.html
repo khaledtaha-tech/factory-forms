@@ -13,6 +13,9 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- SheetJS Standalone CDN for Excel Import & Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -781,9 +784,20 @@
 
       <!-- Modal Footer -->
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onclick="resetCatalogToDefault()" class="px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition">
-          استعادة الافتراضي
-        </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="resetCatalogToDefault()" class="px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition">
+            استعادة الافتراضي
+          </button>
+
+          <!-- Excel Import & Export Engine -->
+          <input type="file" id="catalogExcelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelImport(event)">
+          <button type="button" onclick="document.getElementById('catalogExcelInput').click()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition" title="Import Catalog from Excel">
+            📤 استيراد من ملف إكسيل (Import Excel)
+          </button>
+          <button type="button" onclick="exportCatalogToExcel()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition" title="Export Catalog to Excel">
+            📥 تصدير الكتالوج إلى إكسيل (Export Excel)
+          </button>
+        </div>
 
         <div class="flex items-center gap-2">
           <button type="button" onclick="addCatalogRow()" class="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition">
@@ -1294,6 +1308,151 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    // ==============================================================================
+    // EXCEL IMPORT & EXPORT ENGINE (SHEETJS)
+    // ==============================================================================
+
+    // Helper to find column value across varied headers (case-insensitive & aliases)
+    function findRowValue(row, patterns) {
+      const keys = Object.keys(row);
+      for (const pattern of patterns) {
+        const cleanPattern = pattern.trim().toLowerCase().replace(/[\s_\-\/\\()]+/g, '');
+        for (const key of keys) {
+          const cleanKey = key.trim().toLowerCase().replace(/[\s_\-\/\\()]+/g, '');
+          if (cleanKey === cleanPattern) {
+            const val = row[key];
+            if (val !== undefined && val !== null && String(val).trim() !== '') {
+              return String(val).trim();
+            }
+          }
+        }
+      }
+      return '';
+    }
+
+    // Handle Excel file upload and parsing
+    function handleExcelImport(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (typeof XLSX === 'undefined') {
+        alert('SheetJS library is not loaded. Please verify your internet connection.');
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          if (!firstSheetName) {
+            alert('The uploaded Excel workbook contains no sheets.');
+            event.target.value = '';
+            return;
+          }
+
+          const worksheet = workbook.Sheets[firstSheetName];
+          const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+          if (!rawRows || rawRows.length === 0) {
+            alert('The uploaded sheet is empty.');
+            event.target.value = '';
+            return;
+          }
+
+          const parsedCatalog = [];
+
+          rawRows.forEach(row => {
+            const itemCode = findRowValue(row, ['Item_Code', 'itemcode', 'كود الصنف', 'كود', 'code', 'item_code']);
+            const itemName = findRowValue(row, ['Item_Name_Spec', 'itemnamespec', 'اسم الصنف والمواصفة', 'اسم الصنف', 'المواصفة', 'name', 'spec', 'item_name']);
+            const lengthWeight = findRowValue(row, ['Length_Weight', 'lengthweight', 'الطول والوزن', 'طول ووزن', 'الوزن', 'weight', 'len_wt', 'length_weight']);
+            const machineLine = findRowValue(row, ['Machine_Line', 'machineline', 'الماكينة / الخط', 'الماكينة/الخط', 'الماكينة', 'الخط', 'line', 'machine_line', 'machine']);
+            const rateStr = findRowValue(row, ['Hourly_Rate', 'hourlyrate', 'معدل الساعة', 'معدل الإنتاج', 'المعدل', 'rate', 'hourly_rate', 'hourly']);
+            const hourlyRate = parseInt(rateStr) || 0;
+
+            if (itemCode && machineLine && hourlyRate > 0) {
+              parsedCatalog.push({
+                itemCode: itemCode,
+                itemName: itemName || itemCode,
+                lengthWeight: lengthWeight || '',
+                machineLine: machineLine,
+                hourlyRate: hourlyRate
+              });
+            }
+          });
+
+          if (parsedCatalog.length === 0) {
+            alert('No valid catalog rows found. Please ensure headers include: Item_Code, Machine_Line, and Hourly_Rate.');
+            event.target.value = '';
+            return;
+          }
+
+          // 1. Overwrite active catalog array
+          saveCatalog(parsedCatalog);
+
+          // 2. Re-render modal table rows
+          renderCatalogTable();
+
+          // 3. Refresh dropdowns and active form parameters
+          const firstItem = parsedCatalog[0].itemCode;
+          const firstLine = parsedCatalog[0].machineLine;
+          populateDropdowns(firstItem, firstLine);
+          handleItemCodeChange();
+
+          // 4. Trigger notification toast
+          showToast(`✓ تم استيراد (${parsedCatalog.length}) صنف بنجاح من ملف الإكسيل`);
+        } catch (err) {
+          console.error('Excel Import Error:', err);
+          alert('Error parsing Excel file: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Export current catalog to Excel spreadsheet
+    function exportCatalogToExcel() {
+      if (typeof XLSX === 'undefined') {
+        alert('SheetJS library is not loaded. Please verify your internet connection.');
+        return;
+      }
+
+      const catalog = getCatalog();
+      if (!catalog || catalog.length === 0) {
+        alert('Catalog is currently empty. Nothing to export.');
+        return;
+      }
+
+      const exportRows = catalog.map(item => ({
+        'Item_Code': String(item.itemCode || ''),
+        'Item_Name_Spec': String(item.itemName || ''),
+        'Length_Weight': String(item.lengthWeight || ''),
+        'Machine_Line': String(item.machineLine || ''),
+        'Hourly_Rate': parseInt(item.hourlyRate) || 0
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportRows);
+
+      // Auto-fit column widths
+      worksheet['!cols'] = [
+        { wch: 14 }, // Item_Code
+        { wch: 45 }, // Item_Name_Spec
+        { wch: 22 }, // Length_Weight
+        { wch: 24 }, // Machine_Line
+        { wch: 14 }  // Hourly_Rate
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Extrusion_Catalog');
+
+      XLSX.writeFile(workbook, 'almanar_extrusion_catalog_export.xlsx');
+      showToast('📥 تم تصدير ملف الإكسيل بنجاح');
     }
 
     // ==============================================================================
