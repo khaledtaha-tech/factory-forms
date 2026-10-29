@@ -54,7 +54,7 @@
       }
 
       /* Hide interactive toolbars, modals, tabs, and toasts */
-      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer {
+      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar {
         display: none !important;
       }
 
@@ -270,7 +270,7 @@
       </span>
       <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
     </div>
-    <div id="machineTabsList" class="flex flex-wrap gap-1.5">
+    <div id="machineTabsBar" class="flex flex-wrap gap-1.5">
       <!-- Tabs populated dynamically via renderMachineTabs() -->
     </div>
   </div>
@@ -890,7 +890,7 @@
     const STORAGE_KEY = 'AL_MANAR_EXTRUSION_DAILY_MONITORING_DATA';
     const CATALOG_STORAGE_KEY = 'almanar_extrusion_catalog_v2';
 
-    // Default Seed Catalog as per factory specification
+    // Default Seed Catalog as per canonical factory specification (7 lines)
     const DEFAULT_CATALOG = [
       {
         itemCode: "307",
@@ -903,22 +903,43 @@
         itemCode: "307",
         itemName: "uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452",
         lengthWeight: "6M - 6.00 Kg/Pc",
-        machineLine: "L-02 - KTS 350 TDH",
+        machineLine: "L-02 - KTS 170",
         hourlyRate: 38
       },
       {
         itemCode: "308",
         itemName: "uPVC PIPE 110MM 3.2MM GRAY PN-6 EN 1452",
         lengthWeight: "6M - 9.80 Kg/Pc",
-        machineLine: "L-01 - KTS 350 TDH",
+        machineLine: "L-03 - Kabra 90",
         hourlyRate: 32
       },
       {
         itemCode: "309",
         itemName: "uPVC PIPE 160MM 4.0MM GRAY PN-6 EN 1452",
         lengthWeight: "6M - 18.50 Kg/Pc",
-        machineLine: "L-02 - KTS 350 TDH",
+        machineLine: "L-04 - KTS 350",
         hourlyRate: 19
+      },
+      {
+        itemCode: "310",
+        itemName: "uPVC PIPE 200MM 4.9MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 28.50 Kg/Pc",
+        machineLine: "L-05 - KTS 200",
+        hourlyRate: 14
+      },
+      {
+        itemCode: "311",
+        itemName: "uPVC PIPE 250MM 6.2MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 44.00 Kg/Pc",
+        machineLine: "L-06 - KTS 700",
+        hourlyRate: 9
+      },
+      {
+        itemCode: "312",
+        itemName: "uPVC PIPE 315MM 7.7MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 70.00 Kg/Pc",
+        machineLine: "L-07 - KTS 250 TDH",
+        hourlyRate: 6
       }
     ];
 
@@ -1076,6 +1097,24 @@
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
+            let modified = false;
+            parsed.forEach(item => {
+              if (item.machineLine && item.machineLine.toLowerCase().includes('twin screw')) {
+                item.machineLine = 'L-02 - KTS 170';
+                modified = true;
+              } else if (item.machineLine === 'L-02 - KTS 350 TDH') {
+                item.machineLine = 'L-02 - KTS 170';
+                modified = true;
+              }
+            });
+            // Upgrade legacy small seed (<= 4 items) lacking L-07 to full canonical 7-line seed
+            if (parsed.length <= 4 && !parsed.some(e => e.machineLine && e.machineLine.includes('L-07'))) {
+              localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(DEFAULT_CATALOG));
+              return JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+            }
+            if (modified) {
+              localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(parsed));
+            }
             return parsed;
           }
         }
@@ -1084,6 +1123,10 @@
       }
       localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(DEFAULT_CATALOG));
       return JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+    }
+
+    function getActiveCatalogData() {
+      return getCatalog();
     }
 
     // Save catalog array to localStorage
@@ -1095,31 +1138,59 @@
       }
     }
 
-    const DEFAULT_LINES = [
-      'L-01 - KTS 350 TDH',
-      'L-02 - Twin Screw',
-      'L-03 - Kabra 90',
-      'L-04 - KTS 350',
-      'L-05 - KTS 200',
-      'L-06 - KTS 700'
-    ];
+    // Centralized Dynamic Extraction of Machine Lines from Catalog / Excel
+    function getActiveMachineLines() {
+      const catalog = getActiveCatalogData();
+      const linesFromCatalog = catalog
+        .map(item => (item.machineLine || '').trim())
+        .filter(line => line.length > 0 && !line.toLowerCase().includes('twin screw'));
+      
+      const uniqueLines = Array.from(new Set(linesFromCatalog));
+      
+      // Sort naturally (L-01, L-02, ... L-07)
+      uniqueLines.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
-    function getAvailableLines() {
-      const catalog = getCatalog();
-      const catLines = catalog.map(e => String(e.machineLine || '').trim()).filter(Boolean);
-      const combined = [...DEFAULT_LINES];
-      catLines.forEach(l => {
-        if (!combined.includes(l)) {
-          combined.push(l);
-        }
-      });
-      return combined;
+      // Strict canonical fallback list (7 lines only)
+      const fallbackLines = [
+        "L-01 - KTS 350 TDH",
+        "L-02 - KTS 170",
+        "L-03 - Kabra 90",
+        "L-04 - KTS 350",
+        "L-05 - KTS 200",
+        "L-06 - KTS 700",
+        "L-07 - KTS 250 TDH"
+      ];
+
+      return uniqueLines.length > 0 ? uniqueLines : fallbackLines;
     }
 
+    // Alias for backward compatibility
+    function getAvailableLines() {
+      return getActiveMachineLines();
+    }
+
+    // Populate Machine Line Dropdown (#lineSelect)
+    function populateLineDropdown(preserveLine) {
+      const lineSelect = document.getElementById('lineSelect');
+      if (!lineSelect) return;
+      const lines = getActiveMachineLines();
+      const currentLine = preserveLine || lineSelect.value || lines[0];
+
+      lineSelect.innerHTML = '';
+      lines.forEach(line => {
+        const opt = document.createElement('option');
+        opt.value = line;
+        opt.textContent = line;
+        if (line === currentLine) opt.selected = true;
+        lineSelect.appendChild(opt);
+      });
+    }
+
+    // Render Top Machine Tabs Bar (#machineTabsBar)
     function renderMachineTabs() {
-      const container = document.getElementById('machineTabsList');
+      const container = document.getElementById('machineTabsBar') || document.getElementById('machineTabsList');
       if (!container) return;
-      const lines = getAvailableLines();
+      const lines = getActiveMachineLines();
       const lineSelect = document.getElementById('lineSelect');
       const currentLine = (lineSelect && lineSelect.value) ? lineSelect.value : lines[0];
 
@@ -1144,8 +1215,11 @@
       }
     }
 
+    // Update active tab styling
     function updateActiveTabUI(activeLine) {
-      const buttons = document.querySelectorAll('#machineTabsList button');
+      const container = document.getElementById('machineTabsBar') || document.getElementById('machineTabsList');
+      if (!container) return;
+      const buttons = container.querySelectorAll('button');
       buttons.forEach(btn => {
         const isMatch = btn.dataset.line === activeLine;
         btn.className = isMatch
@@ -1162,14 +1236,10 @@
     function populateDropdowns(preserveItemCode, preserveLine) {
       const catalog = getCatalog();
       const itemSelect = document.getElementById('itemCodeSelect');
-      const lineSelect = document.getElementById('lineSelect');
-      if (!itemSelect || !lineSelect) return;
+      if (!itemSelect) return;
 
       const uniqueCodes = [...new Set(catalog.map(e => String(e.itemCode).trim()).filter(Boolean))];
-      const availableLines = getAvailableLines();
-
       const currentItem = preserveItemCode || itemSelect.value || uniqueCodes[0] || '307';
-      const currentLine = preserveLine || lineSelect.value || availableLines[0] || 'L-01 - KTS 350 TDH';
 
       // Rebuild Item Code options
       itemSelect.innerHTML = '';
@@ -1181,16 +1251,8 @@
         itemSelect.appendChild(opt);
       });
 
-      // Rebuild Machine Line options
-      lineSelect.innerHTML = '';
-      availableLines.forEach(line => {
-        const opt = document.createElement('option');
-        opt.value = line;
-        opt.textContent = line;
-        if (line === currentLine) opt.selected = true;
-        lineSelect.appendChild(opt);
-      });
-
+      // Synchronize Machine Line dropdown & tabs
+      populateLineDropdown(preserveLine);
       renderMachineTabs();
     }
 
@@ -1721,10 +1783,12 @@
           // Immediately re-render modal table rows
           renderCatalogTable();
 
-          // Populate form dropdowns (#itemCodeSelect, #lineSelect)
+          // Populate form dropdowns (#itemCodeSelect, #lineSelect) and immediately sync tabs
           const firstItem = parsedCatalog[0].itemCode;
           const firstLine = parsedCatalog[0].machineLine;
           populateDropdowns(firstItem, firstLine);
+          populateLineDropdown(firstLine);
+          renderMachineTabs();
           handleItemCodeChange();
 
           // Display toast notification
@@ -2045,7 +2109,7 @@
       saveToStorage();
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
-      const lines = getAvailableLines();
+      const lines = getActiveMachineLines();
       const batchContainer = document.getElementById('batchPrintContainer');
       const singleSheet = document.getElementById('singleSheetContainer');
       if (!batchContainer || !singleSheet) return;
