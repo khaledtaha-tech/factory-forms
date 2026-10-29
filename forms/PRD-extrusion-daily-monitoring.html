@@ -180,8 +180,8 @@
     <!-- Smart Hourly Rate Stepper, Catalog Trigger & Controls -->
     <div class="flex items-center gap-2 flex-wrap">
       <!-- Catalog Manager Trigger Button -->
-      <button type="button" onclick="openCatalogModal()" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1.5 rounded-lg shadow-2xs transition" title="Open Catalog Manager">
-        <span>⚙️ جدول الأصناف والماكينات (Catalog Manager)</span>
+      <button type="button" onclick="toggleCatalogModal(true)" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1.5 rounded-lg shadow-2xs transition" title="Open Catalog Manager">
+        <span>\u2699\ufe0f \u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a (Catalog Manager)</span>
       </button>
 
       <div class="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-0.5">
@@ -749,18 +749,18 @@
        CATALOG MANAGER MODAL (STRICTLY NON-PRINT)
        ============================================================================== -->
   <div id="catalogModal" class="no-print fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+    <div class="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       
       <!-- Modal Header -->
       <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="text-base">⚙️</span>
+          <span class="text-base">\u2699\ufe0f</span>
           <div>
-            <h3 class="text-sm font-black tracking-wide uppercase">جدول الأصناف والماكينات (Catalog Manager)</h3>
-            <p class="text-[11px] text-slate-300">إدارة ربط كود الصنف بخط الإنتاج ومعدل الإنتاج القياسي بالساعة (Pcs/Hr)</p>
+            <h3 class="text-sm font-black tracking-wide uppercase">\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a (Catalog Manager)</h3>
+            <p class="text-[11px] text-slate-300">\u0625\u062f\u0627\u0631\u0629 \u0631\u0628\u0637 \u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641 \u0628\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0648\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0642\u064a\u0627\u0633\u064a \u0628\u0627\u0644\u0633\u0627\u0639\u0629 (Pcs/Hr)</p>
           </div>
         </div>
-        <button type="button" onclick="closeCatalogModal()" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">&times;</button>
+        <button type="button" onclick="toggleCatalogModal(false)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">&times;</button>
       </div>
 
       <!-- Modal Body: Editable Table -->
@@ -768,47 +768,35 @@
         <table class="w-full border-collapse text-xs" id="catalogTable">
           <thead>
             <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 text-left">
-              <th class="p-2 border border-slate-200 w-24">كود الصنف<br><span class="font-normal text-[10px] text-slate-500">(Item Code)</span></th>
-              <th class="p-2 border border-slate-200">اسم الصنف والمواصفة<br><span class="font-normal text-[10px] text-slate-500">(Item Name / Spec)</span></th>
-              <th class="p-2 border border-slate-200 w-36">الطول والوزن<br><span class="font-normal text-[10px] text-slate-500">(Length &amp; Nominal Wt)</span></th>
-              <th class="p-2 border border-slate-200 w-44">الماكينة / الخط<br><span class="font-normal text-[10px] text-slate-500">(Machine Line)</span></th>
-              <th class="p-2 border border-slate-200 w-28 text-center">معدل الساعة<br><span class="font-normal text-[10px] text-slate-500">(Rate Pcs/Hr)</span></th>
-              <th class="p-2 border border-slate-200 w-16 text-center">إجراء<br><span class="font-normal text-[10px] text-slate-500">(Action)</span></th>
+              <th class="p-2 border border-slate-200 w-24">\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641<br><span class="font-normal text-[10px] text-slate-500">(Item Code)</span></th>
+              <th class="p-2 border border-slate-200">\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629<br><span class="font-normal text-[10px] text-slate-500">(Item Name / Spec)</span></th>
+              <th class="p-2 border border-slate-200 w-36">\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646<br><span class="font-normal text-[10px] text-slate-500">(Length &amp; Nominal Wt)</span></th>
+              <th class="p-2 border border-slate-200 w-44">\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637<br><span class="font-normal text-[10px] text-slate-500">(Machine Line)</span></th>
+              <th class="p-2 border border-slate-200 w-28 text-center">\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629<br><span class="font-normal text-[10px] text-slate-500">(Rate Pcs/Hr)</span></th>
+              <th class="p-2 border border-slate-200 w-16 text-center">\u0625\u062c\u0631\u0627\u0621<br><span class="font-normal text-[10px] text-slate-500">(Action)</span></th>
             </tr>
           </thead>
-          <tbody id="catalogTbody">
+          <tbody id="catalogTableBody">
             <!-- Dynamic rows injected by JavaScript -->
           </tbody>
         </table>
       </div>
 
-      <!-- Modal Footer -->
+      <!-- Modal Footer Action Toolbar -->
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" onclick="resetCatalogToDefault()" class="px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition">
-            استعادة الافتراضي
-          </button>
+        <input type="file" id="catalogExcelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelImport(event)">
 
-          <!-- Excel Import & Export Engine -->
-          <input type="file" id="catalogExcelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelImport(event)">
-          <button type="button" onclick="document.getElementById('catalogExcelInput').click()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition" title="Import Catalog from Excel">
-            📤 استيراد من ملف إكسيل (Import Excel)
-          </button>
-          <button type="button" onclick="exportCatalogToExcel()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition" title="Export Catalog to Excel">
-            📥 تصدير الكتالوج إلى إكسيل (Export Excel)
-          </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="addCatalogRow()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded text-xs font-bold transition flex items-center gap-1">+ \u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 / \u062e\u0637 \u062c\u062f\u064a\u062f</button>
+          <button type="button" onclick="document.getElementById('catalogExcelInput').click()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\ud83d\udce4 \u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0625\u0643\u0633\u064a\u0644 (Import Excel)</button>
+          <button type="button" onclick="exportCatalogToExcel()" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\ud83d\udce5 \u062a\u0635\u062f\u064a\u0631 \u0625\u0643\u0633\u064a\u0644 (Export Excel)</button>
+          <button type="button" onclick="harmonizeCatalogSpecifications()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\u2728 \u062a\u0635\u062d\u064a\u062d \u0648\u062a\u0648\u062d\u064a\u062f \u0627\u0644\u0645\u0633\u0645\u064a\u0627\u062a (Harmonize Specs)</button>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button type="button" onclick="addCatalogRow()" class="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition">
-            + إضافة صنف / خط جديد
-          </button>
-          <button type="button" onclick="closeCatalogModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-lg transition">
-            إلغاء
-          </button>
-          <button type="button" onclick="saveCatalogFromModal()" class="px-4 py-1.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
-            حفظ التغييرات
-          </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="restoreCatalogDefaults()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded text-xs font-bold transition">\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a</button>
+          <button type="button" onclick="toggleCatalogModal(false)" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-semibold transition">\u0625\u0644\u063a\u0627\u0621</button>
+          <button type="button" onclick="saveCatalogChanges()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow transition">\u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a</button>
         </div>
       </div>
 
@@ -1160,13 +1148,252 @@
     }
 
     // ==============================================================================
+    // METRIC SPECIFICATION DB & HARMONIZATION ENGINE
+    // ==============================================================================
+
+    const SASO_ISO_METRIC_DB = {
+      63: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 1.5 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 1.9 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 3.0 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 4.7 }
+      },
+      75: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 1.5 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 2.2 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 3.6 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 5.6 }
+      },
+      90: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 1.8 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 2.7 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 4.3 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 6.7 }
+      },
+      110: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 2.2 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 3.2 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 5.3 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 8.2 }
+      },
+      125: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 2.5 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 3.7 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 6.0 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 9.3 }
+      },
+      140: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 2.8 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 4.1 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 6.7 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 10.4 }
+      },
+      160: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 3.2 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 4.7 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 7.7 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 11.9 }
+      },
+      200: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 3.9 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 5.9 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 9.6 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 14.9 }
+      },
+      225: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 4.4 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 6.6 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 10.8 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 16.7 }
+      },
+      250: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 4.9 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 7.3 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 11.9 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 18.6 }
+      },
+      315: {
+        pn4: { classNom: 'Class 2 / PN 4', wt: 6.2 },
+        pn6: { classNom: 'Class 3 / PN 6', wt: 9.2 },
+        pn10: { classNom: 'Class 4 / PN 10', wt: 15.0 },
+        pn16: { classNom: 'Class 5 / PN 16', wt: 23.3 }
+      }
+    };
+    const UPVC_DENSITY = 1.43;
+
+    // Helper to decode unicode escapes (\u06xx) in DOM text nodes
+    function decodeUnicodeUI() {
+      try {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.nodeValue && node.nodeValue.indexOf('\\u') !== -1) {
+            node.nodeValue = node.nodeValue.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+              return String.fromCharCode(parseInt(hex, 16));
+            });
+          }
+        }
+      } catch (e) {
+        // Fallback or ignore
+      }
+    }
+
+    // Clean and normalize pipe specification string based on SASO / ISO / DIN standards
+    function cleanPipeString(raw) {
+      if (!raw || typeof raw !== 'string') return null;
+      let str = raw.trim();
+
+      let joint = 'R/R';
+      if (/\b(P\s*[\/\s]*E|PE|PLAIN\s*END)\b/i.test(str)) {
+        joint = 'P/E';
+      } else if (/\b(R\s*[\/\s]*R|RR|RUBBER\s*RING)\b/i.test(str)) {
+        joint = 'R/R';
+      }
+
+      let lengthMeters = 6.0;
+      const lenMatch = str.match(/(?:^|[^\d])(3|4|5|5\.8|6|12)\s*(?:M|MTR|METERS?)(?=[^\d]|$)/i);
+      if (lenMatch) {
+        lengthMeters = parseFloat(lenMatch[1]);
+      }
+
+      let pn = null;
+      const pnMatch = str.match(/\bPN\s*[-_]?\s*(\d+(?:\.\d+)?)\b/i);
+      if (pnMatch) {
+        pn = parseFloat(pnMatch[1]);
+      } else {
+        const classMatch = str.match(/\bCLASS\s*[-_]?\s*([2-5])\b/i);
+        if (classMatch) {
+          const c = parseInt(classMatch[1]);
+          if (c === 2) pn = 4;
+          else if (c === 3) pn = 6;
+          else if (c === 4) pn = 10;
+          else if (c === 5) pn = 16;
+        }
+      }
+
+      let od = null;
+      const odMatch = str.match(/(?:^|[^\d])(63|75|90|110|125|140|160|200|225|250|315)(?:\s*MM)?(?=[^\d]|$)/i);
+      if (odMatch) {
+        od = parseInt(odMatch[1]);
+      }
+
+      let wt = null;
+      let remainingForWt = str;
+      if (odMatch) {
+        remainingForWt = str.replace(odMatch[0], ' ');
+      }
+      const wtMatch = remainingForWt.match(/(?:^|[^\d])(\d+\.\d+)\s*(?:MM)?(?=[^\d]|$)/i);
+      if (wtMatch) {
+        wt = parseFloat(wtMatch[1]);
+      }
+
+      if (!od || !SASO_ISO_METRIC_DB[od]) {
+        return null;
+      }
+
+      const odData = SASO_ISO_METRIC_DB[od];
+
+      if (!pn && wt) {
+        for (const pKey of ['pn4', 'pn6', 'pn10', 'pn16']) {
+          if (Math.abs(odData[pKey].wt - wt) <= 0.25) {
+            pn = parseInt(pKey.replace('pn', ''));
+            break;
+          }
+        }
+      }
+
+      if (pn && !wt) {
+        const pKey = 'pn' + pn;
+        if (odData[pKey]) {
+          wt = odData[pKey].wt;
+        }
+      }
+
+      if (!pn && !wt) {
+        pn = 6;
+        wt = odData.pn6.wt;
+      } else if (!wt && pn) {
+        const pKey = 'pn' + pn;
+        wt = odData[pKey] ? odData[pKey].wt : (od * 0.04);
+      }
+
+      const linearWeight = Math.PI * (od - wt) * wt * (UPVC_DENSITY / 1000);
+      const pieceWeight = linearWeight * lengthMeters;
+
+      const pnKey = 'pn' + (pn || 6);
+      const classNom = (odData[pnKey] && odData[pnKey].classNom) ? odData[pnKey].classNom : ('PN ' + (pn || 6));
+
+      const cleanName = 'uPVC PIPE ' + od + 'MM ' + wt.toFixed(1) + 'MM ' + joint + ' ' + classNom + ' DIN 8061/8062';
+      const lengthWeight = lengthMeters + 'M - ' + pieceWeight.toFixed(2) + ' Kg/Pc';
+      const nominalWeight = parseFloat(pieceWeight.toFixed(2));
+
+      return {
+        cleanName: cleanName,
+        lengthWeight: lengthWeight,
+        nominalWeight: nominalWeight
+      };
+    }
+
+    // Harmonize all specification strings and calculate standard nominal weights
+    function harmonizeCatalogSpecifications() {
+      const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
+      let updatedCount = 0;
+
+      if (tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(tr => {
+          const nameInput = tr.querySelector('.catalog-name');
+          const lenWtInput = tr.querySelector('.catalog-len-wt');
+          if (nameInput) {
+            const match = cleanPipeString(nameInput.value);
+            if (match) {
+              nameInput.value = match.cleanName;
+              if (lenWtInput) {
+                lenWtInput.value = match.lengthWeight;
+              }
+              updatedCount++;
+            }
+          }
+        });
+      }
+
+      // Also harmonize storage catalog
+      const catalog = getCatalog();
+      let storageUpdated = false;
+      catalog.forEach(item => {
+        const match = cleanPipeString(item.itemName);
+        if (match) {
+          item.itemName = match.cleanName;
+          item.lengthWeight = match.lengthWeight;
+          storageUpdated = true;
+        }
+      });
+      if (storageUpdated) {
+        saveCatalog(catalog);
+      }
+
+      showToast('\u2728 \u062a\u0645 \u062a\u0648\u062d\u064a\u062f \u0645\u0633\u0645\u064a\u0627\u062a \u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0627\u062a \u0648\u0627\u0644\u0623\u0648\u0632\u0627\u0646 \u0628\u0646\u062c\u0627\u062d');
+    }
+
+    // ==============================================================================
     // CATALOG MANAGER MODAL ENGINE (NON-PRINT)
     // ==============================================================================
+
+    function toggleCatalogModal(show) {
+      if (show) {
+        openCatalogModal();
+      } else {
+        closeCatalogModal();
+      }
+    }
 
     function openCatalogModal() {
       renderCatalogTable();
       const modal = document.getElementById('catalogModal');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        decodeUnicodeUI();
+      }
     }
 
     function closeCatalogModal() {
@@ -1176,7 +1403,7 @@
 
     function renderCatalogTable() {
       const catalog = getCatalog();
-      const tbody = document.getElementById('catalogTbody');
+      const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
       if (!tbody) return;
       tbody.innerHTML = '';
 
@@ -1201,16 +1428,17 @@
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
             <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
-              حذف
+              \u062d\u0630\u0641
             </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+      decodeUnicodeUI();
     }
 
     function addCatalogRow() {
-      const tbody = document.getElementById('catalogTbody');
+      const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
       if (!tbody) return;
       const tr = document.createElement('tr');
       tr.className = 'border-b border-slate-200 bg-amber-50/40 hover:bg-slate-50 transition';
@@ -1232,12 +1460,13 @@
         </td>
         <td class="p-1.5 border border-slate-200 text-center">
           <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
-            حذف
+            \u062d\u0630\u0641
           </button>
         </td>
       `;
       tbody.appendChild(tr);
       tr.querySelector('.catalog-code').focus();
+      decodeUnicodeUI();
     }
 
     function deleteCatalogRow(btn) {
@@ -1245,8 +1474,8 @@
       if (tr) tr.remove();
     }
 
-    function saveCatalogFromModal() {
-      const tbody = document.getElementById('catalogTbody');
+    function saveCatalogChanges() {
+      const tbody = document.getElementById('catalogTableBody') || document.getElementById('catalogTbody');
       if (!tbody) return;
       const rows = tbody.querySelectorAll('tr');
       const newCatalog = [];
@@ -1289,17 +1518,19 @@
       handleItemCodeChange();
 
       closeCatalogModal();
-      showToast('Catalog updated successfully!');
+      showToast('\u2713 \u062a\u0645 \u062d\u0641\u0638 \u062a\u063a\u064a\u064a\u0631\u0627\u062a \u0627\u0644\u0643\u062a\u0627\u0644\u0648\u062c \u0628\u0646\u062c\u0627\u062d');
     }
+    const saveCatalogFromModal = saveCatalogChanges;
 
-    function resetCatalogToDefault() {
+    function restoreCatalogDefaults() {
       if (!confirm('Are you sure you want to restore the default seed catalog? Any custom entries will be reset.')) return;
       saveCatalog(DEFAULT_CATALOG);
       renderCatalogTable();
       populateDropdowns('307', 'L-01 - KTS 350 TDH');
       handleItemCodeChange();
-      showToast('Default catalog restored!');
+      showToast('\u2713 \u062a\u0645 \u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0643\u062a\u0627\u0644\u0648\u062c \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a');
     }
+    const resetCatalogToDefault = restoreCatalogDefaults;
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -1367,11 +1598,11 @@
           const parsedCatalog = [];
 
           rawRows.forEach(row => {
-            const itemCode = findRowValue(row, ['Item_Code', 'itemcode', 'كود الصنف', 'كود', 'code', 'item_code']);
-            const itemName = findRowValue(row, ['Item_Name_Spec', 'itemnamespec', 'اسم الصنف والمواصفة', 'اسم الصنف', 'المواصفة', 'name', 'spec', 'item_name']);
-            const lengthWeight = findRowValue(row, ['Length_Weight', 'lengthweight', 'الطول والوزن', 'طول ووزن', 'الوزن', 'weight', 'len_wt', 'length_weight']);
-            const machineLine = findRowValue(row, ['Machine_Line', 'machineline', 'الماكينة / الخط', 'الماكينة/الخط', 'الماكينة', 'الخط', 'line', 'machine_line', 'machine']);
-            const rateStr = findRowValue(row, ['Hourly_Rate', 'hourlyrate', 'معدل الساعة', 'معدل الإنتاج', 'المعدل', 'rate', 'hourly_rate', 'hourly']);
+            const itemCode = findRowValue(row, ['Item_Code', 'itemcode', '\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641', '\u0643\u0648\u062f', 'code', 'item_code']);
+            const itemName = findRowValue(row, ['Item_Name_Spec', 'itemnamespec', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641', '\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', 'name', 'spec', 'item_name']);
+            const lengthWeight = findRowValue(row, ['Length_Weight', 'lengthweight', '\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646', '\u0637\u0648\u0644 \u0648\u0648\u0632\u0646', '\u0627\u0644\u0648\u0632\u0646', 'weight', 'len_wt', 'length_weight']);
+            const machineLine = findRowValue(row, ['Machine_Line', 'machineline', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629/\u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629', '\u0627\u0644\u062e\u0637', 'line', 'machine_line', 'machine']);
+            const rateStr = findRowValue(row, ['Hourly_Rate', 'hourlyrate', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c', '\u0627\u0644\u0645\u0639\u062f\u0644', 'rate', 'hourly_rate', 'hourly']);
             const hourlyRate = parseInt(rateStr) || 0;
 
             if (itemCode && machineLine && hourlyRate > 0) {
@@ -1404,7 +1635,7 @@
           handleItemCodeChange();
 
           // 4. Trigger notification toast
-          showToast(`✓ تم استيراد (${parsedCatalog.length}) صنف بنجاح من ملف الإكسيل`);
+          showToast('\u2713 \u062a\u0645 \u0627\u0633\u062a\u064a\u0631\u0627\u062f (' + parsedCatalog.length + ') \u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d \u0645\u0646 \u0645\u0644\u0641 \u0627\u0644\u0625\u0643\u0633\u064a\u0644');
         } catch (err) {
           console.error('Excel Import Error:', err);
           alert('Error parsing Excel file: ' + err.message);
@@ -1441,18 +1672,18 @@
 
       // Auto-fit column widths
       worksheet['!cols'] = [
-        { wch: 14 }, // Item_Code
-        { wch: 45 }, // Item_Name_Spec
+        { wch: 15 }, // Item_Code
+        { wch: 48 }, // Item_Name_Spec
         { wch: 22 }, // Length_Weight
-        { wch: 24 }, // Machine_Line
-        { wch: 14 }  // Hourly_Rate
+        { wch: 26 }, // Machine_Line
+        { wch: 18 }  // Hourly_Rate
       ];
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Extrusion_Catalog');
 
       XLSX.writeFile(workbook, 'almanar_extrusion_catalog_export.xlsx');
-      showToast('📥 تم تصدير ملف الإكسيل بنجاح');
+      showToast('\ud83d\udce5 \u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0645\u0644\u0641 \u0627\u0644\u0625\u0643\u0633\u064a\u0644 \u0628\u0646\u062c\u0627\u062d');
     }
 
     // ==============================================================================
@@ -1657,6 +1888,9 @@
 
       // Recalculate baseline and totals
       syncHourlyRate(document.getElementById('toolbarRateInput').value || 47);
+
+      // Decode Unicode escaped UI text
+      decodeUnicodeUI();
 
       // Close modal on ESC key
       window.addEventListener('keydown', (e) => {
