@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مُنجز - المهام والتزامات الأشخاص</title>
+    <!-- خط القاهرة العربي المميز -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- مكتبة الأيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- مكتبة الاحتفال البصري (Confetti) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        /* كلاسات حركية سلسة */
+        .card-enter {
+            animation: cardIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .completed-strike {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white pb-16">
+
+    <!-- نافذة الإشعارات السريعة (Toast Notification) -->
+    <div id="toast" class="fixed bottom-6 left-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none bg-slate-900/95 text-white dark:bg-white/95 dark:text-slate-900 backdrop-blur-md border border-slate-700/30">
+        <span id="toastIcon" class="text-emerald-400 dark:text-emerald-600 text-lg"></span>
+        <span id="toastMsg" class="text-sm font-semibold"></span>
+    </div>
+
+    <!-- نافذة التأكيد المخصصة (Custom Confirm Modal) -->
+    <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 dark:border-slate-700 transform scale-95 transition-transform duration-200 text-center">
+            <div class="w-14 h-14 bg-rose-100 dark:bg-rose-950/60 text-rose-500 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmTitle" class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">تأكيد الإجراء</h3>
+            <p id="confirmDesc" class="text-sm text-slate-600 dark:text-slate-400 mb-6">هل أنت متأكد من هذه الخطوة؟ لا يمكن التراجع عنها.</p>
+            <div class="flex items-center gap-3">
+                <button id="confirmCancelBtn" class="flex-1 py-2.5 px-4 rounded-xl text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-medium transition text-sm">
+                    إلغاء
+                </button>
+                <button id="confirmOkBtn" class="flex-1 py-2.5 px-4 rounded-xl text-white bg-rose-500 hover:bg-rose-600 font-medium shadow-md shadow-rose-500/20 transition text-sm">
+                    تأكيد
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة دليل الأشخاص والالتزامات (People Hub Modal) -->
+    <div id="peopleHubModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-right my-8 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-4 flex-shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center">
+                        <i class="fa-solid fa-users-viewfinder text-base"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">دليل التزامات الأشخاص والمعاملات</h3>
+                        <p class="text-xs text-slate-400">ملخص جميع العلاقات والجمعيات والمستحقات المرتبطة بكل شخص</p>
+                    </div>
+                </div>
+                <button onclick="closePeopleHubModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- قائمة الأشخاص والتزاماتهم -->
+            <div id="peopleHubContent" class="space-y-4 overflow-y-auto pr-1 flex-1 py-2">
+                <!-- تعبأ ديناميكياً بواسطة جافاسكربت -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700/80 flex items-center justify-between flex-shrink-0 mt-3">
+                <span id="peopleHubSummary" class="text-xs font-semibold text-slate-500 dark:text-slate-400"></span>
+                <button onclick="closePeopleHubModal()" class="px-5 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-bold transition">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة النسخ الاحتياطي والاستيراد (Backup & Restore Modal) -->
+    <div id="backupModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-right">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-database text-brand-500 text-lg"></i>
+                    <h3 class="font-bold text-lg">النسخ الاحتياطي ونقل البيانات</h3>
+                </div>
+                <button onclick="closeBackupModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">يمكنك تصدير مهامك والتزاماتك كملف JSON لاسترجاعها لاحقاً أو نقلها لجهاز آخر مع الحفاظ على كافة التفاصيل.</p>
+            
+            <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-bold">تصدير البيانات (Export)</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">تنزيل نسخة كاملة لملف JSON</p>
+                    </div>
+                    <button onclick="exportData()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition">
+                        <i class="fa-solid fa-download"></i> تصدير
+                    </button>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-bold">استيراد البيانات (Import)</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">استعادة مهام سابقة من ملف JSON</p>
+                    </div>
+                    <label class="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-2 cursor-pointer transition">
+                        <i class="fa-solid fa-upload"></i> استيراد
+                        <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة / تعديل المهمة (Task Add/Edit Modal) -->
+    <div id="taskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-7 max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-700 my-8">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-5">
+                <div class="flex items-center gap-2">
+                    <span id="modalActionIcon" class="w-8 h-8 rounded-xl bg-brand-100 dark:bg-brand-950/60 text-brand-600 flex items-center justify-center">
+                        <i class="fa-solid fa-plus"></i>
+                    </span>
+                    <h3 id="modalTitle" class="font-bold text-lg text-slate-800 dark:text-slate-100">إضافة مهمة / التزام جديد</h3>
+                </div>
+                <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="taskForm" onsubmit="handleTaskSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editTaskId" value="">
+
+                <!-- عنوان المهمة / الالتزام -->
+                <div>
+                    <label for="taskTitleInput" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        عنوان المهمة أو الالتزام <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="taskTitleInput" required placeholder="مثال: جمعية بوسي، كفيلة عزيزة، إعداد تقرير المصنع..."
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/70 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <!-- قسم الشخص المعني والموقف الحالي (مخصص لأمور الناس) -->
+                <div class="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+                    <div class="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                        <i class="fa-solid fa-user-group text-sm"></i>
+                        <span>بيانات الشخص والالتزام المرتبط (اختياري)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- اسم الشخص المعني مع إكمال تلقائي -->
+                        <div>
+                            <label for="taskPersonInput" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                الشخص المعني / جهة المعاملة
+                            </label>
+                            <div class="relative">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <input type="text" id="taskPersonInput" list="existingPeopleList" placeholder="مثال: بوسي، كفيلة عزيزة..."
+                                       class="w-full pr-8 pl-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <datalist id="existingPeopleList">
+                                    <!-- يعبأ تلقائياً بأسماء الأشخاص المسجلين -->
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <!-- الموقف الحالي أو حالة السداد -->
+                        <div>
+                            <label for="taskPersonStatusInput" class="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                الموقف الحالي / حالة السداد
+                            </label>
+                            <div class="relative">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                </span>
+                                <input type="text" id="taskPersonStatusInput" placeholder="مثال: دفعت القسط الأول، دافع لنهاية السنة..."
+                                       class="w-full pr-8 pl-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تفاصيل وملاحظات -->
+                <div>
+                    <label for="taskNotesInput" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        ملاحظات وتفاصيل إضافية
+                    </label>
+                    <textarea id="taskNotesInput" rows="2" placeholder="أضف أي تفاصيل، مبالغ، تواريخ مرجعية أو ملاحظات تود تذكرها..."
+                              class="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/70 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
+                </div>
+
+                <!-- الأولوية والتصنيف في سطرين -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- مستوى الأولوية -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            مستوى الأولوية
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="taskPriority" value="low" class="peer hidden">
+                                <div class="py-2 px-2 rounded-xl text-center text-xs font-semibold border border-slate-200 dark:border-slate-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 dark:peer-checked:bg-emerald-950/40 peer-checked:text-emerald-600 dark:peer-checked:text-emerald-400 text-slate-600 dark:text-slate-400 transition flex items-center justify-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    عادية
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="taskPriority" value="medium" class="peer hidden" checked>
+                                <div class="py-2 px-2 rounded-xl text-center text-xs font-semibold border border-slate-200 dark:border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:bg-amber-950/40 peer-checked:text-amber-600 dark:peer-checked:text-amber-400 text-slate-600 dark:text-slate-400 transition flex items-center justify-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    متوسطة
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="taskPriority" value="high" class="peer hidden">
+                                <div class="py-2 px-2 rounded-xl text-center text-xs font-semibold border border-slate-200 dark:border-slate-700 peer-checked:border-rose-500 peer-checked:bg-rose-50 dark:peer-checked:bg-rose-950/40 peer-checked:text-rose-600 dark:peer-checked:text-rose-400 text-slate-600 dark:text-slate-400 transition flex items-center justify-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                    قصوى
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- التصنيف -->
+                    <div>
+                        <label for="taskCategorySelect" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            التصنيف
+                        </label>
+                        <select id="taskCategorySelect" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/70 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <!-- الفئات ديناميكية -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- خيار التثبيت في الأعلى -->
+                <div class="flex items-center gap-2 pt-1">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="taskPinnedInput" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600"></div>
+                        <span class="mr-2 text-xs font-bold text-slate-700 dark:text-slate-300">تثبيت المهمة في المقدمة (Pin)</span>
+                    </label>
+                </div>
+
+                <!-- إضافة مهام وخطوات فرعية / أقساط (Subtasks) -->
+                <div class="border-t border-slate-100 dark:border-slate-700/80 pt-3">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center justify-between">
+                        <span>الخطوات الفرعية أو الأقساط (Checklist)</span>
+                        <span class="text-[11px] font-normal text-slate-400">مثال: قسط 1، قسط 2... أو خطوات المهمة</span>
+                    </label>
+                    <div id="modalSubtasksList" class="space-y-2 mb-2 max-h-36 overflow-y-auto pr-1">
+                        <!-- عناصر فرعية -->
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="newSubtaskInput" placeholder="أضف قسط أو خطوة واضغط إضافة..." 
+                               onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addModalSubtask(); }"
+                               class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="button" onclick="addModalSubtask()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 transition">
+                            <i class="fa-solid fa-plus ml-1"></i> إضافة خطوة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- أزرار الحفظ -->
+                <div class="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <button type="button" onclick="closeTaskModal()" class="w-1/3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">
+                        إلغاء
+                    </button>
+                    <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-lg shadow-brand-500/25 transition">
+                        حفظ المهمة / الالتزام
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الموقف الحالي السريعة -->
+    <div id="quickStatusModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-right">
+            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-brand-500"></i>
+                <span>تحديث الموقف الحالي</span>
+            </h4>
+            <p id="quickStatusTaskTitle" class="text-xs text-slate-500 dark:text-slate-400 mb-3 truncate"></p>
+            <input type="hidden" id="quickStatusTaskId" value="">
+            <div class="mb-4">
+                <input type="text" id="quickStatusInput" placeholder="اكتب الموقف الجديد (مثلاً: دفعت القسط الثاني)..."
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="closeQuickStatusModal()" class="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+                    إلغاء
+                </button>
+                <button onclick="saveQuickStatus()" class="flex-1 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition shadow-sm">
+                    تحديث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- رأس الصفحة العلوي (Navbar) -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white flex items-center justify-center text-lg shadow-md shadow-brand-500/30">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-slate-800 dark:text-white leading-tight">مُنجز</h1>
+                    <p class="text-[10px] font-semibold text-slate-400">لوحة المهام والتزامات الأشخاص والمعاملات</p>
+                </div>
+            </div>
+
+            <!-- أزرار الإجراءات العلوية -->
+            <div class="flex items-center gap-2">
+                <!-- زر دليل التزامات الناس -->
+                <button onclick="openPeopleHubModal()" title="سجل التزامات ومعاملات الناس" 
+                        class="px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 transition shadow-xs">
+                    <i class="fa-solid fa-user-group text-purple-600 dark:text-purple-400"></i>
+                    <span class="hidden sm:inline">التزامات الناس</span>
+                    <span id="peopleCountBadge" class="bg-purple-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                </button>
+
+                <button onclick="openBackupModal()" title="النسخ الاحتياطي والاستيراد" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70 border border-slate-200 dark:border-slate-700 transition text-sm">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+                <button id="themeToggleBtn" onclick="toggleTheme()" title="تبديل المظهر النهاري/الليلي" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/70 border border-slate-200 dark:border-slate-700 transition text-sm">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="openTaskModal()" class="mr-1 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-brand-500/30 transition transform active:scale-95">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>مهمة / التزام جديد</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 w-full flex-1 pt-6">
+
+        <!-- لوحة الإحصائيات وشريط التقدم -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <!-- إجمالي المهام والالتزامات -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400">إجمالي البنود</span>
+                    <h3 id="statTotal" class="text-2xl font-black mt-1 text-slate-800 dark:text-slate-100">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+
+            <!-- قيد المتابعة / التنفيذ -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400">المتبقية</span>
+                    <h3 id="statPending" class="text-2xl font-black mt-1 text-amber-500">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-500 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-spinner"></i>
+                </div>
+            </div>
+
+            <!-- التزامات الأشخاص النشطة -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400">التزامات الناس</span>
+                    <h3 id="statPeoplePending" class="text-2xl font-black mt-1 text-purple-600 dark:text-purple-400">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-handshake"></i>
+                </div>
+            </div>
+
+            <!-- نسبة الإنجاز مع شريط التقدم -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-400">نسبة الإنجاز</span>
+                    <span id="statPercent" class="text-xs font-black text-brand-600 dark:text-brand-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden mt-3">
+                    <div id="statProgressBar" class="bg-gradient-to-l from-emerald-500 to-brand-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- لوحة التحكم، الفلترة، والبحث -->
+        <section class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm mb-6 space-y-4">
+            <!-- سطر البحث والترتيب السريع -->
+            <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                <!-- شريط البحث الفوري (يبحث بالعناوين والملاحظات وأسماء الأشخاص والموقف الحالي) -->
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="renderTasks()" placeholder="ابحث في المهام، أسماء الأشخاص (بوسي، عزيزة...) أو الموقف..."
+                           class="w-full pr-9 pl-8 py-2 text-xs font-medium rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- فرز المهام -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400 whitespace-nowrap"><i class="fa-solid fa-arrow-down-wide-short ml-1"></i>الترتيب:</span>
+                    <select id="sortSelect" onchange="renderTasks()" class="px-3 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="pinned">المثبتة أولاً</option>
+                        <option value="priority_desc">حسب الأولوية (الأعلى أولاً)</option>
+                        <option value="people_first">التزامات الناس أولاً</option>
+                        <option value="alphabetical">أبجدياً (أ - ي)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- صف الفلاتر المتقدمة (الحالة، الأشخاص، الأولوية، التصنيف) -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-700/60">
+                <!-- أزرار تبويب الحالة -->
+                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/70 p-1 rounded-xl text-xs font-bold">
+                    <button onclick="setStatusFilter('all')" data-status="all" class="status-pill px-3 py-1.5 rounded-lg transition bg-white dark:bg-slate-800 text-brand-600 shadow-sm">
+                        الكل
+                    </button>
+                    <button onclick="setStatusFilter('pending')" data-status="pending" class="status-pill px-3 py-1.5 rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800">
+                        قيد الإنجاز
+                    </button>
+                    <button onclick="setStatusFilter('completed')" data-status="completed" class="status-pill px-3 py-1.5 rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800">
+                        المكتملة
+                    </button>
+                </div>
+
+                <!-- فلاتر منسدلة إضافية -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- فلتر مخصص للأشخاص -->
+                    <select id="personFilter" onchange="renderTasks()" class="px-3 py-1.5 rounded-xl text-xs font-medium border border-indigo-200 dark:border-indigo-900/80 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 focus:outline-none">
+                        <option value="all">كل الأشخاص</option>
+                        <option value="__only_people__">فقط المرتبطة بأشخاص</option>
+                        <!-- تعبأ ديناميكياً بأسماء الأشخاص -->
+                    </select>
+
+                    <!-- فلتر الأولوية -->
+                    <select id="priorityFilter" onchange="renderTasks()" class="px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 focus:outline-none">
+                        <option value="all">كل الأولويات</option>
+                        <option value="high">أولوية قصوى</option>
+                        <option value="medium">أولوية متوسطة</option>
+                        <option value="low">أولوية عادية</option>
+                    </select>
+
+                    <!-- فلتر التصنيف -->
+                    <select id="categoryFilter" onchange="renderTasks()" class="px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 focus:outline-none">
+                        <option value="all">كل التصنيفات</option>
+                        <!-- التصنيفات تعبأ برمجياً -->
+                    </select>
+
+                    <!-- زر تفريغ المهام المكتملة -->
+                    <button onclick="confirmClearCompleted()" title="حذف كل المهام المكتملة دفعة واحدة" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-broom"></i>
+                        <span>تنظيف المكتمل</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- قائمة عرض المهام -->
+        <section id="tasksContainer" class="space-y-3.5">
+            <!-- تتولد بطاقات المهام هنا تلقائياً عبر JavaScript -->
+        </section>
+
+        <!-- حالة فارغة عند عدم وجود مهام -->
+        <div id="emptyState" class="hidden text-center py-16 px-4 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+            <div class="w-20 h-20 bg-brand-50 dark:bg-slate-700/50 text-brand-500 rounded-3xl mx-auto flex items-center justify-center text-3xl mb-4 shadow-inner">
+                <i class="fa-solid fa-clipboard-check"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">لا توجد بنود مطابقة حالياً!</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto mb-5">أضف مهمتك أو التزامك الجديد لتبدأ بتنظيم أعمالك، أو قم بتغيير معايير البحث والفلترة أعلاه.</p>
+            <button onclick="openTaskModal()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs inline-flex items-center gap-2 shadow-md transition">
+                <i class="fa-solid fa-plus"></i> أضف أول بند الآن
+            </button>
+        </div>
+
+    </main>
+
+    <!-- شفرة الجافاسكربت البرمجية المدمجة -->
+    <script>
+        /**
+         * قائمة التصنيفات المعرفة مسبقاً
+         * مضاف إليها تصنيف "التزامات وأشخاص"
+         */
+        const CATEGORIES = {
+            people: { id: 'people', label: 'التزامات وأشخاص', icon: 'fa-users', color: 'purple', bg: 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900' },
+            work: { id: 'work', label: 'عمل ومشاريع', icon: 'fa-briefcase', color: 'blue', bg: 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900' },
+            personal: { id: 'personal', label: 'شخصي وعائلة', icon: 'fa-user', color: 'pink', bg: 'bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 border-pink-200 dark:border-pink-900' },
+            shopping: { id: 'shopping', label: 'مشتريات واحتياجات', icon: 'fa-basket-shopping', color: 'emerald', bg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900' },
+            learning: { id: 'learning', label: 'تطوير ودراسة', icon: 'fa-graduation-cap', color: 'indigo', bg: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900' },
+            ideas: { id: 'ideas', label: 'أفكار وإلهام', icon: 'fa-lightbulb', color: 'amber', bg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900' },
+            home: { id: 'home', label: 'صيانة ومنزل', icon: 'fa-house-chimney', color: 'rose', bg: 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900' }
+        };
+
+        const PRIORITIES = {
+            high: { label: 'قصوى', color: 'rose', borderClass: 'border-r-4 border-r-rose-500', badgeClass: 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400' },
+            medium: { label: 'متوسطة', color: 'amber', borderClass: 'border-r-4 border-r-amber-500', badgeClass: 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400' },
+            low: { label: 'عادية', color: 'emerald', borderClass: 'border-r-4 border-r-emerald-500', badgeClass: 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400' }
+        };
+
+        // مفتاح التخزين في الذاكرة المحلية
+        const STORAGE_KEY = 'monjez_tasks_data_v2';
+        const THEME_KEY = 'monjez_theme_mode';
+
+        // بيانات تجريبية افتراضية تتضمن أمثلة حقيقية لالتزامات الناس كما طلب المستخدم
+        const INITIAL_TASKS = [
+            {
+                id: 't_init_1',
+                title: 'جمعية بوسي',
+                person: 'بوسي',
+                personStatus: 'دفعت القسط الأول',
+                notes: 'متابعة أقساط الجمعية الشهرية بانتظام حتى انتهاء موعد القبض.',
+                priority: 'high',
+                category: 'people',
+                pinned: true,
+                completed: false,
+                subtasks: [
+                    { id: 'st_p1', text: 'القسط الأول (تم الدفع)', completed: true },
+                    { id: 'st_p2', text: 'القسط الثاني', completed: false },
+                    { id: 'st_p3', text: 'القسط الثالث', completed: false },
+                    { id: 'st_p4', text: 'القسط الرابع', completed: false }
+                ]
+            },
+            {
+                id: 't_init_2',
+                title: 'كفيلة عزيزة',
+                person: 'كفيلة عزيزة',
+                personStatus: 'دافع لغاية نهاية السنة',
+                notes: 'الالتزام مسدد بالكامل حتى نهاية السنة الحالية، وتجهيز الدفعة القادمة مع بداية العام الجديد.',
+                priority: 'medium',
+                category: 'people',
+                pinned: true,
+                completed: false,
+                subtasks: [
+                    { id: 'st_k1', text: 'مراجعة الموقف المالي وحساب السداد السنوي', completed: true },
+                    { id: 'st_k2', text: 'تجديد التواصل والاتفاق للعام القادم', completed: false }
+                ]
+            },
+            {
+                id: 't_init_3',
+                title: 'تجهيز خطة العمل السنوية وتحديد الأهداف',
+                person: '',
+                personStatus: '',
+                notes: 'مراجعة المخرجات الرئيسية واحتياجات الفريق وإعداد نموذج للمتابعة المستمرة.',
+                priority: 'high',
+                category: 'work',
+                pinned: false,
+                completed: false,
+                subtasks: [
+                    { id: 'st_1', text: 'حصر الموارد والأدوات المطلوبة', completed: true },
+                    { id: 'st_2', text: 'صياغة بنود ومؤشرات قياس الأداء', completed: false }
+                ]
+            },
+            {
+                id: 't_init_4',
+                title: 'شراء المستلزمات المكتبية والكتب التقنية',
+                person: '',
+                personStatus: '',
+                notes: 'دفاتر تنظيم المهام، أقلام تلوين، كتاب بنية الأنظمة البرمجية.',
+                priority: 'medium',
+                category: 'shopping',
+                pinned: false,
+                completed: true,
+                subtasks: []
+            }
+        ];
+
+        // الحالة العامة للتطبيق
+        let tasks = [];
+        let currentStatusFilter = 'all';
+        let modalSubtasksTemp = [];
+
+        // التهيئة عند تشغيل الصفحة
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            populateCategorySelects();
+            loadTasks();
+            updatePeopleDatalistAndFilter();
+            renderTasks();
+        });
+
+        /* ================== إدارة المظهر (Dark / Light) ================== */
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcon(false);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+            showToast(isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري', 'fa-moon');
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (isDark) {
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-moon text-slate-600';
+            }
+        }
+
+        /* ================== تعبئة قوائم التصنيفات ================== */
+        function populateCategorySelects() {
+            const formSelect = document.getElementById('taskCategorySelect');
+            const filterSelect = document.getElementById('categoryFilter');
+
+            formSelect.innerHTML = '';
+            filterSelect.innerHTML = '<option value="all">كل التصنيفات</option>';
+
+            Object.values(CATEGORIES).forEach(cat => {
+                const opt1 = document.createElement('option');
+                opt1.value = cat.id;
+                opt1.textContent = cat.label;
+                formSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = cat.id;
+                opt2.textContent = cat.label;
+                filterSelect.appendChild(opt2);
+            });
+        }
+
+        /* ================== حفظ وتحميل المهام ================== */
+        function loadTasks() {
+            try {
+                // محاولة القراءة من الإصدار v2 أو الترقية التلقائية من v1
+                let stored = localStorage.getItem(STORAGE_KEY);
+                if (!stored) {
+                    const oldStored = localStorage.getItem('monjez_tasks_data_v1');
+                    if (oldStored) {
+                        const parsedOld = JSON.parse(oldStored);
+                        if (Array.isArray(parsedOld) && parsedOld.length > 0) {
+                            tasks = parsedOld.map(t => ({
+                                ...t,
+                                person: t.person || '',
+                                personStatus: t.personStatus || ''
+                            }));
+                            // دمج أمثلة الناس التوضيحية إن لم تكن موجودة
+                            tasks.unshift(INITIAL_TASKS[0], INITIAL_TASKS[1]);
+                            saveTasks();
+                            return;
+                        }
+                    }
+                }
+
+                if (stored) {
+                    tasks = JSON.parse(stored);
+                } else {
+                    tasks = [...INITIAL_TASKS];
+                    saveTasks();
+                }
+            } catch (e) {
+                console.error("فشل قراءة المهام من التخزين", e);
+                tasks = [...INITIAL_TASKS];
+            }
+        }
+
+        function saveTasks() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                updateStats();
+                updatePeopleDatalistAndFilter();
+            } catch (e) {
+                console.error("فشل حفظ المهام", e);
+                showToast("تعذر حفظ البيانات في الذاكرة المحلية", "fa-circle-xmark");
+            }
+        }
+
+        /* ================== تحديث قائمة الأشخاص للفلترة والإكمال التلقائي ================== */
+        function getUniquePeople() {
+            const peopleSet = new Set();
+            tasks.forEach(t => {
+                if (t.person && t.person.trim()) {
+                    peopleSet.add(t.person.trim());
+                }
+            });
+            return Array.from(peopleSet);
+        }
+
+        function updatePeopleDatalistAndFilter() {
+            const people = getUniquePeople();
+
+            // 1. تحديث قائمة Datalist في النموذج
+            const datalist = document.getElementById('existingPeopleList');
+            if (datalist) {
+                datalist.innerHTML = '';
+                people.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    datalist.appendChild(opt);
+                });
+            }
+
+            // 2. تحديث قائمة الفلترة بالأشخاص
+            const personFilter = document.getElementById('personFilter');
+            if (personFilter) {
+                const currentVal = personFilter.value;
+                personFilter.innerHTML = `
+                    <option value="all">كل الأشخاص</option>
+                    <option value="__only_people__">فقط التزامات الناس (${tasks.filter(t => t.person && t.person.trim()).length})</option>
+                `;
+
+                people.forEach(p => {
+                    const count = tasks.filter(t => t.person && t.person.trim() === p).length;
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = `${p} (${count})`;
+                    personFilter.appendChild(opt);
+                });
+
+                if (people.includes(currentVal) || currentVal === '__only_people__') {
+                    personFilter.value = currentVal;
+                } else {
+                    personFilter.value = 'all';
+                }
+            }
+
+            // 3. تحديث شارة عدد الأشخاص في النافبار
+            const badge = document.getElementById('peopleCountBadge');
+            if (badge) {
+                badge.textContent = people.length;
+            }
+        }
+
+        /* ================== تحديث الإحصائيات وشريط التقدم ================== */
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const pending = total - completed;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            // عدد التزامات الأشخاص غير المكتملة
+            const peoplePending = tasks.filter(t => !t.completed && (t.person && t.person.trim() || t.category === 'people')).length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statPeoplePending').textContent = peoplePending;
+            document.getElementById('statPercent').textContent = percentage + '%';
+            document.getElementById('statProgressBar').style.width = percentage + '%';
+        }
+
+        /* ================== فلترة وترتيب وعرض المهام ================== */
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.status-pill').forEach(btn => {
+                if (btn.getAttribute('data-status') === status) {
+                    btn.className = 'status-pill px-3 py-1.5 rounded-lg transition bg-white dark:bg-slate-800 text-brand-600 shadow-sm';
+                } else {
+                    btn.className = 'status-pill px-3 py-1.5 rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800';
+                }
+            });
+            renderTasks();
+        }
+
+        function filterByPerson(personName) {
+            const personFilter = document.getElementById('personFilter');
+            if (personFilter) {
+                personFilter.value = personName;
+                renderTasks();
+                showToast(`تمت تصفية البنود الخاصة بـ: ${personName}`, 'fa-filter');
+            }
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            const emptyState = document.getElementById('emptyState');
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim().toLowerCase();
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const personFilter = document.getElementById('personFilter').value;
+            const sortBy = document.getElementById('sortSelect').value;
+
+            // إظهار أو إخفاء زر مسح البحث
+            if (query.length > 0) {
+                clearSearchBtn.classList.remove('hidden');
+            } else {
+                clearSearchBtn.classList.add('hidden');
+            }
+
+            // تطبيق الفلاتر
+            let filtered = tasks.filter(task => {
+                // فلتر الحالة
+                if (currentStatusFilter === 'pending' && task.completed) return false;
+                if (currentStatusFilter === 'completed' && !task.completed) return false;
+
+                // فلتر الأولوية
+                if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
+
+                // فلتر التصنيف
+                if (categoryFilter !== 'all' && task.category !== categoryFilter) return false;
+
+                // فلتر الأشخاص
+                if (personFilter === '__only_people__') {
+                    if (!task.person || !task.person.trim()) return false;
+                } else if (personFilter !== 'all') {
+                    if (!task.person || task.person.trim() !== personFilter) return false;
+                }
+
+                // البحث بالنص في العنوان أو الملاحظات أو اسم الشخص أو الموقف الحالي
+                if (query) {
+                    const titleMatch = (task.title || '').toLowerCase().includes(query);
+                    const notesMatch = (task.notes || '').toLowerCase().includes(query);
+                    const personMatch = (task.person || '').toLowerCase().includes(query);
+                    const statusMatch = (task.personStatus || '').toLowerCase().includes(query);
+                    const subtaskMatch = (task.subtasks || []).some(st => st.text.toLowerCase().includes(query));
+                    if (!titleMatch && !notesMatch && !personMatch && !statusMatch && !subtaskMatch) return false;
+                }
+
+                return true;
+            });
+
+            // تطبيق الترتيب
+            filtered.sort((a, b) => {
+                if (sortBy === 'pinned') {
+                    if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+                    return 0;
+                }
+                if (sortBy === 'priority_desc') {
+                    const priorityWeight = { high: 3, medium: 2, low: 1 };
+                    const diff = priorityWeight[b.priority] - priorityWeight[a.priority];
+                    if (diff !== 0) return diff;
+                    return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+                }
+                if (sortBy === 'people_first') {
+                    const aHasPerson = !!(a.person && a.person.trim());
+                    const bHasPerson = !!(b.person && b.person.trim());
+                    if (aHasPerson !== bHasPerson) return bHasPerson ? 1 : -1;
+                    return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+                }
+                if (sortBy === 'alphabetical') {
+                    return a.title.localeCompare(b.title, 'ar');
+                }
+                return 0;
+            });
+
+            container.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(task => {
+                    const card = createTaskCardElement(task);
+                    container.appendChild(card);
+                });
+            }
+
+            updateStats();
+        }
+
+        /* ================== إنشاء عنصر بطاقة المهمة ================== */
+        function createTaskCardElement(task) {
+            const card = document.createElement('div');
+            const priorityInfo = PRIORITIES[task.priority] || PRIORITIES.medium;
+            const categoryInfo = CATEGORIES[task.category] || CATEGORIES.work;
+
+            // حساب خطوات الإنجاز الفرعية
+            const subtasks = task.subtasks || [];
+            const completedSubCount = subtasks.filter(s => s.completed).length;
+            const totalSubCount = subtasks.length;
+            const subPercentage = totalSubCount > 0 ? Math.round((completedSubCount / totalSubCount) * 100) : 0;
+
+            const hasPerson = !!(task.person && task.person.trim());
+            const hasStatus = !!(task.personStatus && task.personStatus.trim());
+
+            card.className = `card-enter bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-slate-700/80 shadow-sm transition-all duration-200 hover:shadow-md ${priorityInfo.borderClass} ${task.completed ? 'opacity-85' : ''}`;
+            card.id = `task-card-${task.id}`;
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <!-- الجانب الأيمن: زر الإكمال + العنوان والتفاصيل -->
+                    <div class="flex items-start gap-3 flex-1">
+                        <!-- زر تبديل حالة المهمة -->
+                        <button onclick="toggleTaskComplete('${task.id}')" title="${task.completed ? 'تحديد كغير مكتملة' : 'إكمال المهمة'}" 
+                                class="mt-0.5 flex-shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${task.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600 hover:border-emerald-500 text-transparent'}">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
+
+                        <div class="space-y-2 flex-1">
+                            <!-- الشارات والعلامات -->
+                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                <!-- شارة التثبيت -->
+                                ${task.pinned ? `
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                                        <i class="fa-solid fa-thumbtack text-[9px]"></i> مثبتة
+                                    </span>
+                                ` : ''}
+
+                                <!-- شارة الشخص المعني (قابلة للنقر للفلترة السريعة) -->
+                                ${hasPerson ? `
+                                    <button onclick="filterByPerson('${escapeHtml(task.person)}')" title="تصفية البنود المرتبطة بهذا الشخص"
+                                            class="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-200 dark:hover:bg-purple-900 transition">
+                                        <i class="fa-solid fa-user-tag text-[9px] text-purple-600"></i>
+                                        <span>${escapeHtml(task.person)}</span>
+                                    </button>
+                                ` : ''}
+
+                                <!-- شارة الأولوية -->
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${priorityInfo.badgeClass}">
+                                    أولوية ${priorityInfo.label}
+                                </span>
+
+                                <!-- شارة التصنيف -->
+                                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${categoryInfo.bg}">
+                                    <i class="fa-solid ${categoryInfo.icon} text-[9px]"></i>
+                                    ${categoryInfo.label}
+                                </span>
+                            </div>
+
+                            <!-- عنوان المهمة / الالتزام -->
+                            <h4 class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 leading-snug transition-all ${task.completed ? 'completed-strike' : ''}">
+                                ${escapeHtml(task.title)}
+                            </h4>
+
+                            <!-- شريط الموقف الحالي وحالة السداد إن وجد -->
+                            ${hasStatus ? `
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 text-xs font-semibold">
+                                    <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
+                                    <span>الموقف الحالي: <strong class="font-bold underline decoration-amber-400">${escapeHtml(task.personStatus)}</strong></span>
+                                    <button onclick="openQuickStatusModal('${task.id}')" title="تحديث الموقف الحالي سريعاً" class="mr-1 text-amber-600 dark:text-amber-400 hover:text-amber-800 text-[11px] p-0.5">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                </div>
+                            ` : (hasPerson ? `
+                                <div class="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-brand-600 cursor-pointer" onclick="openQuickStatusModal('${task.id}')">
+                                    <i class="fa-solid fa-plus-circle"></i>
+                                    <span>أضف الموقف الحالي (مثال: دفعت القسط، دافع لنهاية السنة...)</span>
+                                </div>
+                            ` : '')}
+
+                            <!-- الملاحظات إن وجدت -->
+                            ${task.notes ? `
+                                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-normal ${task.completed ? 'completed-strike' : ''}">
+                                    ${escapeHtml(task.notes)}
+                                </p>
+                            ` : ''}
+
+                            <!-- ملخص المهام والأقساط الفرعية إن وجدت -->
+                            ${totalSubCount > 0 ? `
+                                <div class="pt-2">
+                                    <button onclick="toggleSubtasksView('${task.id}')" class="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400 transition">
+                                        <i class="fa-solid fa-list-check text-[11px]"></i>
+                                        <span>الأقساط / الخطوات (${completedSubCount}/${totalSubCount})</span>
+                                        <span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-700 font-bold">${subPercentage}%</span>
+                                        <i id="subChevron-${task.id}" class="fa-solid fa-chevron-down text-[10px] mr-1 transform transition-transform"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- أزرار الإجراءات السريعة (تثبيت، تعديل، حذف) -->
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleTaskPin('${task.id}')" title="${task.pinned ? 'إلغاء التثبيت' : 'تثبيت في الأعلى'}" 
+                                class="w-8 h-8 rounded-xl flex items-center justify-center transition text-xs ${task.pinned ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-600'}">
+                            <i class="fa-solid fa-thumbtack ${task.pinned ? '' : 'rotate-45'}"></i>
+                        </button>
+
+                        <button onclick="openEditTaskModal('${task.id}')" title="تعديل المهمة أو الالتزام" 
+                                class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/40 transition text-xs">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+
+                        <button onclick="confirmDeleteTask('${task.id}')" title="حذف" 
+                                class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition text-xs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- مساحة الأقساط والخطوات الفرعية القابلة للطي -->
+                <div id="subtasksContainer-${task.id}" class="${totalSubCount > 0 ? 'hidden' : 'hidden'} mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/70">
+                    <div class="space-y-2 mb-3">
+                        ${subtasks.map((sub, sIdx) => `
+                            <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800">
+                                <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                    <input type="checkbox" onchange="toggleSubtaskStatus('${task.id}', '${sub.id}')" ${sub.completed ? 'checked' : ''} 
+                                           class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 focus:ring-offset-0 border-slate-300 dark:border-slate-600 cursor-pointer">
+                                    <span class="text-xs text-slate-700 dark:text-slate-300 font-medium ${sub.completed ? 'completed-strike' : ''}">
+                                        ${escapeHtml(sub.text)}
+                                    </span>
+                                </label>
+                                <button onclick="deleteInlineSubtask('${task.id}', '${sub.id}')" title="حذف الخطوة" class="text-slate-300 hover:text-rose-500 transition text-xs p-1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- إضافة خطوة / قسط جديد مباشرة من البطاقة -->
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="inlineSubInput-${task.id}" placeholder="إضافة قسط أو خطوة سريعة (مثلاً: قسط شهر 3)..." 
+                               onkeydown="if(event.key === 'Enter'){ addInlineSubtask('${task.id}'); }"
+                               class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                        <button onclick="addInlineSubtask('${task.id}')" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-sm transition">
+                            <i class="fa-solid fa-plus text-[10px] ml-1"></i> أضف
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        /* ================== طي وتوسيع المهام الفرعية ================== */
+        function toggleSubtasksView(taskId) {
+            const container = document.getElementById(`subtasksContainer-${taskId}`);
+            const chevron = document.getElementById(`subChevron-${taskId}`);
+            if (!container) return;
+
+            const isHidden = container.classList.contains('hidden');
+            if (isHidden) {
+                container.classList.remove('hidden');
+                if (chevron) chevron.classList.add('rotate-180');
+            } else {
+                container.classList.add('hidden');
+                if (chevron) chevron.classList.remove('rotate-180');
+            }
+        }
+
+        /* ================== عمليات المهام الفرعية المباشرة ================== */
+        function toggleSubtaskStatus(taskId, subId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task || !task.subtasks) return;
+
+            const sub = task.subtasks.find(s => s.id === subId);
+            if (sub) {
+                sub.completed = !sub.completed;
+                const allDone = task.subtasks.every(s => s.completed);
+                if (allDone && !task.completed) {
+                    task.completed = true;
+                    launchConfetti();
+                    showToast('رائع! اكتملت جميع بنود وأقساط الالتزام!', 'fa-trophy');
+                }
+                saveTasks();
+                renderTasks();
+                setTimeout(() => {
+                    const cont = document.getElementById(`subtasksContainer-${taskId}`);
+                    if (cont) cont.classList.remove('hidden');
+                }, 10);
+            }
+        }
+
+        function addInlineSubtask(taskId) {
+            const input = document.getElementById(`inlineSubInput-${taskId}`);
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            if (!task.subtasks) task.subtasks = [];
+            task.subtasks.push({
+                id: 'st_' + generateUniqueId(),
+                text: text,
+                completed: false
+            });
+
+            input.value = '';
+            saveTasks();
+            renderTasks();
+
+            setTimeout(() => {
+                const cont = document.getElementById(`subtasksContainer-${taskId}`);
+                if (cont) cont.classList.remove('hidden');
+            }, 10);
+            showToast('تمت إضافة الخطوة بنجاح', 'fa-check');
+        }
+
+        function deleteInlineSubtask(taskId, subId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task || !task.subtasks) return;
+
+            task.subtasks = task.subtasks.filter(s => s.id !== subId);
+            saveTasks();
+            renderTasks();
+
+            setTimeout(() => {
+                const cont = document.getElementById(`subtasksContainer-${taskId}`);
+                if (cont) cont.classList.remove('hidden');
+            }, 10);
+        }
+
+        /* ================== إجراءات المهمة (CRUD) ================== */
+        function toggleTaskComplete(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.completed = !task.completed;
+
+            if (task.completed) {
+                launchConfetti();
+                showToast('رائع! تم إكمال الالتزام بنجاح', 'fa-circle-check');
+            } else {
+                showToast('تمت إعادة الالتزام لقيد التنفيذ والمتابعة', 'fa-rotate-left');
+            }
+
+            saveTasks();
+            renderTasks();
+        }
+
+        function toggleTaskPin(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.pinned = !task.pinned;
+            saveTasks();
+            renderTasks();
+            showToast(task.pinned ? 'تم تثبيت البند في المقدمة' : 'تم إلغاء التثبيت', 'fa-thumbtack');
+        }
+
+        /* نافذة إضافة / تعديل المهمة */
+        function openTaskModal(prefilledPerson = '') {
+            document.getElementById('taskForm').reset();
+            document.getElementById('editTaskId').value = '';
+            document.getElementById('modalTitle').textContent = 'إضافة مهمة أو التزام جديد';
+            document.getElementById('modalActionIcon').innerHTML = '<i class="fa-solid fa-plus"></i>';
+            modalSubtasksTemp = [];
+            renderModalSubtasks();
+
+            if (prefilledPerson) {
+                document.getElementById('taskPersonInput').value = prefilledPerson;
+                document.getElementById('taskCategorySelect').value = 'people';
+            }
+
+            const modal = document.getElementById('taskModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+            document.getElementById('taskTitleInput').focus();
+        }
+
+        function openEditTaskModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('modalTitle').textContent = 'تعديل تفاصيل المهمة والالتزام';
+            document.getElementById('modalActionIcon').innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+
+            document.getElementById('taskTitleInput').value = task.title || '';
+            document.getElementById('taskPersonInput').value = task.person || '';
+            document.getElementById('taskPersonStatusInput').value = task.personStatus || '';
+            document.getElementById('taskNotesInput').value = task.notes || '';
+            document.getElementById('taskCategorySelect').value = task.category || 'people';
+            document.getElementById('taskPinnedInput').checked = !!task.pinned;
+
+            // تحديد الأولوية
+            const radios = document.getElementsByName('taskPriority');
+            radios.forEach(r => {
+                r.checked = (r.value === task.priority);
+            });
+
+            // نسخ الخطوات الفرعية مؤقتاً
+            modalSubtasksTemp = (task.subtasks || []).map(s => ({ ...s }));
+            renderModalSubtasks();
+
+            const modal = document.getElementById('taskModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+            document.getElementById('taskTitleInput').focus();
+        }
+
+        function closeTaskModal() {
+            const modal = document.getElementById('taskModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function addModalSubtask() {
+            const input = document.getElementById('newSubtaskInput');
+            const val = input.value.trim();
+            if (!val) return;
+
+            modalSubtasksTemp.push({
+                id: 'st_' + generateUniqueId(),
+                text: val,
+                completed: false
+            });
+            input.value = '';
+            renderModalSubtasks();
+        }
+
+        function removeModalSubtask(index) {
+            modalSubtasksTemp.splice(index, 1);
+            renderModalSubtasks();
+        }
+
+        function renderModalSubtasks() {
+            const list = document.getElementById('modalSubtasksList');
+            list.innerHTML = '';
+
+            modalSubtasksTemp.forEach((st, idx) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/60 text-xs';
+                item.innerHTML = `
+                    <span class="truncate text-slate-700 dark:text-slate-300">${escapeHtml(st.text)}</span>
+                    <button type="button" onclick="removeModalSubtask(${idx})" class="text-rose-500 hover:text-rose-700 p-1">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function handleTaskSubmit(event) {
+            event.preventDefault();
+            const editId = document.getElementById('editTaskId').value;
+            const title = document.getElementById('taskTitleInput').value.trim();
+            const person = document.getElementById('taskPersonInput').value.trim();
+            const personStatus = document.getElementById('taskPersonStatusInput').value.trim();
+            const notes = document.getElementById('taskNotesInput').value.trim();
+            const category = document.getElementById('taskCategorySelect').value;
+            const pinned = document.getElementById('taskPinnedInput').checked;
+
+            let priority = 'medium';
+            const radios = document.getElementsByName('taskPriority');
+            radios.forEach(r => {
+                if (r.checked) priority = r.value;
+            });
+
+            if (!title) return;
+
+            if (editId) {
+                // تعديل بند موجود
+                const task = tasks.find(t => t.id === editId);
+                if (task) {
+                    task.title = title;
+                    task.person = person;
+                    task.personStatus = personStatus;
+                    task.notes = notes;
+                    task.category = category;
+                    task.priority = priority;
+                    task.pinned = pinned;
+                    task.subtasks = [...modalSubtasksTemp];
+                    showToast('تم تحديث البيانات بنجاح', 'fa-check');
+                }
+            } else {
+                // إضافة بند جديد
+                const newTask = {
+                    id: 'task_' + generateUniqueId(),
+                    title: title,
+                    person: person,
+                    personStatus: personStatus,
+                    notes: notes,
+                    category: category,
+                    priority: priority,
+                    pinned: pinned,
+                    completed: false,
+                    subtasks: [...modalSubtasksTemp]
+                };
+                tasks.unshift(newTask);
+                showToast('تمت إضافة الالتزام بنجاح', 'fa-plus');
+            }
+
+            saveTasks();
+            renderTasks();
+            closeTaskModal();
+        }
+
+        /* نافذة تعديل الموقف الحالي السريعة */
+        function openQuickStatusModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('quickStatusTaskId').value = task.id;
+            document.getElementById('quickStatusTaskTitle').textContent = `${task.person ? task.person + ' - ' : ''}${task.title}`;
+            document.getElementById('quickStatusInput').value = task.personStatus || '';
+
+            const modal = document.getElementById('quickStatusModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('quickStatusInput').focus();
+            }, 10);
+        }
+
+        function closeQuickStatusModal() {
+            const modal = document.getElementById('quickStatusModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function saveQuickStatus() {
+            const taskId = document.getElementById('quickStatusTaskId').value;
+            const newStatus = document.getElementById('quickStatusInput').value.trim();
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.personStatus = newStatus;
+                saveTasks();
+                renderTasks();
+                showToast('تم تحديث الموقف الحالي بنجاح', 'fa-check');
+            }
+            closeQuickStatusModal();
+        }
+
+        /* ================== نافذة سجل التزامات الناس (People Hub) ================== */
+        function openPeopleHubModal() {
+            const people = getUniquePeople();
+            const container = document.getElementById('peopleHubContent');
+            const summary = document.getElementById('peopleHubSummary');
+
+            container.innerHTML = '';
+
+            if (people.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 px-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                        <i class="fa-solid fa-users text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                        <p class="text-xs font-bold text-slate-500">لم تقم بتسجيل أي شخص بعد في خانة (الشخص المعني).</p>
+                        <p class="text-[11px] text-slate-400 mt-1">عند إضافة أي مهمة، اكتب اسم الشخص (مثال: بوسي، كفيلة عزيزة) وسيظهر سجله هنا تلقائياً.</p>
+                    </div>
+                `;
+                summary.textContent = 'إجمالي الأشخاص: 0';
+            } else {
+                summary.textContent = `إجمالي الأشخاص: ${people.length}`;
+
+                people.forEach(personName => {
+                    const personTasks = tasks.filter(t => t.person && t.person.trim() === personName);
+                    const pendingCount = personTasks.filter(t => !t.completed).length;
+                    const completedCount = personTasks.filter(t => t.completed).length;
+
+                    const personCard = document.createElement('div');
+                    personCard.className = 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/70 space-y-3';
+                    
+                    personCard.innerHTML = `
+                        <div class="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/70 text-purple-600 dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">${escapeHtml(personName)}</h4>
+                                    <span class="text-[10px] text-slate-400">${pendingCount} قيد المتابعة · ${completedCount} مكتمل</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="closePeopleHubModal(); filterByPerson('${escapeHtml(personName)}');" class="px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-semibold transition">
+                                    عرض البنود
+                                </button>
+                                <button onclick="closePeopleHubModal(); openTaskModal('${escapeHtml(personName)}');" class="px-2 py-1 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-[11px] font-semibold transition" title="إضافة التزام جديد لهذا الشخص">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- تفاصيل التزامات هذا الشخص -->
+                        <div class="space-y-2">
+                            ${personTasks.map(t => `
+                                <div class="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-xs">
+                                    <div class="space-y-1 flex-1">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full ${t.completed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                                            <span class="font-bold text-slate-700 dark:text-slate-200 ${t.completed ? 'line-through opacity-70' : ''}">${escapeHtml(t.title)}</span>
+                                        </div>
+                                        ${t.personStatus ? `
+                                            <div class="text-[11px] font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1 pr-3.5">
+                                                <i class="fa-solid fa-arrow-turn-down text-[9px] rotate-90"></i>
+                                                <span>الموقف: ${escapeHtml(t.personStatus)}</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${t.completed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'}">
+                                        ${t.completed ? 'مكتمل' : 'نشط'}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    container.appendChild(personCard);
+                });
+            }
+
+            const modal = document.getElementById('peopleHubModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        function closePeopleHubModal() {
+            const modal = document.getElementById('peopleHubModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        /* حذف مهمة مع تأكيد مخصص */
+        function confirmDeleteTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            openConfirmModal({
+                title: 'حذف البند؟',
+                desc: `هل تريد بالتأكيد حذف "${task.title}"؟`,
+                onConfirm: () => {
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    saveTasks();
+                    renderTasks();
+                    showToast('تم الحذف بنجاح', 'fa-trash-can');
+                }
+            });
+        }
+
+        /* تفريغ المهام المكتملة */
+        function confirmClearCompleted() {
+            const completedCount = tasks.filter(t => t.completed).length;
+            if (completedCount === 0) {
+                showToast('لا توجد بنود مكتملة لتنظيفها', 'fa-info');
+                return;
+            }
+
+            openConfirmModal({
+                title: 'مسح البنود المكتملة؟',
+                desc: `سيتم حذف (${completedCount}) بنود مكتملة نهائياً من قائمتك.`,
+                onConfirm: () => {
+                    tasks = tasks.filter(t => !t.completed);
+                    saveTasks();
+                    renderTasks();
+                    showToast('تم تنظيف البنود المكتملة', 'fa-broom');
+                }
+            });
+        }
+
+        /* ================== نافذة التأكيد المخصصة ================== */
+        let confirmCallback = null;
+
+        function openConfirmModal({ title, desc, onConfirm }) {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmDesc').textContent = desc;
+            confirmCallback = onConfirm;
+
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+            confirmCallback = null;
+        }
+
+        document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
+        document.getElementById('confirmOkBtn').onclick = () => {
+            if (typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            closeConfirmModal();
+        };
+
+        /* ================== النسخ الاحتياطي والاستيراد (Export/Import) ================== */
+        function openBackupModal() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        function closeBackupModal() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function exportData() {
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", "monjez_backup_tasks_people.json");
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                showToast('تم تصدير البيانات بنجاح', 'fa-file-arrow-down');
+            } catch (err) {
+                showToast('حدث خطأ أثناء تصدير البيانات', 'fa-triangle-exclamation');
+            }
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        tasks = imported.map(t => ({
+                            ...t,
+                            person: t.person || '',
+                            personStatus: t.personStatus || ''
+                        }));
+                        saveTasks();
+                        renderTasks();
+                        closeBackupModal();
+                        showToast('تم استيراد البيانات بنجاح', 'fa-circle-check');
+                    } else {
+                        showToast('تنسيق الملف غير صالح', 'fa-circle-xmark');
+                    }
+                } catch (err) {
+                    showToast('فشل في قراءة ملف JSON', 'fa-circle-xmark');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        /* ================== إشعار Toast ================== */
+        let toastTimeout = null;
+        function showToast(message, iconClass = 'fa-check') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMsg');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+            iconEl.className = `fa-solid ${iconClass} text-emerald-400 dark:text-emerald-500`;
+
+            toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        /* ================== احتفال بصري خفيف (Confetti) ================== */
+        function launchConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#a855f7']
+                });
+            }
+        }
+
+        /* ================== دوال مساعدة عامة ================== */
+        function generateUniqueId() {
+            return Math.random().toString(36).substring(2, 9) + '_' + Math.random().toString(36).substring(2, 6);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
