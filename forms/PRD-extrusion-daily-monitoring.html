@@ -50,8 +50,8 @@
         print-color-adjust: exact !important;
       }
 
-      /* Hide interactive toolbars and toasts */
-      .no-print, button, .action-bar, #toast {
+      /* Hide interactive toolbars, modals, and toasts */
+      .no-print, button, .action-bar, #toast, #catalogModal {
         display: none !important;
       }
 
@@ -96,7 +96,7 @@
         height: 18px !important;
       }
 
-      /* Clean inputs for print */
+      /* Clean inputs and selects for print - seamless borderless text */
       input, textarea, select {
         border: none !important;
         background: transparent !important;
@@ -109,6 +109,13 @@
         color: #000 !important;
         width: 100% !important;
         text-align: inherit !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+      }
+
+      select::-ms-expand {
+        display: none !important;
       }
 
       .sign-box {
@@ -167,12 +174,17 @@
       </div>
     </div>
 
-    <!-- Smart Hourly Rate Stepper & Controls -->
+    <!-- Smart Hourly Rate Stepper, Catalog Trigger & Controls -->
     <div class="flex items-center gap-2 flex-wrap">
+      <!-- Catalog Manager Trigger Button -->
+      <button type="button" onclick="openCatalogModal()" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1.5 rounded-lg shadow-2xs transition" title="Open Catalog Manager">
+        <span>⚙️ جدول الأصناف والماكينات (Catalog Manager)</span>
+      </button>
+
       <div class="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-0.5">
         <span class="text-[11px] font-bold text-slate-600 px-2">Hourly Target (Pcs/Hr):</span>
         <button type="button" onclick="stepHourlyRate(-1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Decrease rate">-</button>
-        <input type="number" id="toolbarRateInput" value="47" min="1" max="5000" class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums" oninput="syncHourlyRate(this.value)">
+        <input type="number" id="toolbarRateInput" value="47" min="1" max="5000" class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums" oninput="syncHourlyRate(this.value)" title="Toolbar Target Rate">
         <button type="button" onclick="stepHourlyRate(1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Increase rate">+</button>
       </div>
 
@@ -258,59 +270,74 @@
         </div>
       </div>
 
-      <!-- 2. PRODUCTION PARAMETERS BAR (TOP METADATA INPUTS) -->
+      <!-- 2. PRODUCTION PARAMETERS BAR (TOP METADATA INPUTS & TWO-TIER LOOKUP) -->
       <div class="border border-slate-900 bg-slate-50/80 mb-1.5 p-1 text-[8px]">
         <div class="grid grid-cols-12 gap-1.5 items-center">
           
-          <!-- Product Specification -->
-          <div class="col-span-4 border-r border-slate-300 pr-1.5">
-            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [2] Product Specification:
+          <!-- [1] Item Code Selection (Step 1) -->
+          <div class="col-span-2 border-r border-slate-300 pr-1.5">
+            <label for="itemCodeSelect" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [1] Item Code:
             </label>
-            <input type="text" id="productSpec" value="[307] - uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate" title="Product Specification">
+            <select id="itemCodeSelect" onchange="handleItemCodeChange()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none cursor-pointer" title="Select Item Code">
+              <!-- Dynamically populated from catalog -->
+            </select>
           </div>
 
-          <!-- Line No -->
+          <!-- [2] Product Name & Specification -->
+          <div class="col-span-3 border-r border-slate-300 pr-1.5">
+            <label for="prodSpec" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [2] Product Spec:
+            </label>
+            <input type="text" id="prodSpec" value="uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate" title="Product Specification">
+            <input type="hidden" id="productSpec" value="uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452">
+          </div>
+
+          <!-- [3] Machine Line Selection (Step 2) -->
           <div class="col-span-2 border-r border-slate-300 pr-1.5">
-            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+            <label for="lineSelect" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [3] Line No:
             </label>
-            <input type="text" id="lineNo" value="L-01 - KTS 350 TDH" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
+            <select id="lineSelect" onchange="handleLineChange()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none cursor-pointer" title="Select Machine Line">
+              <!-- Dynamically populated from catalog -->
+            </select>
+            <input type="hidden" id="lineNo" value="L-01 - KTS 350 TDH">
           </div>
 
-          <!-- Standard Speed -->
+          <!-- [4] Standard Speed -->
+          <div class="col-span-1 border-r border-slate-300 pr-1.5">
+            <label for="stdSpeed" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [4] Speed:
+            </label>
+            <input type="text" id="stdSpeed" value="4 M/Min" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate">
+          </div>
+
+          <!-- [5] Nominal Capacity -->
+          <div class="col-span-1 border-r border-slate-300 pr-1.5">
+            <label for="nomCapacity" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [5] Cap:
+            </label>
+            <input type="text" id="nomCapacity" value="300 Kg/h" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate">
+          </div>
+
+          <!-- [6] Pipe Length & Nominal Weight -->
           <div class="col-span-2 border-r border-slate-300 pr-1.5">
-            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [4] Std Speed:
+            <label for="prodLengthWeight" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
+              [6] Length &amp; Nom Wt:
             </label>
-            <input type="text" id="stdSpeed" value="4 M/Min" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
+            <input type="text" id="prodLengthWeight" value="6M - 6.00 Kg/Pc" oninput="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate" title="Pipe Length & Nominal Weight">
+            <input type="hidden" id="nomWeight" value="6.00">
+            <input type="hidden" id="nominalWeight" value="6.00">
           </div>
 
-          <!-- Nominal Capacity -->
-          <div class="col-span-1 border-r border-slate-300 pr-1.5">
-            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [5] Capacity:
-            </label>
-            <input type="text" id="nomCapacity" value="300 Kg/h" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none truncate">
-          </div>
-
-          <!-- Nominal Weight -->
-          <div class="col-span-1 border-r border-slate-300 pr-1.5">
-            <label class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [6] Nom Wt:
-            </label>
-            <input type="text" id="nomWeight" value="6.00" oninput="recalcShiftSummaries()" class="w-full font-bold text-[8.5px] text-slate-950 bg-transparent outline-none tabular-nums" title="Nominal Weight in Kg/Pc">
-          </div>
-
-          <!-- Hourly Target Baseline (Pcs/Hr) -->
-          <div class="col-span-2 bg-amber-100/70 border border-amber-300 rounded-xs px-1 py-0.5 flex flex-col justify-center">
+          <!-- [7] Hourly Target Baseline (Pcs/Hr) -->
+          <div class="col-span-1 bg-amber-100/70 border border-amber-300 rounded-xs px-1 py-0.5 flex flex-col justify-center">
             <div class="flex items-center justify-between">
-              <label class="text-[7px] font-black text-amber-900 uppercase">
-                [7] Hourly Rate:
+              <label for="hourlyTargetMeta" class="text-[7px] font-black text-amber-900 uppercase">
+                [7] Rate:
               </label>
-              <span class="text-[7px] text-amber-800 font-bold">Pcs/Hr</span>
             </div>
-            <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center">
+            <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center" title="Hourly Target in Pcs/Hr">
           </div>
 
         </div>
@@ -716,6 +743,65 @@
   </main>
 
   <!-- ==============================================================================
+       CATALOG MANAGER MODAL (STRICTLY NON-PRINT)
+       ============================================================================== -->
+  <div id="catalogModal" class="no-print fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-base">⚙️</span>
+          <div>
+            <h3 class="text-sm font-black tracking-wide uppercase">جدول الأصناف والماكينات (Catalog Manager)</h3>
+            <p class="text-[11px] text-slate-300">إدارة ربط كود الصنف بخط الإنتاج ومعدل الإنتاج القياسي بالساعة (Pcs/Hr)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCatalogModal()" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">&times;</button>
+      </div>
+
+      <!-- Modal Body: Editable Table -->
+      <div class="p-4 overflow-y-auto max-h-[60vh]">
+        <table class="w-full border-collapse text-xs" id="catalogTable">
+          <thead>
+            <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 text-left">
+              <th class="p-2 border border-slate-200 w-24">كود الصنف<br><span class="font-normal text-[10px] text-slate-500">(Item Code)</span></th>
+              <th class="p-2 border border-slate-200">اسم الصنف والمواصفة<br><span class="font-normal text-[10px] text-slate-500">(Item Name / Spec)</span></th>
+              <th class="p-2 border border-slate-200 w-36">الطول والوزن<br><span class="font-normal text-[10px] text-slate-500">(Length &amp; Nominal Wt)</span></th>
+              <th class="p-2 border border-slate-200 w-44">الماكينة / الخط<br><span class="font-normal text-[10px] text-slate-500">(Machine Line)</span></th>
+              <th class="p-2 border border-slate-200 w-28 text-center">معدل الساعة<br><span class="font-normal text-[10px] text-slate-500">(Rate Pcs/Hr)</span></th>
+              <th class="p-2 border border-slate-200 w-16 text-center">إجراء<br><span class="font-normal text-[10px] text-slate-500">(Action)</span></th>
+            </tr>
+          </thead>
+          <tbody id="catalogTbody">
+            <!-- Dynamic rows injected by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onclick="resetCatalogToDefault()" class="px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition">
+          استعادة الافتراضي
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="addCatalogRow()" class="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition">
+            + إضافة صنف / خط جديد
+          </button>
+          <button type="button" onclick="closeCatalogModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-lg transition">
+            إلغاء
+          </button>
+          <button type="button" onclick="saveCatalogFromModal()" class="px-4 py-1.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
+            حفظ التغييرات
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==============================================================================
        NOTIFICATION TOAST (NON-PRINT)
        ============================================================================== -->
   <div id="toast" class="no-print fixed bottom-4 right-4 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none z-50 flex items-center gap-2">
@@ -728,6 +814,39 @@
        ============================================================================== -->
   <script>
     const STORAGE_KEY = 'AL_MANAR_EXTRUSION_DAILY_MONITORING_DATA';
+    const CATALOG_STORAGE_KEY = 'almanar_extrusion_catalog_v2';
+
+    // Default Seed Catalog as per factory specification
+    const DEFAULT_CATALOG = [
+      {
+        itemCode: "307",
+        itemName: "uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 6.00 Kg/Pc",
+        machineLine: "L-01 - KTS 350 TDH",
+        hourlyRate: 47
+      },
+      {
+        itemCode: "307",
+        itemName: "uPVC PIPE 75MM 2.2MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 6.00 Kg/Pc",
+        machineLine: "L-02 - KTS 350 TDH",
+        hourlyRate: 38
+      },
+      {
+        itemCode: "308",
+        itemName: "uPVC PIPE 110MM 3.2MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 9.80 Kg/Pc",
+        machineLine: "L-01 - KTS 350 TDH",
+        hourlyRate: 32
+      },
+      {
+        itemCode: "309",
+        itemName: "uPVC PIPE 160MM 4.0MM GRAY PN-6 EN 1452",
+        lengthWeight: "6M - 18.50 Kg/Pc",
+        machineLine: "L-02 - KTS 350 TDH",
+        hourlyRate: 19
+      }
+    ];
 
     // Format numbers with thousands commas
     function formatNumber(num) {
@@ -739,6 +858,7 @@
     function showToast(msg) {
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toastMsg');
+      if (!toast || !toastMsg) return;
       toastMsg.innerText = msg;
       toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
       toast.classList.add('translate-y-0', 'opacity-100');
@@ -746,6 +866,15 @@
         toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
         toast.classList.remove('translate-y-0', 'opacity-100');
       }, 2500);
+    }
+
+    // Extract numeric weight from string e.g. "6M - 6.00 Kg/Pc" -> 6.00
+    function extractNominalWeight(str) {
+      if (!str) return 6.0;
+      const match = String(str).match(/(\d+(\.\d+)?)\s*(kg|kilo)/i);
+      if (match) return parseFloat(match[1]);
+      const num = parseFloat(String(str).replace(/[^0-9.]/g, ''));
+      return isNaN(num) || num <= 0 ? 6.0 : num;
     }
 
     // Step hourly rate via stepper buttons
@@ -862,8 +991,320 @@
       saveToStorage();
     }
 
-    // Populate realistic sample data
+    // ==============================================================================
+    // CATALOG & TWO-TIER LOOKUP ENGINE
+    // ==============================================================================
+
+    // Retrieve catalog from localStorage or seed with defaults
+    function getCatalog() {
+      try {
+        const raw = localStorage.getItem(CATALOG_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.error('Error loading catalog:', e);
+      }
+      localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(DEFAULT_CATALOG));
+      return JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+    }
+
+    // Save catalog array to localStorage
+    function saveCatalog(catalog) {
+      try {
+        localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalog));
+      } catch (e) {
+        console.error('Error saving catalog:', e);
+      }
+    }
+
+    // Populate Item Code and Machine Line dropdowns
+    function populateDropdowns(preserveItemCode, preserveLine) {
+      const catalog = getCatalog();
+      const itemSelect = document.getElementById('itemCodeSelect');
+      const lineSelect = document.getElementById('lineSelect');
+      if (!itemSelect || !lineSelect) return;
+
+      const uniqueCodes = [...new Set(catalog.map(e => String(e.itemCode).trim()).filter(Boolean))];
+      const uniqueLines = [...new Set(catalog.map(e => String(e.machineLine).trim()).filter(Boolean))];
+
+      const currentItem = preserveItemCode || itemSelect.value || uniqueCodes[0] || '307';
+      const currentLine = preserveLine || lineSelect.value || uniqueLines[0] || 'L-01 - KTS 350 TDH';
+
+      // Rebuild Item Code options
+      itemSelect.innerHTML = '';
+      uniqueCodes.forEach(code => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = code;
+        if (code === currentItem) opt.selected = true;
+        itemSelect.appendChild(opt);
+      });
+
+      // Rebuild Machine Line options
+      lineSelect.innerHTML = '';
+      uniqueLines.forEach(line => {
+        const opt = document.createElement('option');
+        opt.value = line;
+        opt.textContent = line;
+        if (line === currentLine) opt.selected = true;
+        lineSelect.appendChild(opt);
+      });
+    }
+
+    // Step 1: Item Code Selection changed
+    function handleItemCodeChange() {
+      const catalog = getCatalog();
+      const itemCodeEl = document.getElementById('itemCodeSelect');
+      const lineSelectEl = document.getElementById('lineSelect');
+      if (!itemCodeEl || !lineSelectEl) return;
+
+      const itemCode = itemCodeEl.value.trim();
+      const currentLine = lineSelectEl.value.trim();
+
+      // Find matching entries for the selected Item Code
+      const matches = catalog.filter(e => String(e.itemCode).trim() === itemCode);
+      if (matches.length > 0) {
+        const primary = matches[0];
+
+        // 1. Fill Product Name & Specification (#prodSpec / #productSpec alias)
+        const prodSpec = document.getElementById('prodSpec');
+        if (prodSpec) prodSpec.value = primary.itemName;
+        const prodSpecAlias = document.getElementById('productSpec');
+        if (prodSpecAlias) prodSpecAlias.value = primary.itemName;
+
+        // 2. Fill Pipe Length & Nominal Weight (#prodLengthWeight / #nominalWeight / #nomWeight)
+        const prodLenWt = document.getElementById('prodLengthWeight');
+        if (prodLenWt) prodLenWt.value = primary.lengthWeight;
+
+        const numWeight = extractNominalWeight(primary.lengthWeight);
+        const nomWt = document.getElementById('nomWeight');
+        if (nomWt) nomWt.value = numWeight.toFixed(2);
+        const nomWtAlias = document.getElementById('nominalWeight');
+        if (nomWtAlias) nomWtAlias.value = numWeight.toFixed(2);
+
+        // 3. Step 2 check: Look up combination (Item Code + Selected Line)
+        const exactMatch = catalog.find(e => 
+          String(e.itemCode).trim() === itemCode && String(e.machineLine).trim() === currentLine
+        );
+
+        if (exactMatch) {
+          syncHourlyRate(exactMatch.hourlyRate);
+          showToast(`Target Rate: ${exactMatch.hourlyRate} Pcs/Hr (${itemCode} on ${currentLine})`);
+        } else {
+          // If no specific combination exists, allow manual hourly rate entry without breaking stepper
+          showToast(`Item ${itemCode} selected. Custom or manual rate allowed.`);
+        }
+
+        recalcShiftSummaries();
+        saveToStorage();
+      }
+    }
+
+    // Step 2: Machine Line Selection changed
+    function handleLineChange() {
+      const catalog = getCatalog();
+      const itemCodeEl = document.getElementById('itemCodeSelect');
+      const lineSelectEl = document.getElementById('lineSelect');
+      if (!itemCodeEl || !lineSelectEl) return;
+
+      const itemCode = itemCodeEl.value.trim();
+      const line = lineSelectEl.value.trim();
+
+      // Mirror lineNo alias
+      const lineNoAlias = document.getElementById('lineNo');
+      if (lineNoAlias) lineNoAlias.value = line;
+
+      // Look up combination (Item Code + Selected Line) in catalog
+      const exactMatch = catalog.find(e => 
+        String(e.itemCode).trim() === itemCode && String(e.machineLine).trim() === line
+      );
+
+      if (exactMatch) {
+        syncHourlyRate(exactMatch.hourlyRate);
+        showToast(`Target Rate: ${exactMatch.hourlyRate} Pcs/Hr (${itemCode} on ${line})`);
+      } else {
+        // If no specific combination exists, allow manual hourly rate entry without breaking stepper
+        showToast(`No preset rate for ${itemCode} on ${line}. Manual rate allowed.`);
+      }
+
+      saveToStorage();
+    }
+
+    // Manual edit on Length & Nominal Weight field
+    function handleLengthWeightInput(val) {
+      const numWeight = extractNominalWeight(val);
+      const nomWt = document.getElementById('nomWeight');
+      if (nomWt) nomWt.value = numWeight.toFixed(2);
+      const nomWtAlias = document.getElementById('nominalWeight');
+      if (nomWtAlias) nomWtAlias.value = numWeight.toFixed(2);
+      recalcShiftSummaries();
+      saveToStorage();
+    }
+
+    // ==============================================================================
+    // CATALOG MANAGER MODAL ENGINE (NON-PRINT)
+    // ==============================================================================
+
+    function openCatalogModal() {
+      renderCatalogTable();
+      const modal = document.getElementById('catalogModal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeCatalogModal() {
+      const modal = document.getElementById('catalogModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function renderCatalogTable() {
+      const catalog = getCatalog();
+      const tbody = document.getElementById('catalogTbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      catalog.forEach((entry, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-slate-200 hover:bg-slate-50 transition';
+        tr.innerHTML = `
+          <td class="p-1.5 border border-slate-200">
+            <input type="text" class="catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemCode)}">
+          </td>
+          <td class="p-1.5 border border-slate-200">
+            <input type="text" class="catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemName)}">
+          </td>
+          <td class="p-1.5 border border-slate-200">
+            <input type="text" class="catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.lengthWeight)}">
+          </td>
+          <td class="p-1.5 border border-slate-200">
+            <input type="text" class="catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.machineLine)}">
+          </td>
+          <td class="p-1.5 border border-slate-200 text-center">
+            <input type="number" min="1" max="5000" class="catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.hourlyRate}">
+          </td>
+          <td class="p-1.5 border border-slate-200 text-center">
+            <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
+              حذف
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addCatalogRow() {
+      const tbody = document.getElementById('catalogTbody');
+      if (!tbody) return;
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-slate-200 bg-amber-50/40 hover:bg-slate-50 transition';
+      tr.innerHTML = `
+        <td class="p-1.5 border border-slate-200">
+          <input type="text" class="catalog-code w-full px-2 py-1 text-xs font-bold text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="310">
+        </td>
+        <td class="p-1.5 border border-slate-200">
+          <input type="text" class="catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="uPVC PIPE ...">
+        </td>
+        <td class="p-1.5 border border-slate-200">
+          <input type="text" class="catalog-len-wt w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="6M - 12.00 Kg/Pc">
+        </td>
+        <td class="p-1.5 border border-slate-200">
+          <input type="text" class="catalog-line w-full px-2 py-1 text-xs font-semibold text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="L-01 - KTS 350 TDH">
+        </td>
+        <td class="p-1.5 border border-slate-200 text-center">
+          <input type="number" min="1" max="5000" class="catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" placeholder="40" value="40">
+        </td>
+        <td class="p-1.5 border border-slate-200 text-center">
+          <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
+            حذف
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelector('.catalog-code').focus();
+    }
+
+    function deleteCatalogRow(btn) {
+      const tr = btn.closest('tr');
+      if (tr) tr.remove();
+    }
+
+    function saveCatalogFromModal() {
+      const tbody = document.getElementById('catalogTbody');
+      if (!tbody) return;
+      const rows = tbody.querySelectorAll('tr');
+      const newCatalog = [];
+
+      rows.forEach(tr => {
+        const codeInput = tr.querySelector('.catalog-code');
+        const nameInput = tr.querySelector('.catalog-name');
+        const lenWtInput = tr.querySelector('.catalog-len-wt');
+        const lineInput = tr.querySelector('.catalog-line');
+        const rateInput = tr.querySelector('.catalog-rate');
+
+        const code = codeInput ? codeInput.value.trim() : '';
+        const name = nameInput ? nameInput.value.trim() : '';
+        const lenWt = lenWtInput ? lenWtInput.value.trim() : '';
+        const line = lineInput ? lineInput.value.trim() : '';
+        const rate = rateInput ? parseInt(rateInput.value) || 0 : 0;
+
+        if (code && line && rate > 0) {
+          newCatalog.push({
+            itemCode: code,
+            itemName: name || code,
+            lengthWeight: lenWt || '',
+            machineLine: line,
+            hourlyRate: rate
+          });
+        }
+      });
+
+      if (newCatalog.length === 0) {
+        alert('Please enter at least one valid catalog entry with Item Code, Line, and Hourly Rate.');
+        return;
+      }
+
+      saveCatalog(newCatalog);
+
+      // Refresh dropdowns and re-trigger two-tier lookup
+      const currentItem = document.getElementById('itemCodeSelect').value;
+      const currentLine = document.getElementById('lineSelect').value;
+      populateDropdowns(currentItem, currentLine);
+      handleItemCodeChange();
+
+      closeCatalogModal();
+      showToast('Catalog updated successfully!');
+    }
+
+    function resetCatalogToDefault() {
+      if (!confirm('Are you sure you want to restore the default seed catalog? Any custom entries will be reset.')) return;
+      saveCatalog(DEFAULT_CATALOG);
+      renderCatalogTable();
+      populateDropdowns('307', 'L-01 - KTS 350 TDH');
+      handleItemCodeChange();
+      showToast('Default catalog restored!');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ==============================================================================
+    // SAMPLE DATA & RESET FUNCTIONS
+    // ==============================================================================
+
     function populateSampleData() {
+      document.getElementById('itemCodeSelect').value = '307';
+      document.getElementById('lineSelect').value = 'L-01 - KTS 350 TDH';
+      handleItemCodeChange();
+
       const sampleGoods = [
         47, 46, 47, 45, 46, 40, 47, 47, 46, 47, 45, 46, // Day: 549 pcs
         47, 47, 46, 47, 44, 46, 47, 47, 45, 47, 46, 47  // Night: 556 pcs
@@ -903,7 +1344,6 @@
       showToast('Sample operational data populated successfully!');
     }
 
-    // Reset Form
     function resetForm() {
       if (!confirm('Are you sure you want to clear all entered production values?')) return;
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
@@ -922,6 +1362,11 @@
       document.getElementById('nightSignature').value = '';
 
       localStorage.removeItem(STORAGE_KEY);
+
+      // Re-trigger two-tier lookup for default
+      populateDropdowns('307', 'L-01 - KTS 350 TDH');
+      handleItemCodeChange();
+
       recalcShiftSummaries();
       showToast('Form has been cleared.');
     }
@@ -929,14 +1374,22 @@
     // Local Storage persistence
     function saveToStorage() {
       try {
+        const itemSelect = document.getElementById('itemCodeSelect');
+        const lineSelect = document.getElementById('lineSelect');
+        const prodSpec = document.getElementById('prodSpec');
+        const prodLenWt = document.getElementById('prodLengthWeight');
+        const nomWt = document.getElementById('nomWeight');
+
         const data = {
           date: document.getElementById('reportDate').value,
           rate: document.getElementById('toolbarRateInput').value,
-          spec: document.getElementById('productSpec').value,
-          line: document.getElementById('lineNo').value,
+          itemCode: itemSelect ? itemSelect.value : '',
+          spec: prodSpec ? prodSpec.value : '',
+          line: lineSelect ? lineSelect.value : '',
+          lengthWeight: prodLenWt ? prodLenWt.value : '',
           speed: document.getElementById('stdSpeed').value,
           capacity: document.getElementById('nomCapacity').value,
-          weight: document.getElementById('nomWeight').value,
+          weight: nomWt ? nomWt.value : '',
           s1_remarks: document.getElementById('s1_remarks').value,
           s2_remarks: document.getElementById('s2_remarks').value,
           dayLead: document.getElementById('dayLeadName').value,
@@ -965,23 +1418,55 @@
     // Restore from LocalStorage
     function restoreFromStorage() {
       try {
+        // First populate dropdowns
+        populateDropdowns();
+
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (!saved) return;
+        if (!saved) {
+          // If no saved data, run initial two-tier lookup
+          handleItemCodeChange();
+          return;
+        }
+
         const data = JSON.parse(saved);
 
-        if (data.rate) syncHourlyRate(data.rate);
+        if (data.itemCode && data.line) {
+          populateDropdowns(data.itemCode, data.line);
+        } else if (data.itemCode) {
+          populateDropdowns(data.itemCode);
+        }
+
         if (data.date) document.getElementById('reportDate').value = data.date;
-        if (data.spec) document.getElementById('productSpec').value = data.spec;
-        if (data.line) document.getElementById('lineNo').value = data.line;
+        if (data.spec) {
+          const prodSpec = document.getElementById('prodSpec');
+          if (prodSpec) prodSpec.value = data.spec;
+          const prodSpecAlias = document.getElementById('productSpec');
+          if (prodSpecAlias) prodSpecAlias.value = data.spec;
+        }
+        if (data.lengthWeight) {
+          const prodLenWt = document.getElementById('prodLengthWeight');
+          if (prodLenWt) prodLenWt.value = data.lengthWeight;
+        }
+        if (data.weight) {
+          const nomWt = document.getElementById('nomWeight');
+          if (nomWt) nomWt.value = data.weight;
+          const nomWtAlias = document.getElementById('nominalWeight');
+          if (nomWtAlias) nomWtAlias.value = data.weight;
+        }
         if (data.speed) document.getElementById('stdSpeed').value = data.speed;
         if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
-        if (data.weight) document.getElementById('nomWeight').value = data.weight;
         if (data.s1_remarks) document.getElementById('s1_remarks').value = data.s1_remarks;
         if (data.s2_remarks) document.getElementById('s2_remarks').value = data.s2_remarks;
         if (data.dayLead) document.getElementById('dayLeadName').value = data.dayLead;
         if (data.daySign) document.getElementById('daySignature').value = data.daySign;
         if (data.nightLead) document.getElementById('nightLeadName').value = data.nightLead;
         if (data.nightSign) document.getElementById('nightSignature').value = data.nightSign;
+
+        if (data.rate) {
+          syncHourlyRate(data.rate);
+        } else {
+          handleItemCodeChange();
+        }
 
         if (Array.isArray(data.rows)) {
           const rows = document.querySelectorAll('#tableBody tr.hourly-row');
@@ -995,7 +1480,8 @@
           });
         }
       } catch (e) {
-        // Ignore restore exceptions
+        // Fallback to default
+        handleItemCodeChange();
       }
     }
 
@@ -1007,11 +1493,28 @@
         dateInput.value = new Date().toISOString().split('T')[0];
       }
 
-      // Check stored data
+      // Check stored data and restore
       restoreFromStorage();
 
       // Recalculate baseline and totals
       syncHourlyRate(document.getElementById('toolbarRateInput').value || 47);
+
+      // Close modal on ESC key
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeCatalogModal();
+        }
+      });
+
+      // Close modal when clicking on dark backdrop
+      const modal = document.getElementById('catalogModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeCatalogModal();
+          }
+        });
+      }
     });
   </script>
 </body>
