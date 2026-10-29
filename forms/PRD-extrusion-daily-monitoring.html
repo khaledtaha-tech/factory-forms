@@ -58,14 +58,14 @@
         display: none !important;
       }
 
-      /* Double outer border container - Strictly fill A4 vertical height */
-      .sheet-container {
+      /* Double outer border container - Strictly fill A4 vertical height (282mm) */
+      .sheet-container, .print-page {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        min-height: 285mm !important;
-        height: 285mm !important;
-        max-height: 287mm !important;
+        min-height: 280mm !important;
+        height: 282mm !important;
+        max-height: 284mm !important;
         margin: 0 auto !important;
         padding: 1.5mm !important;
         border: 2.5px double #000 !important;
@@ -102,7 +102,7 @@
         font-weight: 800 !important;
       }
 
-      .hourly-row, .hourly-row td {
+      #productionTable tbody tr, #monitoringTable tbody tr, .hourly-row, .hourly-row td {
         height: 25px !important;
         padding: 1px 2px !important;
       }
@@ -130,7 +130,7 @@
       }
 
       textarea#s1_remarks, textarea#s2_remarks, .shift-remarks-textarea {
-        height: calc(100% - 18px) !important;
+        height: 100% !important;
         min-height: 95px !important;
       }
 
@@ -138,6 +138,20 @@
         min-height: 16mm !important;
         height: 16mm !important;
         padding: 1.5mm !important;
+      }
+
+      /* Hide speed field in print and expand product spec */
+      .print-hide-speed {
+        display: none !important;
+      }
+      .param-col-spec {
+        grid-column: span 4 / span 4 !important;
+      }
+      #prodLengthWeight {
+        overflow: visible !important;
+        text-overflow: clip !important;
+        white-space: nowrap !important;
+        font-weight: 700 !important;
       }
 
       /* Batch printing styles */
@@ -150,14 +164,18 @@
       body.batch-mode #batchPrintContainer {
         display: block !important;
       }
+      body.batch-mode .print-page,
       body.batch-mode .batch-sheet {
         page-break-after: always !important;
         break-after: page !important;
         margin-bottom: 0 !important;
       }
+      body.batch-mode .print-page.last-print-page,
+      body.batch-mode .print-page:last-child,
+      body.batch-mode .batch-sheet.last-print-page,
       body.batch-mode .batch-sheet:last-child {
-        page-break-after: avoid !important;
-        break-after: avoid !important;
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
     }
 
@@ -165,7 +183,7 @@
     .sheet-container {
       width: 100%;
       max-width: 210mm;
-      min-height: 285mm;
+      min-height: 282mm;
       margin: 0 auto;
       padding: 3mm;
       background: #ffffff;
@@ -260,15 +278,20 @@
   </header>
 
   <!-- ==============================================================================
-       MULTI-MACHINE DAILY TABS (NON-PRINT)
+       MULTI-MACHINE DAILY TABS & COMMIT CONTROLS (NON-PRINT)
        ============================================================================== -->
   <div id="machineTabsContainer" class="no-print max-w-[210mm] mx-auto mb-2.5 bg-white border border-slate-300 rounded-xl p-2.5 shadow-xs">
-    <div class="flex items-center justify-between mb-2 px-1">
+    <div class="flex items-center justify-between mb-2 px-1 flex-wrap gap-2">
       <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
         <span>\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c (Machine Lines):</span>
       </span>
-      <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="lockAndCommitActiveMachine()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition cursor-pointer" title="Lock & Add this machine to batch print queue">
+          <span>\ud83d\udd12 \u0627\u0639\u062a\u0645\u0627\u062f \u0648\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629 (Lock &amp; Add)</span>
+        </button>
+        <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
+      </div>
     </div>
     <div id="machineTabsBar" class="flex flex-wrap gap-1.5">
       <!-- Tabs populated dynamically via renderMachineTabs() -->
@@ -355,7 +378,7 @@
           </div>
 
           <!-- [2] Product Name & Specification -->
-          <div class="col-span-3 border-r border-slate-300 pr-1.5">
+          <div class="col-span-3 border-r border-slate-300 pr-1.5 param-col-spec">
             <label for="prodSpec" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [2] Product Spec:
             </label>
@@ -374,8 +397,8 @@
             <input type="hidden" id="lineNo" value="L-01 - KTS 350 TDH">
           </div>
 
-          <!-- [4] Standard Speed -->
-          <div class="col-span-1 border-r border-slate-300 pr-1.5">
+          <!-- [4] Standard Speed (Hidden in Print) -->
+          <div class="col-span-1 border-r border-slate-300 pr-1.5 print-hide-speed">
             <label for="stdSpeed" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [4] Speed:
             </label>
@@ -391,11 +414,11 @@
           </div>
 
           <!-- [6] Pipe Length & Nominal Weight -->
-          <div class="col-span-2 border-r border-slate-300 pr-1.5">
+          <div class="col-span-2 border-r border-slate-300 pr-1.5 param-col-lenwt">
             <label for="prodLengthWeight" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [6] Length &amp; Nom Wt:
             </label>
-            <input type="text" id="prodLengthWeight" value="6M - 6.00 Kg/Pc" oninput="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate" title="Pipe Length & Nominal Weight">
+            <input type="text" id="prodLengthWeight" value="6M - 6.00 Kg/Pc" oninput="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none" title="Pipe Length & Nominal Weight">
             <input type="hidden" id="nomWeight" value="6.00">
             <input type="hidden" id="nominalWeight" value="6.00">
           </div>
@@ -1186,13 +1209,41 @@
       });
     }
 
-    // Render Top Machine Tabs Bar (#machineTabsBar)
+    function getBatchData(date) {
+      const d = date || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : new Date().toISOString().split('T')[0]);
+      try {
+        const raw = localStorage.getItem('almanar_batch_' + d);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {
+        console.error('Error reading batch data:', e);
+      }
+      return {};
+    }
+
+    function saveBatchData(date, batchObj) {
+      const d = date || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : new Date().toISOString().split('T')[0]);
+      try {
+        localStorage.setItem('almanar_batch_' + d, JSON.stringify(batchObj));
+      } catch (e) {
+        console.error('Error saving batch data:', e);
+      }
+    }
+
+    function isMachineCommitted(date, line) {
+      const batch = getBatchData(date);
+      return Boolean(batch && batch[line]);
+    }
+
+    // Render Top Machine Tabs Bar (#machineTabsBar) with Commit Status Badges
     function renderMachineTabs() {
       const container = document.getElementById('machineTabsBar') || document.getElementById('machineTabsList');
       if (!container) return;
       const lines = getActiveMachineLines();
       const lineSelect = document.getElementById('lineSelect');
       const currentLine = (lineSelect && lineSelect.value) ? lineSelect.value : lines[0];
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const batch = getBatchData(currentDate);
 
       container.innerHTML = '';
       lines.forEach(line => {
@@ -1200,36 +1251,35 @@
         btn.type = 'button';
         btn.dataset.line = line;
         btn.onclick = () => switchMachineLine(line);
-        const isActive = line === currentLine;
-        btn.className = isActive
-          ? 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1 cursor-pointer'
-          : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1 cursor-pointer';
 
-        btn.innerHTML = `<span>${line}</span>`;
+        const isActive = (line === currentLine);
+        const isLocked = Boolean(batch && batch[line]);
+
+        if (isActive) {
+          btn.className = isLocked
+            ? 'px-3 py-1.5 bg-indigo-700 text-white font-extrabold rounded-lg text-xs shadow-xs border border-indigo-700 transition flex items-center gap-1.5 cursor-pointer ring-2 ring-indigo-300'
+            : 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1.5 cursor-pointer';
+        } else {
+          btn.className = isLocked
+            ? 'px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg text-xs border border-emerald-300 transition flex items-center gap-1.5 cursor-pointer'
+            : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1.5 cursor-pointer';
+        }
+
+        const badgeHtml = isLocked ? '<span class="text-xs" title="Locked & Ready for Print">\u2705</span>' : '';
+        btn.innerHTML = `<span>${line}</span>${badgeHtml}`;
         container.appendChild(btn);
       });
 
       const badge = document.getElementById('activeMachineBadge');
       if (badge) {
-        badge.textContent = currentLine;
+        const isLocked = Boolean(batch && batch[currentLine]);
+        badge.innerHTML = isLocked ? `<span>${currentLine}</span> <span class="text-xs">\ud83d\udd12</span>` : `<span>${currentLine}</span>`;
       }
     }
 
     // Update active tab styling
     function updateActiveTabUI(activeLine) {
-      const container = document.getElementById('machineTabsBar') || document.getElementById('machineTabsList');
-      if (!container) return;
-      const buttons = container.querySelectorAll('button');
-      buttons.forEach(btn => {
-        const isMatch = btn.dataset.line === activeLine;
-        btn.className = isMatch
-          ? 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1 cursor-pointer'
-          : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1 cursor-pointer';
-      });
-      const badge = document.getElementById('activeMachineBadge');
-      if (badge) {
-        badge.textContent = activeLine;
-      }
+      renderMachineTabs();
     }
 
     // Populate Item Code and Machine Line dropdowns
@@ -2033,9 +2083,69 @@
       saveToStorage();
     }
 
+    // Explicit Machine Commit / Locking Engine
+    function lockAndCommitActiveMachine() {
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const lineSelect = document.getElementById('lineSelect');
+      const activeLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
+
+      const itemSelect = document.getElementById('itemCodeSelect');
+      const prodSpec = document.getElementById('prodSpec');
+      const prodLenWt = document.getElementById('prodLengthWeight');
+      const nomWt = document.getElementById('nomWeight');
+
+      const hourlyData = [];
+      const rows = document.querySelectorAll('#tableBody tr.hourly-row');
+      rows.forEach(row => {
+        hourlyData.push({
+          good: row.querySelector('.good-input') ? row.querySelector('.good-input').value : '',
+          cause: row.querySelector('.cause-input') ? row.querySelector('.cause-input').value : '',
+          downtime: row.querySelector('.downtime-input') ? row.querySelector('.downtime-input').value : '',
+          reject: row.querySelector('.reject-input') ? row.querySelector('.reject-input').value : ''
+        });
+      });
+
+      const nomWeightVal = nomWt ? nomWt.value : extractNominalWeight(prodLenWt ? prodLenWt.value : '').toFixed(2);
+      const lengthWeightVal = prodLenWt ? prodLenWt.value : `6M - ${nomWeightVal} Kg/Pc`;
+
+      const machinePayload = {
+        itemCode: itemSelect ? itemSelect.value : '',
+        prodSpec: prodSpec ? prodSpec.value : '',
+        nominalWeight: nomWeightVal,
+        lengthWeight: lengthWeightVal,
+        hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
+        hourlyData: hourlyData,
+        supervisorRemarks1: document.getElementById('s1_remarks') ? document.getElementById('s1_remarks').value : '',
+        supervisorRemarks2: document.getElementById('s2_remarks') ? document.getElementById('s2_remarks').value : '',
+        dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
+        daySign: document.getElementById('daySignature') ? document.getElementById('daySignature').value : '',
+        nightLead: document.getElementById('nightLeadName') ? document.getElementById('nightLeadName').value : '',
+        nightSign: document.getElementById('nightSignature') ? document.getElementById('nightSignature').value : '',
+        speed: document.getElementById('stdSpeed') ? document.getElementById('stdSpeed').value : '4 M/Min',
+        capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '300 Kg/h',
+        timestamp: Date.now()
+      };
+
+      // 1. Save into almanar_batch_${currentDate}[activeLine]
+      const batch = getBatchData(currentDate);
+      batch[activeLine] = machinePayload;
+      saveBatchData(currentDate, batch);
+
+      // 2. Also save to daily key for state continuity
+      saveToStorage();
+
+      // 3. Mark line tab as committed (\u2705)
+      renderMachineTabs();
+
+      // 4. Toast notification
+      showToast('\ud83d\udd12 \u062a\u0645 \u062a\u062b\u0628\u064a\u062a \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 \u0648\u0625\u0636\u0627\u0641\u062a\u0647\u0627 \u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0637\u0628\u0627\u0639\u0629');
+    }
+
+    // Switch active machine with complete data isolation
     function switchMachineLine(targetLine) {
       const lineSelect = document.getElementById('lineSelect');
-      const currentLine = lineSelect ? lineSelect.value : '';
+      const currentLine = lineSelect ? lineSelect.value.trim() : '';
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
 
@@ -2043,59 +2153,112 @@
         saveToStorage();
       }
 
+      // Check committed batch data first, then saved draft
+      const batch = getBatchData(currentDate);
+      const targetCommitted = batch ? batch[targetLine] : null;
       const targetKey = getDailyStorageKey(currentDate, targetLine);
-      const saved = localStorage.getItem(targetKey);
+      const savedDraftRaw = localStorage.getItem(targetKey);
+      let targetDraft = null;
+      if (savedDraftRaw) {
+        try { targetDraft = JSON.parse(savedDraftRaw); } catch (e) {}
+      }
 
-      if (saved) {
-        try {
-          const data = JSON.parse(saved);
-          applyFormData(data, targetLine);
-          showToast(`Switched to ${targetLine}`);
-        } catch (e) {
-          initializeCleanMachine(targetLine, currentDate);
-          showToast(`Switched to ${targetLine}`);
-        }
+      const targetData = targetCommitted || targetDraft;
+
+      if (targetData) {
+        const normalized = {
+          date: currentDate,
+          line: targetLine,
+          itemCode: targetData.itemCode || '307',
+          spec: targetData.prodSpec || targetData.spec || '',
+          lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
+          weight: targetData.nominalWeight || targetData.weight || '',
+          rate: targetData.hourlyRate || targetData.rate || 47,
+          speed: targetData.speed || '4 M/Min',
+          capacity: targetData.capacity || '300 Kg/h',
+          s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
+          s2_remarks: targetData.supervisorRemarks2 || targetData.s2_remarks || '',
+          dayLead: targetData.dayLead || '',
+          daySign: targetData.daySign || '',
+          nightLead: targetData.nightLead || '',
+          nightSign: targetData.nightSign || '',
+          rows: targetData.hourlyData || targetData.rows || []
+        };
+        applyFormData(normalized, targetLine);
+        showToast(`Switched to ${targetLine}`);
       } else {
         initializeCleanMachine(targetLine, currentDate);
-        showToast(`Switched to ${targetLine}`);
+        showToast(`Switched to ${targetLine} (New sheet)`);
       }
+
+      renderMachineTabs();
     }
 
     function handleDateChange() {
       const dateInput = document.getElementById('reportDate');
       const newDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
       const lineSelect = document.getElementById('lineSelect');
-      const currentLine = lineSelect ? lineSelect.value : 'L-01 - KTS 350 TDH';
+      const currentLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
 
+      const batch = getBatchData(newDate);
+      const targetCommitted = batch ? batch[currentLine] : null;
       const targetKey = getDailyStorageKey(newDate, currentLine);
-      const saved = localStorage.getItem(targetKey);
+      const savedDraftRaw = localStorage.getItem(targetKey);
+      let targetDraft = null;
+      if (savedDraftRaw) {
+        try { targetDraft = JSON.parse(savedDraftRaw); } catch (e) {}
+      }
 
-      if (saved) {
-        try {
-          const data = JSON.parse(saved);
-          applyFormData(data, currentLine);
-          showToast(`Date: ${newDate} (Restored)`);
-        } catch (e) {
-          initializeCleanMachine(currentLine, newDate);
-          showToast(`Date: ${newDate} (New sheet)`);
-        }
+      const targetData = targetCommitted || targetDraft;
+
+      if (targetData) {
+        const normalized = {
+          date: newDate,
+          line: currentLine,
+          itemCode: targetData.itemCode || '307',
+          spec: targetData.prodSpec || targetData.spec || '',
+          lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
+          weight: targetData.nominalWeight || targetData.weight || '',
+          rate: targetData.hourlyRate || targetData.rate || 47,
+          speed: targetData.speed || '4 M/Min',
+          capacity: targetData.capacity || '300 Kg/h',
+          s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
+          s2_remarks: targetData.supervisorRemarks2 || targetData.s2_remarks || '',
+          dayLead: targetData.dayLead || '',
+          daySign: targetData.daySign || '',
+          nightLead: targetData.nightLead || '',
+          nightSign: targetData.nightSign || '',
+          rows: targetData.hourlyData || targetData.rows || []
+        };
+        applyFormData(normalized, currentLine);
+        showToast(`Date: ${newDate} (Restored)`);
       } else {
         initializeCleanMachine(currentLine, newDate);
         showToast(`Date: ${newDate} (New sheet)`);
       }
+
+      renderMachineTabs();
     }
 
     function resetForm() {
       if (!confirm('Are you sure you want to clear this machine line daily form?')) return;
       const lineSelect = document.getElementById('lineSelect');
-      const currentLine = lineSelect ? lineSelect.value : 'L-01 - KTS 350 TDH';
+      const currentLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+
+      // Remove from batch if present
+      const batch = getBatchData(currentDate);
+      if (batch && batch[currentLine]) {
+        delete batch[currentLine];
+        saveBatchData(currentDate, batch);
+      }
 
       const key = getDailyStorageKey(currentDate, currentLine);
       localStorage.removeItem(key);
 
       initializeCleanMachine(currentLine, currentDate);
+      renderMachineTabs();
       showToast(`Form for ${currentLine} has been cleared.`);
     }
 
@@ -2105,49 +2268,41 @@
       window.print();
     }
 
+    // Batch Printing: Print only locked/committed machines in queue cleanly
     function printAllLinesBatch() {
       saveToStorage();
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
-      const lines = getActiveMachineLines();
+      const lineSelect = document.getElementById('lineSelect');
+      const activeLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
+
+      const batch = getBatchData(currentDate);
+      let committedLines = Object.keys(batch).filter(line => Boolean(batch[line]));
+
+      // Fallback: If no machine has been explicitly locked, lock the active machine and print it
+      if (committedLines.length === 0) {
+        lockAndCommitActiveMachine();
+        committedLines = [activeLine];
+      }
+
+      // Sort naturally (L-01, L-02, ... L-07)
+      committedLines.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
       const batchContainer = document.getElementById('batchPrintContainer');
       const singleSheet = document.getElementById('singleSheetContainer');
       if (!batchContainer || !singleSheet) return;
 
       batchContainer.innerHTML = '';
 
-      lines.forEach((line) => {
+      committedLines.forEach((line, index) => {
+        const isLast = (index === committedLines.length - 1);
+        const data = batch[line] || serializeCurrentForm();
+
         const clone = singleSheet.cloneNode(true);
         clone.removeAttribute('id');
-        clone.classList.add('batch-sheet');
-
-        const key = getDailyStorageKey(currentDate, line);
-        const saved = localStorage.getItem(key);
-        let data = null;
-        if (saved) {
-          try { data = JSON.parse(saved); } catch (e) {}
-        }
-        if (!data) {
-          const catalog = getCatalog();
-          const match = catalog.find(e => String(e.machineLine).trim() === line);
-          data = {
-            date: currentDate,
-            rate: match ? match.hourlyRate : 47,
-            itemCode: match ? match.itemCode : (catalog[0] ? catalog[0].itemCode : '307'),
-            spec: match ? match.itemName : '',
-            line: line,
-            lengthWeight: match ? match.lengthWeight : '',
-            speed: '4 M/Min',
-            capacity: '300 Kg/h',
-            weight: match ? extractNominalWeight(match.lengthWeight).toFixed(2) : '6.00',
-            s1_remarks: '',
-            s2_remarks: '',
-            dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
-            daySign: '',
-            nightLead: document.getElementById('nightLeadName') ? document.getElementById('nightLeadName').value : '',
-            nightSign: '',
-            rows: []
-          };
+        clone.classList.add('print-page', 'batch-sheet');
+        if (isLast) {
+          clone.classList.add('last-print-page');
         }
 
         const dateEl = clone.querySelector('#reportDate');
@@ -2157,13 +2312,16 @@
         if (itemEl) itemEl.innerHTML = `<option value="${data.itemCode}" selected>${data.itemCode}</option>`;
 
         const lineEl = clone.querySelector('#lineSelect');
-        if (lineEl) lineEl.innerHTML = `<option value="${data.line}" selected>${data.line}</option>`;
+        if (lineEl) lineEl.innerHTML = `<option value="${line}" selected>${line}</option>`;
 
         const specEl = clone.querySelector('#prodSpec');
-        if (specEl) specEl.setAttribute('value', data.spec || '');
+        if (specEl) specEl.setAttribute('value', data.prodSpec || data.spec || '');
+
+        const nomWeightVal = data.nominalWeight || data.weight || '6.00';
+        const lengthWeightVal = data.lengthWeight || `6M - ${nomWeightVal} Kg/Pc`;
 
         const lenWtEl = clone.querySelector('#prodLengthWeight');
-        if (lenWtEl) lenWtEl.setAttribute('value', data.lengthWeight || '');
+        if (lenWtEl) lenWtEl.setAttribute('value', lengthWeightVal);
 
         const speedEl = clone.querySelector('#stdSpeed');
         if (speedEl) speedEl.setAttribute('value', data.speed || '4 M/Min');
@@ -2171,14 +2329,14 @@
         const capEl = clone.querySelector('#nomCapacity');
         if (capEl) capEl.setAttribute('value', data.capacity || '300 Kg/h');
 
-        const rate = parseInt(data.rate) || 47;
+        const rate = parseInt(data.hourlyRate || data.rate) || 47;
         const rateEl = clone.querySelector('#hourlyTargetMeta');
         if (rateEl) rateEl.setAttribute('value', rate);
 
         const s1RemEl = clone.querySelector('#s1_remarks');
-        if (s1RemEl) s1RemEl.textContent = data.s1_remarks || '';
+        if (s1RemEl) s1RemEl.textContent = data.supervisorRemarks1 || data.s1_remarks || '';
         const s2RemEl = clone.querySelector('#s2_remarks');
-        if (s2RemEl) s2RemEl.textContent = data.s2_remarks || '';
+        if (s2RemEl) s2RemEl.textContent = data.supervisorRemarks2 || data.s2_remarks || '';
 
         const dLeadEl = clone.querySelector('#dayLeadName');
         if (dLeadEl) dLeadEl.setAttribute('value', data.dayLead || '');
@@ -2190,6 +2348,8 @@
         if (nSignEl) nSignEl.setAttribute('value', data.nightSign || '');
 
         const cloneRows = clone.querySelectorAll('tr.hourly-row');
+        const rowsData = data.hourlyData || data.rows || [];
+
         let totalGood = 0;
         let totalDowntime = 0;
         let totalReject = 0;
@@ -2197,7 +2357,7 @@
         let s2Good = 0, s2Down = 0, s2Rej = 0;
 
         cloneRows.forEach((row, i) => {
-          const rowData = (data.rows && data.rows[i]) ? data.rows[i] : null;
+          const rowData = rowsData[i] || null;
           const cumTarget = (i + 1) * rate;
           const stdCell = row.querySelector('.std-cell');
           if (stdCell) stdCell.textContent = formatNumber(cumTarget);
@@ -2235,17 +2395,14 @@
         const s2Target = rate * 12;
         const totalTarget = rate * 24;
 
-        const s1TgtEl = clone.querySelector('#s1_target');
-        if (s1TgtEl) s1TgtEl.textContent = formatNumber(s1Target);
-        const s2TgtEl = clone.querySelector('#s2_target');
-        if (s2TgtEl) s2TgtEl.textContent = formatNumber(s2Target);
-        const totTgtEl = clone.querySelector('#total_std_target');
-        if (totTgtEl) totTgtEl.textContent = formatNumber(totalTarget);
+        const s1TgtEl = clone.querySelector('#s1_target'); if (s1TgtEl) s1TgtEl.textContent = formatNumber(s1Target);
+        const s2TgtEl = clone.querySelector('#s2_target'); if (s2TgtEl) s2TgtEl.textContent = formatNumber(s2Target);
+        const totTgtEl = clone.querySelector('#total_std_target'); if (totTgtEl) totTgtEl.textContent = formatNumber(totalTarget);
 
-        const nomWeightVal = extractNominalWeight(data.lengthWeight);
-        const s1GoodKg = s1Good * nomWeightVal;
-        const s2GoodKg = s2Good * nomWeightVal;
-        const totGoodKg = totalGood * nomWeightVal;
+        const numWtParsed = extractNominalWeight(lengthWeightVal);
+        const s1GoodKg = s1Good * numWtParsed;
+        const s2GoodKg = s2Good * numWtParsed;
+        const totGoodKg = totalGood * numWtParsed;
 
         const s1ScrapPct = s1GoodKg > 0 ? ((s1Rej / (s1GoodKg + s1Rej)) * 100).toFixed(2) : '0.00';
         const s2ScrapPct = s2GoodKg > 0 ? ((s2Rej / (s2GoodKg + s2Rej)) * 100).toFixed(2) : '0.00';
