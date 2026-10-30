@@ -100,6 +100,8 @@ if ($isAuthenticated) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>\u0645\u0646\u0637\u0642\u0629 \u0645\u062d\u0645\u064a\u0629 \u0628\u0631\u0645\u0632 \u0633\u0631\u064a | \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">

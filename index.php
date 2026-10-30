@@ -241,6 +241,9 @@ foreach ($publicForms as $pf) {
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629 | \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643</title>
     
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
