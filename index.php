@@ -519,6 +519,74 @@ foreach ($publicForms as $pf) {
         <?php else: ?>
             <div id="formsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <?php foreach ($forms as $form): ?>
+                <?php if ($form['filename'] === 'iqama-renewal.php'): ?>
+                <!-- Custom Card: Iqama Renewal Application -->
+                <div class="col-12 col-md-6 col-lg-4 mb-4 form-card card h-100 position-relative bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
+                     data-title="<?= htmlspecialchars(mb_strtolower($form['title'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-subtitle="<?= htmlspecialchars(mb_strtolower($form['subtitle'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-code="<?= htmlspecialchars(mb_strtolower($form['code'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-filename="<?= htmlspecialchars(mb_strtolower($form['filename'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-category="<?= htmlspecialchars($form['category'], ENT_QUOTES, 'UTF-8') ?>"
+                     data-mtime="<?= $form['mtime'] ?>"
+                     data-size="<?= $form['size_bytes'] ?>"
+                     data-protected="<?= $form['is_protected'] ? 'true' : 'false' ?>"
+                     <?php if ($form['is_protected']): ?>style="display: none;"<?php endif; ?>>
+                    <div class="card-body d-flex flex-column p-4 flex-1">
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="badge bg-primary text-white rounded-pill px-3 py-2 fw-medium">PHP</span>
+                            <span class="badge bg-light text-dark rounded-pill px-3 py-2 border font-monospace text-muted">
+                                <?= htmlspecialchars($form['code'], ENT_QUOTES, 'UTF-8') ?> #
+                            </span>
+                        </div>
+
+                        <div class="text-center mb-4 flex-grow-1">
+                            <span class="d-inline-flex align-items-center bg-light rounded-pill px-3 py-1 mb-3 text-muted small border">
+                                <span class="p-1 bg-secondary rounded-circle me-2" style="width: 6px; height: 6px;"></span>
+                                <?= htmlspecialchars($form['category'], ENT_QUOTES, 'UTF-8') ?>
+                            </span>
+                            <h4 class="card-title fw-bold text-dark mb-2 text-lg"><?= htmlspecialchars($form['title'], ENT_QUOTES, 'UTF-8') ?></h4>
+                            <p class="card-text text-muted mb-0 text-xs"><?= htmlspecialchars($form['subtitle'], ENT_QUOTES, 'UTF-8') ?></p>
+                        </div>
+
+                        <div class="form-meta d-flex justify-content-between text-muted small mb-4 pt-3 border-top">
+                            <span class="d-flex align-items-center">
+                                <i class="fa-regular fa-calendar me-2"></i> <?= u('\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b:') ?>
+                            </span>
+                            <span><?= htmlspecialchars($form['date_formatted'], ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
+                        
+                        <div class="form-meta d-flex justify-content-between text-muted small mb-4">
+                            <span class="d-flex align-items-center">
+                                <i class="fa-solid fa-server me-2"></i> <?= u('\u062d\u062c\u0645 \u0627\u0644\u0645\u0644\u0641:') ?>
+                            </span>
+                            <span><?= htmlspecialchars($form['size_formatted'], ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-auto">
+                            <button type="button" 
+                                    onclick="copyFormLink('<?= htmlspecialchars($form['relative_url'], ENT_QUOTES, 'UTF-8') ?>')" 
+                                    class="btn btn-light border p-2" 
+                                    title="<?= u('\u0646\u0633\u062e \u0627\u0644\u0631\u0627\u0628\u0637') ?>">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <a href="<?= htmlspecialchars($form['relative_url'], ENT_QUOTES, 'UTF-8') ?>" 
+                               download="<?= htmlspecialchars($form['filename'], ENT_QUOTES, 'UTF-8') ?>" 
+                               class="btn btn-light border p-2" 
+                               title="<?= u('\u062a\u062d\u0645\u064a\u0644') ?>">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                            <a href="<?= htmlspecialchars($form['relative_url'], ENT_QUOTES, 'UTF-8') ?>" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="btn btn-primary flex-grow-1 fw-bold d-flex align-items-center justify-content-center">
+                                <?= u('\u0641\u062a\u062d \u0648\u0645\u0639\u0627\u064a\u0646\u0629') ?> <i class="fa-solid fa-arrow-up-right-from-square ms-2"></i>
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+                <?php else: ?>
                 <div class="form-card bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
                      data-title="<?= htmlspecialchars(mb_strtolower($form['title'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-subtitle="<?= htmlspecialchars(mb_strtolower($form['subtitle'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
@@ -639,6 +707,7 @@ foreach ($publicForms as $pf) {
                     </div>
 
                 </div>
+                <?php endif; ?>
                 <?php endforeach; ?>
             </div>
 
