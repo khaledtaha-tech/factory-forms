@@ -103,8 +103,9 @@ if ($action === 'update_protection') {
 }
 
 try {
-    // Ensure table exists on first run
+    // Ensure tables exist on first run
     ensureFormRecordsTableExists();
+    ensureIqamaInstallmentsTableExists();
     $pdo = getDbConnection();
 
     switch ($action) {
@@ -281,14 +282,203 @@ try {
             $countStmt = $pdo->query('SELECT COUNT(*) AS total_count FROM form_records');
             $countRow  = $countStmt->fetch();
 
+            $iqamaCountStmt = $pdo->query('SELECT COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_amount FROM iqama_installments');
+            $iqamaCountRow  = $iqamaCountStmt->fetch();
+
             sendJsonResponse([
-                'status'       => 'success',
-                'connected'    => true,
-                'database'     => DB_NAME,
-                'user'         => DB_USER,
-                'table'        => 'form_records',
-                'total_rows'   => (int)($countRow['total_count'] ?? 0),
-                'server_time'  => date('Y-m-d H:i:s')
+                'status'                    => 'success',
+                'connected'                 => true,
+                'database'                  => DB_NAME,
+                'user'                      => DB_USER,
+                'tables'                    => ['form_records', 'iqama_installments'],
+                'form_records_count'        => (int)($countRow['total_count'] ?? 0),
+                'iqama_installments_count'  => (int)($iqamaCountRow['total_count'] ?? 0),
+                'iqama_installments_total'  => (float)($iqamaCountRow['total_amount'] ?? 0),
+                'server_time'               => date('Y-m-d H:i:s')
+            ]);
+            break;
+
+        /**
+         * --------------------------------------------------------------------------
+         * ACTION: save_iqama_installment (POST)
+         * Inserts a new installment remittance record with optional receipt upload
+         * --------------------------------------------------------------------------
+         */
+        case 'save_iqama_installment':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+                sendJsonResponse([
+                    'status'  => 'error',
+                    'message' => 'The save_iqama_installment action requires a POST request.'
+                ], 405);
+            }
+
+            $cycleCode    = trim($params['cycle_code'] ?? '');
+            $amountRaw    = $params['amount'] ?? 0;
+            $transferDate = trim($params['transfer_date'] ?? '');
+            $notes        = trim($params['notes'] ?? '');
+
+            if (empty($cycleCode)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing required parameter: cycle_code (e.g. 2026-2027)'], 400);
+            }
+
+            if (!is_numeric($amountRaw) || (float)$amountRaw <= 0) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Invalid or missing amount. Must be a positive decimal number.'], 400);
+            }
+            $amount = round((float)$amountRaw, 2);
+
+            if (empty($transferDate) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $transferDate)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Invalid or missing transfer_date. Expected format: YYYY-MM-DD'], 400);
+            }
+
+            // Handle Receipt File Upload
+            $storedFilePath = null;
+            $fileCandidate = null;
+            if (!empty($_FILES['receipt_file']['name'])) {
+                $fileCandidate = $_FILES['receipt_file'];
+            } elseif (!empty($_FILES['receipt']['name'])) {
+                $fileCandidate = $_FILES['receipt'];
+            } elseif (!empty($_FILES['file']['name'])) {
+                $fileCandidate = $_FILES['file'];
+            }
+
+            if ($fileCandidate && $fileCandidate['error'] === UPLOAD_ERR_OK) {
+                $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'bmp'];
+                $ext = strtolower(pathinfo($fileCandidate['name'], PATHINFO_EXTENSION));
+
+                if (!in_array($ext, $allowedExtensions)) {
+                    sendJsonResponse([
+                        'status'  => 'error',
+                        'message' => 'Invalid file format. Allowed file formats: PDF, JPG, JPEG, PNG, WEBP, HEIC.'
+                    ], 400);
+                }
+
+                // Max file size: 15MB
+                if ($fileCandidate['size'] > 15 * 1024 * 1024) {
+                    sendJsonResponse(['status' => 'error', 'message' => 'Receipt file exceeds maximum allowed limit of 15MB.'], 400);
+                }
+
+                $uploadDirectory = __DIR__ . '/uploads/iqama';
+                if (!is_dir($uploadDirectory)) {
+                    @mkdir($uploadDirectory, 0755, true);
+                }
+
+                $cleanCycle = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $cycleCode);
+                $cleanDate  = preg_replace('/[^0-9\-]/', '', $transferDate);
+                $uniqueHash = bin2hex(random_bytes(6));
+                $targetName = "receipt_{$cleanCycle}_{$cleanDate}_{$uniqueHash}.{$ext}";
+                $targetPath = $uploadDirectory . '/' . $targetName;
+
+                if (!move_uploaded_file($fileCandidate['tmp_name'], $targetPath)) {
+                    sendJsonResponse(['status' => 'error', 'message' => 'Failed to save uploaded receipt file to destination directory.'], 500);
+                }
+
+                $storedFilePath = 'uploads/iqama/' . $targetName;
+            } elseif (!empty($params['file_path'])) {
+                $storedFilePath = trim($params['file_path']);
+            }
+
+            $insertStmt = $pdo->prepare('INSERT INTO iqama_installments (cycle_code, amount, transfer_date, file_path, notes) VALUES (?, ?, ?, ?, ?)');
+            $insertStmt->execute([$cycleCode, $amount, $transferDate, $storedFilePath, !empty($notes) ? $notes : null]);
+            $insertedId = (int)$pdo->lastInsertId();
+
+            $fetchStmt = $pdo->prepare('SELECT * FROM iqama_installments WHERE id = ?');
+            $fetchStmt->execute([$insertedId]);
+            $newRecord = $fetchStmt->fetch();
+
+            sendJsonResponse([
+                'status'  => 'success',
+                'message' => 'Iqama installment recorded successfully.',
+                'id'      => $insertedId,
+                'record'  => $newRecord
+            ], 201);
+            break;
+
+        /**
+         * --------------------------------------------------------------------------
+         * ACTION: list_iqama_installments (GET / POST)
+         * Returns all recorded installments with optional cycle filter and statistics
+         * --------------------------------------------------------------------------
+         */
+        case 'list_iqama_installments':
+            $filterCycle = trim($params['cycle_code'] ?? '');
+            $limit       = isset($params['limit']) ? max(1, min(1000, (int)$params['limit'])) : 500;
+
+            if (!empty($filterCycle)) {
+                $listStmt = $pdo->prepare('SELECT * FROM iqama_installments WHERE cycle_code = ? ORDER BY transfer_date DESC, id DESC LIMIT ' . $limit);
+                $listStmt->execute([$filterCycle]);
+                $records = $listStmt->fetchAll();
+
+                $sumStmt = $pdo->prepare('SELECT COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_sum FROM iqama_installments WHERE cycle_code = ?');
+                $sumStmt->execute([$filterCycle]);
+                $sumData = $sumStmt->fetch();
+            } else {
+                $listStmt = $pdo->prepare('SELECT * FROM iqama_installments ORDER BY transfer_date DESC, id DESC LIMIT ' . $limit);
+                $listStmt->execute();
+                $records = $listStmt->fetchAll();
+
+                $sumStmt = $pdo->query('SELECT COUNT(*) AS total_count, COALESCE(SUM(amount), 0) AS total_sum FROM iqama_installments');
+                $sumData = $sumStmt->fetch();
+            }
+
+            $cyclesStmt = $pdo->query('SELECT DISTINCT cycle_code FROM iqama_installments ORDER BY cycle_code DESC');
+            $distinctCycles = $cyclesStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            sendJsonResponse([
+                'status'           => 'success',
+                'filter_cycle'     => !empty($filterCycle) ? $filterCycle : null,
+                'total_records'    => (int)($sumData['total_count'] ?? count($records)),
+                'total_amount'     => (float)($sumData['total_sum'] ?? 0),
+                'available_cycles' => $distinctCycles,
+                'records'          => $records
+            ]);
+            break;
+
+        /**
+         * --------------------------------------------------------------------------
+         * ACTION: delete_iqama_installment (POST)
+         * Removes an installment entry and purges associated receipt file
+         * --------------------------------------------------------------------------
+         */
+        case 'delete_iqama_installment':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+                sendJsonResponse([
+                    'status'  => 'error',
+                    'message' => 'The delete_iqama_installment action requires a POST request.'
+                ], 405);
+            }
+
+            $deleteId = (int)($params['id'] ?? 0);
+            if ($deleteId <= 0) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing or invalid installment id parameter.'], 400);
+            }
+
+            $findStmt = $pdo->prepare('SELECT id, file_path FROM iqama_installments WHERE id = ?');
+            $findStmt->execute([$deleteId]);
+            $existingRecord = $findStmt->fetch();
+
+            if (!$existingRecord) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Installment record not found.'], 404);
+            }
+
+            // Remove file if exists inside uploads/iqama
+            if (!empty($existingRecord['file_path'])) {
+                $targetLocalPath = __DIR__ . '/' . ltrim($existingRecord['file_path'], '/');
+                $realUploads = realpath(__DIR__ . '/uploads/iqama');
+                if (file_exists($targetLocalPath) && is_file($targetLocalPath)) {
+                    $realTarget = realpath($targetLocalPath);
+                    if ($realUploads && $realTarget && str_starts_with($realTarget, $realUploads)) {
+                        @unlink($targetLocalPath);
+                    }
+                }
+            }
+
+            $delStmt = $pdo->prepare('DELETE FROM iqama_installments WHERE id = ?');
+            $delStmt->execute([$deleteId]);
+
+            sendJsonResponse([
+                'status'  => 'success',
+                'message' => 'Installment record deleted successfully.',
+                'id'      => $deleteId
             ]);
             break;
 
@@ -369,7 +559,11 @@ try {
             sendJsonResponse([
                 'status'            => 'error',
                 'message'           => 'Invalid or unsupported action requested.',
-                'supported_actions' => ['save', 'load', 'list', 'status', 'init', 'get_protection', 'update_protection']
+                'supported_actions' => [
+                    'save', 'load', 'list', 'status', 'init',
+                    'get_protection', 'update_protection',
+                    'save_iqama_installment', 'list_iqama_installments', 'delete_iqama_installment'
+                ]
             ], 400);
             break;
     }

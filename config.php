@@ -70,3 +70,24 @@ function ensureFormRecordsTableExists() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
     $pdo->exec($sql);
 }
+
+/**
+ * Ensure iqama_installments table exists
+ *
+ * @return void
+ */
+function ensureIqamaInstallmentsTableExists() {
+    $pdo = getDbConnection();
+    $sql = "CREATE TABLE IF NOT EXISTS iqama_installments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        cycle_code VARCHAR(64) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        transfer_date DATE NOT NULL,
+        file_path VARCHAR(255) NULL,
+        notes TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_cycle (cycle_code),
+        INDEX idx_transfer_date (transfer_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+    $pdo->exec($sql);
+}
