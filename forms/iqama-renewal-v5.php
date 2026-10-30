@@ -74,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_installment']))
     $update_query = "UPDATE iqama_installments SET amount = ?, transfer_date = ?, notes = ?";
     $params = [$edit_amount, $edit_transfer_date, $edit_notes];
 
-    // لو رفع إيصال جديد وقت التعديل
     if (isset($_FILES['edit_receipt_file']) && $_FILES['edit_receipt_file']['error'] == 0) {
         $file_name = time() . '_update_' . basename($_FILES['edit_receipt_file']['name']);
         $target_file = $upload_dir . $file_name;
@@ -96,6 +95,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_installment']))
         $message = '<div class="alert alert-success">تم تعديل الدفعة بنجاح.</div>';
     } else {
         $message = '<div class="alert alert-danger">حدث خطأ أثناء التعديل.</div>';
+    }
+}
+
+// === معالجة حذف دفعة ===
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_installment'])) {
+    $delete_id = $_POST['delete_id'];
+    
+    // سحب مسار الملف عشان نحذفه من السيرفر ونوفر مساحة
+    $stmt = $pdo->prepare("SELECT file_path FROM iqama_installments WHERE id = ?");
+    $stmt->execute([$delete_id]);
+    $record = $stmt->fetch();
+    
+    if ($record && !empty($record['file_path']) && file_exists($record['file_path'])) {
+        unlink($record['file_path']);
+    }
+    
+    $stmt = $pdo->prepare("DELETE FROM iqama_installments WHERE id = ?");
+    if ($stmt->execute([$delete_id])) {
+        $message = '<div class="alert alert-success">تم حذف الدفعة بنجاح.</div>';
+    } else {
+        $message = '<div class="alert alert-danger">حدث خطأ أثناء الحذف.</div>';
     }
 }
 
@@ -140,7 +160,6 @@ if ($remaining < 0) {
 <body>
 
 <div class="container mt-4">
-    <!-- الترويسة -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="text-success fw-bold"><i class="fa-solid fa-id-card me-2"></i>متابعة تجديد إقامة الزوجة</h3>
@@ -151,7 +170,6 @@ if ($remaining < 0) {
 
     <?= $message ?>
 
-    <!-- شريط معلومات الدورة -->
     <div class="alert cycle-badge d-flex justify-content-between align-items-center mb-4 shadow-sm">
         <div>
             <strong>إعدادات الدورة الحالية:</strong> تغطي الفترة من <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['start_date'] ?></span> وحتى <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['end_date'] ?></span>
@@ -161,7 +179,6 @@ if ($remaining < 0) {
         </div>
     </div>
 
-    <!-- لوحة المؤشرات -->
     <div class="row mb-4">
         <div class="col-md-3"><div class="stat-card card-info shadow-sm"><h6>المبلغ المطلوب</h6><h3 dir="ltr">SAR <?= number_format($required_amount, 2) ?></h3></div></div>
         <div class="col-md-3"><div class="stat-card card-success shadow-sm"><h6>إجمالي المحول</h6><h3 dir="ltr">SAR <?= number_format($total_paid, 2) ?></h3></div></div>
@@ -219,11 +236,17 @@ if ($remaining < 0) {
                                         <span class="text-muted small">-</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle text-nowrap">
                                     <button type="button" class="btn btn-sm btn-outline-primary" title="تعديل" 
                                             onclick="openEditModal(<?= $inst['id'] ?>, <?= $inst['amount'] ?>, '<?= $inst['transfer_date'] ?>', '<?= htmlspecialchars(addslashes($inst['notes']), ENT_QUOTES) ?>')">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه الدفعة نهائياً؟');">
+                                        <input type="hidden" name="delete_id" value="<?= $inst['id'] ?>">
+                                        <button type="submit" name="delete_installment" class="btn btn-sm btn-outline-danger" title="حذف">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -264,7 +287,6 @@ if ($remaining < 0) {
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
