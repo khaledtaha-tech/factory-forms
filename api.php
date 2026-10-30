@@ -40,6 +40,68 @@ if (!empty($rawInput)) {
 $params = array_merge($_GET, $_POST, $inputData);
 $action = trim($params['action'] ?? '');
 
+// Handle Configuration & Protection Actions (File-based, zero DB dependency)
+if ($action === 'get_protection') {
+    $configFile = __DIR__ . '/config/protected_forms.json';
+    $protectedFiles = [];
+    if (file_exists($configFile)) {
+        $rawJson = file_get_contents($configFile);
+        $decoded = json_decode($rawJson, true);
+        if (is_array($decoded)) {
+            $protectedFiles = $decoded;
+        }
+    }
+
+    sendJsonResponse([
+        'status'          => 'success',
+        'protected_files' => $protectedFiles
+    ]);
+}
+
+if ($action === 'update_protection') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+        sendJsonResponse([
+            'status'  => 'error',
+            'message' => 'The update_protection action requires a POST request with payload.'
+        ], 405);
+    }
+
+    $rawFiles = $params['protected_files'] ?? null;
+    if (!is_array($rawFiles)) {
+        sendJsonResponse([
+            'status'  => 'error',
+            'message' => 'Missing or invalid protected_files array in payload.'
+        ], 400);
+    }
+
+    $sanitizedFiles = [];
+    foreach ($rawFiles as $fileItem) {
+        if (is_string($fileItem) && trim($fileItem) !== '') {
+            $sanitizedFiles[] = basename(trim($fileItem));
+        }
+    }
+    $sanitizedFiles = array_values(array_unique($sanitizedFiles));
+
+    $configDir = __DIR__ . '/config';
+    if (!is_dir($configDir)) {
+        @mkdir($configDir, 0755, true);
+    }
+    $configFile = $configDir . '/protected_forms.json';
+    $encodedJson = json_encode($sanitizedFiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+    if (file_put_contents($configFile, $encodedJson) === false) {
+        sendJsonResponse([
+            'status'  => 'error',
+            'message' => 'Failed to save configuration to disk.'
+        ], 500);
+    }
+
+    sendJsonResponse([
+        'status'          => 'success',
+        'protected_files' => $sanitizedFiles
+    ]);
+}
+
 try {
     // Ensure table exists on first run
     ensureFormRecordsTableExists();
