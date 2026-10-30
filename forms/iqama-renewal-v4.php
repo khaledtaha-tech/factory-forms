@@ -29,15 +29,16 @@ $cycles_config = [
 $current_cycle = isset($_GET['cycle']) ? $_GET['cycle'] : '2026-2027';
 $cycle_info = isset($cycles_config[$current_cycle]) ? $cycles_config[$current_cycle] : $cycles_config['2026-2027'];
 
-// === معالجة حفظ البيانات ورفع الملف ===
 $message = '';
+$upload_dir = 'uploads/iqama/';
+
+// === معالجة حفظ دفعة جديدة ===
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
     $cycle_code = $_POST['cycle_code'];
     $amount = $_POST['amount'];
     $transfer_date = $_POST['transfer_date'];
     $notes = $_POST['notes'];
     
-    $upload_dir = 'uploads/iqama/';
     if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
 
     $file_path = '';
@@ -58,6 +59,43 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
         $message = '<div class="alert alert-success">تم حفظ الدفعة بنجاح.</div>';
     } else {
         $message = '<div class="alert alert-danger">حدث خطأ أثناء الحفظ.</div>';
+    }
+}
+
+// === معالجة تعديل دفعة موجودة ===
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_installment'])) {
+    $edit_id = $_POST['edit_id'];
+    $edit_amount = $_POST['edit_amount'];
+    $edit_transfer_date = $_POST['edit_transfer_date'];
+    $edit_notes = $_POST['edit_notes'];
+
+    if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
+
+    $update_query = "UPDATE iqama_installments SET amount = ?, transfer_date = ?, notes = ?";
+    $params = [$edit_amount, $edit_transfer_date, $edit_notes];
+
+    // لو رفع إيصال جديد وقت التعديل
+    if (isset($_FILES['edit_receipt_file']) && $_FILES['edit_receipt_file']['error'] == 0) {
+        $file_name = time() . '_update_' . basename($_FILES['edit_receipt_file']['name']);
+        $target_file = $upload_dir . $file_name;
+        $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        
+        if (in_array($file_type, ['pdf', 'png', 'jpg', 'jpeg'])) {
+            if (move_uploaded_file($_FILES['edit_receipt_file']['tmp_name'], $target_file)) {
+                $update_query .= ", file_path = ?";
+                $params[] = $target_file;
+            }
+        }
+    }
+
+    $update_query .= " WHERE id = ?";
+    $params[] = $edit_id;
+
+    $stmt = $pdo->prepare($update_query);
+    if ($stmt->execute($params)) {
+        $message = '<div class="alert alert-success">تم تعديل الدفعة بنجاح.</div>';
+    } else {
+        $message = '<div class="alert alert-danger">حدث خطأ أثناء التعديل.</div>';
     }
 }
 
@@ -155,6 +193,7 @@ if ($remaining < 0) {
                                 <th>المبلغ</th>
                                 <th>تراكمي</th>
                                 <th>الإيصال</th>
+                                <th>إجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -175,10 +214,16 @@ if ($remaining < 0) {
                                 <td class="align-middle fw-bold text-muted" dir="ltr">SAR <?= number_format($cumulative, 2) ?></td>
                                 <td class="align-middle">
                                     <?php if($inst['file_path']): ?>
-                                        <a href="<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
+                                        <a href="<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary" title="عرض الإيصال"><i class="fa-solid fa-paperclip"></i></a>
                                     <?php else: ?>
                                         <span class="text-muted small">-</span>
                                     <?php endif; ?>
+                                </td>
+                                <td class="align-middle">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="تعديل" 
+                                            onclick="openEditModal(<?= $inst['id'] ?>, <?= $inst['amount'] ?>, '<?= $inst['transfer_date'] ?>', '<?= htmlspecialchars(addslashes($inst['notes']), ENT_QUOTES) ?>')">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -223,6 +268,55 @@ if ($remaining < 0) {
     </div>
 </div>
 
+<!-- Modal تعديل الدفعة -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-primary" id="editModalLabel"><i class="fa-solid fa-pen-to-square me-2"></i>تعديل بيانات الدفعة</h5>
+        <button type="button" class="btn-close m-0 ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="edit_id" id="edit_id">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">المبلغ (ريال)</label>
+                <input type="number" class="form-control" name="edit_amount" id="edit_amount" step="any" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">تاريخ الحوالة</label>
+                <input type="date" class="form-control" name="edit_transfer_date" id="edit_transfer_date" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">تحديث الإيصال (اختياري)</label>
+                <input type="file" class="form-control" name="edit_receipt_file" accept=".pdf,.png,.jpg,.jpeg">
+                <small class="text-muted d-block mt-1">اتركه فارغاً إذا كنت لا تريد تغيير الإيصال الحالي.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">ملاحظات</label>
+                <textarea class="form-control" name="edit_notes" id="edit_notes" rows="2"></textarea>
+            </div>
+            <div class="text-end mt-4">
+                <button type="button" class="btn btn-secondary shadow-sm" data-bs-dismiss="modal">إلغاء</button>
+                <button type="submit" name="update_installment" class="btn btn-primary shadow-sm fw-bold">حفظ التعديلات</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function openEditModal(id, amount, date, notes) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_amount').value = amount;
+        document.getElementById('edit_transfer_date').value = date;
+        document.getElementById('edit_notes').value = notes;
+        
+        var editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        editModal.show();
+    }
+</script>
 </body>
 </html>
