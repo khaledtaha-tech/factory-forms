@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
     $transfer_date = $_POST['transfer_date'];
     $notes = $_POST['notes'];
     
-    $upload_dir = dirname(__DIR__) . '/uploads/iqama/';
+    $upload_dir = 'uploads/iqama/';
     if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
 
     $file_path = '';
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
         
         if (in_array($file_type, ['pdf', 'png', 'jpg', 'jpeg'])) {
             if (move_uploaded_file($_FILES['receipt_file']['tmp_name'], $target_file)) {
-                $file_path = 'uploads/iqama/' . $file_name;
+                $file_path = $target_file;
             }
         }
     }
@@ -84,7 +84,7 @@ if ($remaining < 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة تجديد الإقامة | مصنع المنار للبلاستيك</title>
+    <title>متابعة تجديد الإقامة</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -106,7 +106,7 @@ if ($remaining < 0) {
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="text-success fw-bold"><i class="fa-solid fa-id-card me-2"></i>متابعة تجديد إقامة الزوجة</h3>
-            <p class="text-muted mb-0">مصنع المنار للبلاستيك | نظام إدارة الحوالات وسجل الدفعات</p>
+            <p class="text-muted mb-0">نظام إدارة الحوالات وسجل الدفعات</p>
         </div>
         <a href="../index.php" class="btn btn-outline-success"><i class="fa-solid fa-arrow-right me-2"></i>العودة للبوابة الرئيسية</a>
     </div>
@@ -119,7 +119,7 @@ if ($remaining < 0) {
             <strong>إعدادات الدورة الحالية:</strong> تغطي الفترة من <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['start_date'] ?></span> وحتى <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['end_date'] ?></span>
         </div>
         <div>
-            <strong>تاريخ التجديد المستهدف:</strong> <span class="text-danger fw-bold" dir="ltr"><?= $cycle_info['start_date'] ?></span>
+            <strong>تاريخ انتهاء الإقامة:</strong> <span class="text-danger fw-bold" dir="ltr"><?= $cycle_info['end_date'] ?></span>
         </div>
     </div>
 
@@ -175,7 +175,7 @@ if ($remaining < 0) {
                                 <td class="align-middle fw-bold text-muted" dir="ltr">SAR <?= number_format($cumulative, 2) ?></td>
                                 <td class="align-middle">
                                     <?php if($inst['file_path']): ?>
-                                        <a href="<?= (str_starts_with($inst['file_path'], 'http') || str_starts_with($inst['file_path'], '../') ? '' : '../') . htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
+                                        <a href="<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
                                     <?php else: ?>
                                         <span class="text-muted small">-</span>
                                     <?php endif; ?>
