@@ -56,7 +56,11 @@
       }
 
       /* Hide interactive toolbars, modals, tabs, and toasts */
-      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus, #btnMigrateLegacy, #machineReadyStatus, #schedulerMatrix {
+      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus, #btnMigrateLegacy, #machineReadyStatus, #schedulerMatrix, #btnLangToggle {
+        display: none !important;
+      }
+
+      #btnLangToggle {
         display: none !important;
       }
 
@@ -232,8 +236,12 @@
     <div class="flex items-center gap-3">
       <a href="../index.php" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition" title="Return to forms dashboard">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        <span>Dashboard</span>
+        <span data-i18n="dashboard">Dashboard</span>
       </a>
+      <button id="btnLangToggle" type="button" onclick="toggleAppLanguage()" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded text-xs font-bold transition flex items-center gap-1 shadow-sm" title="Toggle Arabic / English">
+        <span id="langFlag">🌐</span>
+        <span id="langLabel">English</span>
+      </button>
       <div class="h-4 w-px bg-slate-300 hidden sm:block"></div>
       <div class="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
         <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
@@ -243,10 +251,10 @@
       </div>
       <div id="cloudSyncStatus" class="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200" title="Central MySQL Cloud Database Status">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span>\u0645\u062a\u0635\u0644 \u0628\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a</span>
+        <span data-i18n="connectedToDb">\u0645\u062a\u0635\u0644 \u0628\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a</span>
       </div>
       <button id="btnMigrateLegacy" type="button" onclick="runOneClickCloudMigration()" class="hidden px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition animate-pulse" title="Migrate historical local records to central MySQL database">
-        <span>\u2601\ufe0f \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0633\u0627\u0628\u0642\u0629 (<span id="unmigratedCount">0</span>)</span>
+        <span><span data-i18n="migrateLegacy">\u2601\ufe0f \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0633\u0627\u0628\u0642\u0629</span> (<span id="unmigratedCount">0</span>)</span>
       </button>
     </div>
 
@@ -254,11 +262,11 @@
     <div class="flex items-center gap-2 flex-wrap">
       <!-- Catalog Manager Trigger Button -->
       <button type="button" onclick="toggleCatalogModal(true)" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1.5 rounded-lg shadow-2xs transition" title="Open Catalog Manager">
-        <span>\u2699\ufe0f \u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a (Catalog Manager)</span>
+        <span>\u2699\ufe0f</span> <span data-i18n="catalogBtn">\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a</span>
       </button>
 
       <div class="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-0.5">
-        <span class="text-[11px] font-bold text-slate-600 px-2">Hourly Target (Pcs/Hr):</span>
+        <span data-i18n="hourlyTarget" class="text-[11px] font-bold text-slate-600 px-2">Hourly Target (Pcs/Hr):</span>
         <button type="button" onclick="stepHourlyRate(-1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Decrease rate">-</button>
         <input type="number" id="toolbarRateInput" value="47" min="1" max="5000" class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums" oninput="syncHourlyRate(this.value)" title="Toolbar Target Rate">
         <button type="button" onclick="stepHourlyRate(1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Increase rate">+</button>
@@ -266,22 +274,22 @@
 
       <button type="button" onclick="populateSampleData()" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1.5 rounded-lg transition" title="Fill sample operational data">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-        <span>Sample Data</span>
+        <span data-i18n="sampleData">Sample Data</span>
       </button>
 
       <button type="button" onclick="resetForm()" class="inline-flex items-center gap-1 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1.5 rounded-lg transition" title="Clear all entered production numbers">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-        <span>Reset</span>
+        <span data-i18n="reset">Reset</span>
       </button>
 
       <button type="button" onclick="printCurrentMachine()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg shadow-sm transition" title="Print Current Machine (1 Page A4)">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-        <span>Print Machine (1 Page)</span>
+        <span data-i18n="printMachine">Print Machine (1 Page)</span>
       </button>
 
       <button type="button" onclick="printAllLinesBatch()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg shadow-sm transition" title="Batch Print All Lines (A4 Per Machine)">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-        <span>Print All Lines (Batch)</span>
+        <span data-i18n="printBatch">Print All Lines (Batch)</span>
       </button>
     </div>
   </header>
@@ -294,7 +302,7 @@
       <div class="flex items-center gap-2">
         <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
           <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-          <span>\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c (Machine Lines):</span>
+          <span data-i18n="machineLines" class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c:</span>
         </span>
         <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
       </div>
@@ -331,7 +339,7 @@
       <div class="flex items-center justify-between mb-2 px-0.5 flex-wrap gap-1">
         <span class="text-[11px] font-extrabold text-slate-800 flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs"></span>
-          <span>\u0646\u0637\u0627\u0642 \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641 (6-Day Run Schedule):</span>
+          <span data-i18n="schedulerTitle" class="text-xs font-bold text-slate-700">\u0646\u0637\u0627\u0642 \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641:</span>
         </span>
         <span class="text-[10px] text-slate-500 font-medium">
           \u062d\u062f\u062f \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641 \u0644\u062a\u0639\u0645\u064a\u0645 \u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629 \u0648\u0627\u0644\u0645\u0639\u062f\u0644 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b
@@ -891,8 +899,8 @@
         <div class="flex items-center gap-2">
           <span class="text-base">\u2699\ufe0f</span>
           <div>
-            <h3 class="text-sm font-black tracking-wide uppercase">\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a (Catalog Manager)</h3>
-            <p class="text-[11px] text-slate-300">\u0625\u062f\u0627\u0631\u0629 \u0631\u0628\u0637 \u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641 \u0628\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0648\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0642\u064a\u0627\u0633\u064a \u0628\u0627\u0644\u0633\u0627\u0639\u0629 (Pcs/Hr)</p>
+            <h3 data-i18n="catalogTitle" class="text-sm font-black tracking-wide uppercase">\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a</h3>
+            <p data-i18n="catalogDesc" class="text-[11px] text-slate-300">\u0625\u062f\u0627\u0631\u0629 \u0631\u0628\u0637 \u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641 \u0628\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0648\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0642\u064a\u0627\u0633\u064a (\u0642\u0637\u0639\u0629/\u0633\u0627\u0639\u0629)</p>
           </div>
         </div>
         <button type="button" onclick="toggleCatalogModal(false)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">&times;</button>
@@ -903,12 +911,12 @@
         <table class="w-full border-collapse text-xs" id="catalogTable">
           <thead>
             <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 text-left">
-              <th class="p-2 border border-slate-200 w-24">\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641<br><span class="font-normal text-[10px] text-slate-500">(Item Code)</span></th>
-              <th class="p-2 border border-slate-200">\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629<br><span class="font-normal text-[10px] text-slate-500">(Item Name / Spec)</span></th>
-              <th class="p-2 border border-slate-200 w-36">\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646<br><span class="font-normal text-[10px] text-slate-500">(Length &amp; Nominal Wt)</span></th>
-              <th class="p-2 border border-slate-200 w-44">\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637<br><span class="font-normal text-[10px] text-slate-500">(Machine Line)</span></th>
-              <th class="p-2 border border-slate-200 w-28 text-center">\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629<br><span class="font-normal text-[10px] text-slate-500">(Rate Pcs/Hr)</span></th>
-              <th class="p-2 border border-slate-200 w-16 text-center">\u0625\u062c\u0631\u0627\u0621<br><span class="font-normal text-[10px] text-slate-500">(Action)</span></th>
+              <th data-i18n="thCode" class="p-2 border border-slate-200 w-24">\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641</th>
+              <th data-i18n="thSpec" class="p-2 border border-slate-200">\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629</th>
+              <th data-i18n="thWeight" class="p-2 border border-slate-200 w-36">\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646</th>
+              <th data-i18n="thLine" class="p-2 border border-slate-200 w-44">\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c</th>
+              <th data-i18n="thRate" class="p-2 border border-slate-200 w-28 text-center">\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629</th>
+              <th data-i18n="thAction" class="p-2 border border-slate-200 w-16 text-center">\u0625\u062c\u0631\u0627\u0621</th>
             </tr>
           </thead>
           <tbody id="catalogTableBody">
@@ -922,16 +930,33 @@
         <input type="file" id="catalogExcelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelImport(event)">
 
         <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" onclick="addCatalogRow()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded text-xs font-bold transition flex items-center gap-1">+ \u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 / \u062e\u0637 \u062c\u062f\u064a\u062f</button>
-          <button type="button" onclick="document.getElementById('catalogExcelInput').click()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\ud83d\udce4 \u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0625\u0643\u0633\u064a\u0644 (Import Excel)</button>
-          <button type="button" onclick="exportCatalogToExcel()" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\ud83d\udce5 \u062a\u0635\u062f\u064a\u0631 \u0625\u0643\u0633\u064a\u0644 (Export Excel)</button>
-          <button type="button" onclick="harmonizeCatalogSpecifications()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">\u2728 \u062a\u0635\u062d\u064a\u062d \u0648\u062a\u0648\u062d\u064a\u062f \u0627\u0644\u0645\u0633\u0645\u064a\u0627\u062a (Harmonize Specs)</button>
+          <button type="button" onclick="addCatalogRow()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded text-xs font-bold transition flex items-center gap-1">
+            <span data-i18n="btnAddRow">+ \u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 \u062c\u062f\u064a\u062f</span>
+          </button>
+          <button type="button" onclick="document.getElementById('catalogExcelInput').click()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">
+            <span>\ud83d\udce4</span>
+            <span data-i18n="btnImport">\u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0625\u0643\u0633\u064a\u0644</span>
+          </button>
+          <button type="button" onclick="exportCatalogToExcel()" class="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">
+            <span>\ud83d\udce5</span>
+            <span data-i18n="btnExport">\u062a\u0635\u062f\u064a\u0631 \u0625\u0643\u0633\u064a\u0644</span>
+          </button>
+          <button type="button" onclick="harmonizeCatalogSpecifications()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded text-xs font-bold shadow flex items-center gap-1 transition">
+            <span>\u2728</span>
+            <span data-i18n="btnHarmonize">\u062a\u0648\u062d\u064a\u062f \u0627\u0644\u0645\u0633\u0645\u064a\u0627\u062a</span>
+          </button>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <button type="button" onclick="restoreCatalogDefaults()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded text-xs font-bold transition">\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a</button>
-          <button type="button" onclick="toggleCatalogModal(false)" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-semibold transition">\u0625\u0644\u063a\u0627\u0621</button>
-          <button type="button" onclick="saveCatalogChanges()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow transition">\u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a</button>
+          <button type="button" onclick="restoreCatalogDefaults()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded text-xs font-bold transition">
+            <span data-i18n="btnRestore">\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a</span>
+          </button>
+          <button type="button" onclick="toggleCatalogModal(false)" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-semibold transition">
+            <span data-i18n="btnCancel">\u0625\u0644\u063a\u0627\u0621</span>
+          </button>
+          <button type="button" onclick="saveCatalogChanges()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow transition">
+            <span data-i18n="btnSave">\u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a</span>
+          </button>
         </div>
       </div>
 
@@ -950,6 +975,140 @@
        INTERACTIVE JAVASCRIPT ENGINE
        ============================================================================== -->
   <script>
+    // ==============================================================================
+    // CENTRALIZED I18N DICTIONARY & LANGUAGE CONTROLLER
+    // ==============================================================================
+    const i18n = {
+      ar: {
+        dashboard: "\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645",
+        catalogBtn: "\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a",
+        catalogTitle: "\u062c\u062f\u0648\u0644 \u0627\u0644\u0623\u0635\u0646\u0627\u0641 \u0648\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a",
+        catalogDesc: "\u0625\u062f\u0627\u0631\u0629 \u0631\u0628\u0637 \u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641 \u0628\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0648\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0627\u0644\u0642\u064a\u0627\u0633\u064a (\u0642\u0637\u0639\u0629/\u0633\u0627\u0639\u0629)",
+        thCode: "\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641",
+        thSpec: "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629",
+        thWeight: "\u0627\u0644\u0637\u0648\u0644 \u0648\u0627\u0644\u0648\u0632\u0646",
+        thLine: "\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c",
+        thRate: "\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629",
+        thAction: "\u0625\u062c\u0631\u0627\u0621",
+        btnAddRow: "+ \u0625\u0636\u0627\u0641\u0629 \u0635\u0646\u0641 \u062c\u062f\u064a\u062f",
+        btnImport: "\u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0625\u0643\u0633\u064a\u0644",
+        btnExport: "\u062a\u0635\u062f\u064a\u0631 \u0625\u0643\u0633\u064a\u0644",
+        btnHarmonize: "\u062a\u0648\u062d\u064a\u062f \u0627\u0644\u0645\u0633\u0645\u064a\u0627\u062a",
+        btnRestore: "\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0627\u0641\u062a\u0631\u0627\u0636\u064a",
+        btnCancel: "\u0625\u0644\u063a\u0627\u0621",
+        btnSave: "\u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a",
+        btnDelete: "\u062d\u063f\u0641",
+        machineLines: "\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c:",
+        sampleData: "\u0628\u064a\u0627\u0646\u0627\u062a \u062a\u062c\u0631\u064a\u0628\u064a\u0629",
+        reset: "\u0625\u0639\u0627\u062f\u0629 \u062a\u0639\u064a\u064a\u0646",
+        hourlyTarget: "\u0627\u0644\u0645\u0639\u062f\u0644 (\u0642\u0637\u0639\u0629/\u0633):",
+        schedulerTitle: "\u0646\u0637\u0627\u0642 \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641:",
+        workDate: "\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0639\u0645\u0644",
+        printMachine: "\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 (\u0635\u0641\u062d\u0629 \u0648\u0627\u062d\u062f\u0629)",
+        printBatch: "\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u062c\u0645\u064a\u0639 (\u062f\u0641\u0639\u0629)",
+        connectedToDb: "\u0645\u062a\u0635\u0644 \u0628\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a",
+        migrateLegacy: "\u2601\ufe0f \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0633\u0627\u0628\u0642\u0629",
+        readyStatusDraft: "\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f",
+        readyStatusReady: "\u2714\ufe0f \u062c\u0627\u0647\u0632 \u0648\u0645\u0639\u062a\u0645\u062f \u0644\u0644\u062a\u0634\u063a\u064a\u0644",
+        btnCommitDraft: "\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a",
+        btnCommitReady: "\u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a",
+        btnPrintMachineBtn: "\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629"
+      },
+      en: {
+        dashboard: "Dashboard",
+        catalogBtn: "Catalog Manager",
+        catalogTitle: "CATALOG MANAGER",
+        catalogDesc: "Link item codes to production lines and target hourly rates (Pcs/Hr)",
+        thCode: "Item Code",
+        thSpec: "Item Description & Specification",
+        thWeight: "Length & Nominal Weight",
+        thLine: "Production Line",
+        thRate: "Rate (Pcs/Hr)",
+        thAction: "Action",
+        btnAddRow: "+ Add New Item",
+        btnImport: "Import Excel",
+        btnExport: "Export Excel",
+        btnHarmonize: "Harmonize Specs",
+        btnRestore: "Restore Default",
+        btnCancel: "Cancel",
+        btnSave: "Save Changes",
+        btnDelete: "Delete",
+        machineLines: "Machine Lines:",
+        sampleData: "Sample Data",
+        reset: "Reset",
+        hourlyTarget: "Hourly Target (Pcs/Hr):",
+        schedulerTitle: "6-Day Run Schedule:",
+        workDate: "Work Date",
+        printMachine: "Print Machine (1 Page)",
+        printBatch: "Print All Lines (Batch)",
+        connectedToDb: "Connected to Database",
+        migrateLegacy: "☁️ Migrate Legacy Records",
+        readyStatusDraft: "Draft / In Setup - Please Commit",
+        readyStatusReady: "✔️ Ready & Committed for Production",
+        btnCommitDraft: "Commit Operational Setup",
+        btnCommitReady: "Operational Setup Committed",
+        btnPrintMachineBtn: "Print Machine Report"
+      }
+    };
+
+    function decodeUnicodeText(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+        .replace(/\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+    }
+
+    function toggleAppLanguage() {
+      const current = localStorage.getItem('almanar_lang') || 'ar';
+      const next = current === 'ar' ? 'en' : 'ar';
+      applyAppLanguage(next);
+    }
+
+    function applyAppLanguage(lang) {
+      const activeLang = (lang === 'en' || lang === 'ar') ? lang : (localStorage.getItem('almanar_lang') || 'ar');
+      localStorage.setItem('almanar_lang', activeLang);
+      document.documentElement.lang = activeLang;
+
+      // 1. Update Switcher Button Text
+      const langLabel = document.getElementById('langLabel');
+      if (langLabel) {
+        langLabel.textContent = activeLang === 'ar' ? 'English' : decodeUnicodeText('\u0639\u0631\u0628\u064a');
+      }
+
+      // 2. Update all static elements carrying data-i18n
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[activeLang] && i18n[activeLang][key]) {
+          el.textContent = decodeUnicodeText(i18n[activeLang][key]);
+        }
+      });
+
+      // 3. Update dynamic Scheduler Matrix
+      renderSchedulerMatrix();
+
+      // 4. Update Ambient Readiness & Commit Buttons
+      if (typeof window.currentMachineReadinessState === 'string') {
+        setMachineReadinessState(window.currentMachineReadinessState);
+      } else {
+        const dateInput = document.getElementById('reportDate');
+        const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+        const lineSelect = document.getElementById('lineSelect');
+        const currentLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
+        const batch = getBatchData(currentDate);
+        const isLocked = Boolean(batch && batch[currentLine]);
+        setMachineReadinessState(isLocked ? 'ready' : 'draft');
+      }
+
+      // 5. If Catalog Modal is open, re-render its table immediately
+      const modal = document.getElementById('catalogModal');
+      if (modal && !modal.classList.contains('hidden')) {
+        renderCatalogTable();
+      }
+
+      decodeUnicodeUI();
+    }
+
     const STORAGE_KEY = 'AL_MANAR_EXTRUSION_DAILY_MONITORING_DATA';
     const CATALOG_STORAGE_KEY = 'almanar_extrusion_catalog_v2';
 
@@ -1477,18 +1636,22 @@
         card.className = `cursor-pointer rounded-lg p-2 border ${borderClass} ${bgClass} transition flex flex-col justify-between select-none relative`;
         card.onclick = () => toggleScheduleDay(slot.isoDate);
 
+        const lang = localStorage.getItem('almanar_lang') || 'ar';
+        const dayLabel = lang === 'en' ? slot.dayNameEn : slot.dayNameAr;
+
         let workBadgeHtml = '';
         if (slot.isWorkDate) {
+          const badgeText = lang === 'en' ? 'Work Date' : decodeUnicodeText('\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0639\u0645\u0644');
           workBadgeHtml = `
             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-700 text-white shadow-2xs">
-              \u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0639\u0645\u0644
+              ${badgeText}
             </span>
           `;
         }
 
         card.innerHTML = `
           <div class="flex items-center justify-between gap-1 mb-1">
-            <span class="text-[10px] font-extrabold uppercase tracking-tight">${slot.dayNameAr} (${slot.dayNameEn})</span>
+            <span class="text-[10px] font-extrabold uppercase tracking-tight">${dayLabel}</span>
             ${checkmarkHtml}
           </div>
           <div class="flex items-baseline justify-between mt-0.5">
@@ -1509,6 +1672,7 @@
 
     // Ambient Readiness Indicator & Commit Button State Controller
     function setMachineReadinessState(state) {
+      window.currentMachineReadinessState = state;
       const container = document.getElementById('machineReadyStatus');
       const dot = document.getElementById('readyStatusDot');
       const text = document.getElementById('readyStatusText');
@@ -1518,25 +1682,27 @@
 
       if (!container || !dot || !text) return;
 
+      const lang = localStorage.getItem('almanar_lang') || 'ar';
+
       if (state === 'ready') {
         container.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-300 bg-emerald-50 border-emerald-300 text-emerald-800';
         dot.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]';
-        text.textContent = '\u2714\ufe0f \u062c\u0627\u0647\u0632 \u0648\u0645\u0639\u062a\u0645\u062f \u0644\u0644\u062a\u0634\u063a\u064a\u0644';
+        text.textContent = lang === 'en' ? '\u2714\ufe0f Ready & Committed for Production' : decodeUnicodeText('\u2714\ufe0f \u062c\u0627\u0647\u0632 \u0648\u0645\u0639\u062a\u0645\u062f \u0644\u0644\u062a\u0634\u063a\u064a\u0644');
 
         if (commitBtn) {
           commitBtn.className = 'px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer';
           if (commitIcon) commitIcon.textContent = '\u2714\ufe0f';
-          if (commitText) commitText.textContent = '\u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a';
+          if (commitText) commitText.textContent = lang === 'en' ? 'Operational Setup Committed' : decodeUnicodeText('\u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a');
         }
       } else {
         container.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-300 bg-amber-50 border-amber-200 text-amber-700';
         dot.className = 'w-3 h-3 rounded-full animate-pulse bg-amber-500';
-        text.textContent = '\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f';
+        text.textContent = lang === 'en' ? 'Draft / In Setup - Please Commit' : decodeUnicodeText('\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f');
 
         if (commitBtn) {
           commitBtn.className = 'px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer';
           if (commitIcon) commitIcon.textContent = '\ud83d\udd12';
-          if (commitText) commitText.textContent = '\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a';
+          if (commitText) commitText.textContent = lang === 'en' ? 'Commit Operational Setup' : decodeUnicodeText('\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a');
         }
       }
     }
@@ -1833,7 +1999,7 @@
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
             <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
-              \u062d\u0630\u0641
+              <span data-i18n="btnDelete">${(localStorage.getItem('almanar_lang') || 'ar') === 'en' ? 'Delete' : decodeUnicodeText('\u062d\u063f\u0641')}</span>
             </button>
           </td>
         `;
@@ -1865,7 +2031,7 @@
         </td>
         <td class="p-1.5 border border-slate-200 text-center">
           <button type="button" onclick="deleteCatalogRow(this)" class="px-2 py-1 text-[11px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded transition" title="Delete row">
-            \u062d\u0630\u0641
+            <span data-i18n="btnDelete">${(localStorage.getItem('almanar_lang') || 'ar') === 'en' ? 'Delete' : decodeUnicodeText('\\u062d\\u063f\\u0641')}</span>
           </button>
         </td>
       `;
@@ -3062,6 +3228,7 @@
       renderMachineTabs();
       renderSchedulerMatrix();
       decodeUnicodeUI();
+      applyAppLanguage(localStorage.getItem('almanar_lang') || 'ar');
 
       // Ambient status listener on specs fields
       ['prodSpec', 'prodLengthWeight', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity'].forEach(id => {
