@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
     $transfer_date = $_POST['transfer_date'];
     $notes = $_POST['notes'];
     
-    $upload_dir = 'uploads/iqama/';
+    $upload_dir = dirname(__DIR__) . '/uploads/iqama/';
     if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
 
     $file_path = '';
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
         
         if (in_array($file_type, ['pdf', 'png', 'jpg', 'jpeg'])) {
             if (move_uploaded_file($_FILES['receipt_file']['tmp_name'], $target_file)) {
-                $file_path = $target_file;
+                $file_path = 'uploads/iqama/' . $file_name;
             }
         }
     }
@@ -84,7 +84,7 @@ if ($remaining < 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة تجديد الإقامة</title>
+    <title>متابعة تجديد الإقامة | مصنع المنار للبلاستيك</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -175,7 +175,7 @@ if ($remaining < 0) {
                                 <td class="align-middle fw-bold text-muted" dir="ltr">SAR <?= number_format($cumulative, 2) ?></td>
                                 <td class="align-middle">
                                     <?php if($inst['file_path']): ?>
-                                        <a href="<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
+                                        <a href="<?= (str_starts_with($inst['file_path'], 'http') || str_starts_with($inst['file_path'], '../') ? '' : '../') . htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
                                     <?php else: ?>
                                         <span class="text-muted small">-</span>
                                     <?php endif; ?>

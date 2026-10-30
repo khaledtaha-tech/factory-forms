@@ -523,7 +523,7 @@ foreach ($publicForms as $pf) {
                 <!-- Custom Card: Iqama Renewal Application -->
                 <div class="col-12 col-md-6 col-lg-4 mb-4 form-card card h-100 position-relative bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
                      data-title="<?= htmlspecialchars(mb_strtolower($form['title'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
-                     data-subtitle="<?= htmlspecialchars(mb_strtolower($form['subtitle'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-subtitle="<?= htmlspecialchars(mb_strtolower(!empty($form['subtitle']) ? $form['subtitle'] : u('\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643'), 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-code="<?= htmlspecialchars(mb_strtolower($form['code'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-filename="<?= htmlspecialchars(mb_strtolower($form['filename'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-category="<?= htmlspecialchars($form['category'], ENT_QUOTES, 'UTF-8') ?>"
@@ -546,7 +546,7 @@ foreach ($publicForms as $pf) {
                                 <?= htmlspecialchars($form['category'], ENT_QUOTES, 'UTF-8') ?>
                             </span>
                             <h4 class="card-title fw-bold text-dark mb-2 text-lg"><?= htmlspecialchars($form['title'], ENT_QUOTES, 'UTF-8') ?></h4>
-                            <p class="card-text text-muted mb-0 text-xs"><?= htmlspecialchars($form['subtitle'], ENT_QUOTES, 'UTF-8') ?></p>
+                            <p class="card-text text-muted mb-0 text-xs"><?= !empty($form['subtitle']) ? htmlspecialchars($form['subtitle'], ENT_QUOTES, 'UTF-8') : u('\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643') ?></p>
                         </div>
 
                         <div class="form-meta d-flex justify-content-between text-muted small mb-4 pt-3 border-top">
@@ -589,7 +589,7 @@ foreach ($publicForms as $pf) {
                 <?php else: ?>
                 <div class="form-card bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
                      data-title="<?= htmlspecialchars(mb_strtolower($form['title'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
-                     data-subtitle="<?= htmlspecialchars(mb_strtolower($form['subtitle'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                     data-subtitle="<?= htmlspecialchars(mb_strtolower(!empty($form['subtitle']) ? $form['subtitle'] : u('\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643'), 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-code="<?= htmlspecialchars(mb_strtolower($form['code'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-filename="<?= htmlspecialchars(mb_strtolower($form['filename'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-category="<?= htmlspecialchars($form['category'], ENT_QUOTES, 'UTF-8') ?>"
