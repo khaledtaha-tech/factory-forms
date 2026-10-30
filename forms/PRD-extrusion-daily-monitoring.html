@@ -56,7 +56,7 @@
       }
 
       /* Hide interactive toolbars, modals, tabs, and toasts */
-      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus, #btnMigrateLegacy {
+      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus, #btnMigrateLegacy, #machineReadyStatus, #schedulerMatrix {
         display: none !important;
       }
 
@@ -287,23 +287,59 @@
   </header>
 
   <!-- ==============================================================================
-       MULTI-MACHINE DAILY TABS & COMMIT CONTROLS (NON-PRINT)
+       MULTI-MACHINE DAILY TABS, 6-DAY SCHEDULER & COMMIT CONTROLS (NON-PRINT)
        ============================================================================== -->
-  <div id="machineTabsContainer" class="no-print max-w-[210mm] mx-auto mb-2.5 bg-white border border-slate-300 rounded-xl p-2.5 shadow-xs">
-    <div class="flex items-center justify-between mb-2 px-1 flex-wrap gap-2">
-      <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-        <span>\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c (Machine Lines):</span>
-      </span>
+  <div id="machineTabsContainer" class="no-print max-w-[210mm] mx-auto mb-2.5 bg-white border border-slate-300 rounded-xl p-3 shadow-xs">
+    <div class="flex items-center justify-between mb-2.5 px-1 flex-wrap gap-2.5">
       <div class="flex items-center gap-2">
-        <button type="button" onclick="lockAndCommitActiveMachine()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition cursor-pointer" title="Lock & Add this machine to batch print queue">
-          <span>\ud83d\udd12 \u0627\u0639\u062a\u0645\u0627\u062f \u0648\u062a\u062b\u0628\u064a\u062a \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629 (Lock &amp; Add)</span>
-        </button>
+        <span class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          <span>\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c (Machine Lines):</span>
+        </span>
         <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
       </div>
+
+      <!-- Ambient Readiness State Indicator & Dual Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Visual Readiness Indicator -->
+        <div id="machineReadyStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-300 bg-amber-50 border-amber-200 text-amber-700">
+          <span id="readyStatusDot" class="w-3 h-3 rounded-full animate-pulse bg-amber-500"></span>
+          <span id="readyStatusText">\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f</span>
+        </div>
+
+        <!-- Button 1: Commit Operational Setup -->
+        <button id="btnCommitSetup" type="button" onclick="lockAndCommitActiveMachine()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a">
+          <span id="btnCommitSetupIcon">\ud83d\udd12</span>
+          <span id="btnCommitSetupText">\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a</span>
+        </button>
+
+        <!-- Button 2: Print Current Machine Report -->
+        <button id="btnPrintMachine" type="button" onclick="printCurrentMachine()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          <span>\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629</span>
+        </button>
+      </div>
     </div>
-    <div id="machineTabsBar" class="flex flex-wrap gap-1.5">
+
+    <!-- Machine Tabs Bar (L-01 to L-07) -->
+    <div id="machineTabsBar" class="flex flex-wrap gap-1.5 mb-2.5">
       <!-- Tabs populated dynamically via renderMachineTabs() -->
+    </div>
+
+    <!-- 6-DAY PRODUCTION RUN MATRIX WIDGET -->
+    <div id="schedulerMatrix" class="pt-2.5 border-t border-slate-200">
+      <div class="flex items-center justify-between mb-2 px-0.5 flex-wrap gap-1">
+        <span class="text-[11px] font-extrabold text-slate-800 flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs"></span>
+          <span>\u0646\u0637\u0627\u0642 \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641 (6-Day Run Schedule):</span>
+        </span>
+        <span class="text-[10px] text-slate-500 font-medium">
+          \u062d\u062f\u062f \u0623\u064a\u0627\u0645 \u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0635\u0646\u0641 \u0644\u062a\u0639\u0645\u064a\u0645 \u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629 \u0648\u0627\u0644\u0645\u0639\u062f\u0644 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b
+        </span>
+      </div>
+      <div id="scheduleDaysGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+        <!-- Dynamically rendered via renderSchedulerMatrix() -->
+      </div>
     </div>
   </div>
 
@@ -386,8 +422,8 @@
             </select>
           </div>
 
-          <!-- [2] Product Name & Specification -->
-          <div class="col-span-3 border-r border-slate-300 pr-1.5 param-col-spec">
+          <!-- [2] Product Name & Specification (Expanded to 4 columns) -->
+          <div class="col-span-4 border-r border-slate-300 pr-1.5 param-col-spec">
             <label for="prodSpec" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [2] Product Spec:
             </label>
@@ -406,14 +442,6 @@
             <input type="hidden" id="lineNo" value="L-01 - KTS 350 TDH">
           </div>
 
-          <!-- [4] Standard Speed (Hidden in Print) -->
-          <div class="col-span-1 border-r border-slate-300 pr-1.5 print-hide-speed">
-            <label for="stdSpeed" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [4] Speed:
-            </label>
-            <input type="text" id="stdSpeed" value="4 M/Min" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate">
-          </div>
-
           <!-- [5] Nominal Capacity -->
           <div class="col-span-1 border-r border-slate-300 pr-1.5">
             <label for="nomCapacity" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
@@ -430,6 +458,7 @@
             <input type="text" id="prodLengthWeight" value="6M - 6.00 Kg/Pc" oninput="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none" title="Pipe Length & Nominal Weight">
             <input type="hidden" id="nomWeight" value="6.00">
             <input type="hidden" id="nominalWeight" value="6.00">
+            <input type="hidden" id="pipeLength" value="6M">
           </div>
 
           <!-- [7] Hourly Target Baseline (Pcs/Hr) -->
@@ -440,6 +469,8 @@
               </label>
             </div>
             <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center" title="Hourly Target in Pcs/Hr">
+            <input type="hidden" id="hourlyRate" value="47">
+            <input type="hidden" id="stdSpeed" value="">
           </div>
 
         </div>
@@ -1015,8 +1046,12 @@
     // Synchronize toolbar and metadata rate inputs and recalculate cumulative columns
     function syncHourlyRate(value) {
       const rate = parseInt(value) || 0;
-      document.getElementById('toolbarRateInput').value = rate;
-      document.getElementById('hourlyTargetMeta').value = rate;
+      const toolbarInput = document.getElementById('toolbarRateInput');
+      if (toolbarInput) toolbarInput.value = rate;
+      const metaInput = document.getElementById('hourlyTargetMeta');
+      if (metaInput) metaInput.value = rate;
+      const hourlyRateHidden = document.getElementById('hourlyRate');
+      if (hourlyRateHidden) hourlyRateHidden.value = rate;
 
       // Recalculate 24 hourly rows cumulative standard baseline
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
@@ -1028,14 +1063,17 @@
         }
       });
 
-      // Update Shift Targets
+      // Update Shift Targets (Shift 1 = 12 * Rate, Shift 2 = 12 * Rate, Total = 24 * Rate)
       const s1Target = rate * 12;
       const s2Target = rate * 12;
       const totalTarget = rate * 24;
 
-      document.getElementById('s1_target').textContent = formatNumber(s1Target);
-      document.getElementById('s2_target').textContent = formatNumber(s2Target);
-      document.getElementById('total_std_target').textContent = formatNumber(totalTarget);
+      const s1El = document.getElementById('s1_target');
+      if (s1El) s1El.textContent = formatNumber(s1Target);
+      const s2El = document.getElementById('s2_target');
+      if (s2El) s2El.textContent = formatNumber(s2Target);
+      const totalEl = document.getElementById('total_std_target');
+      if (totalEl) totalEl.textContent = formatNumber(totalTarget);
 
       recalcShiftSummaries();
       saveToStorage();
@@ -1280,10 +1318,11 @@
       });
 
       const badge = document.getElementById('activeMachineBadge');
+      const isLocked = Boolean(batch && batch[currentLine]);
       if (badge) {
-        const isLocked = Boolean(batch && batch[currentLine]);
         badge.innerHTML = isLocked ? `<span>${currentLine}</span> <span class="text-xs">\ud83d\udd12</span>` : `<span>${currentLine}</span>`;
       }
+      setMachineReadinessState(isLocked ? 'ready' : 'draft');
     }
 
     // Update active tab styling
@@ -1315,7 +1354,194 @@
       renderMachineTabs();
     }
 
-    // Step 1: Item Code Selection changed
+
+    // ==============================================================================
+    // 6-DAY PRODUCTION RUN SCHEDULER & AMBIENT READINESS INDICATOR ENGINE
+    // ==============================================================================
+
+    window.activeMachineSchedules = window.activeMachineSchedules || {};
+
+    // Generate 6 consecutive day slots based on T from #reportDate (T-2, T-1, T, T+1, T+2, T+3)
+    function getScheduleDates(currentDate) {
+      const parts = currentDate.split('-');
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+
+      const slots = [];
+      const offsets = [-2, -1, 0, 1, 2, 3];
+      const ARABIC_DAYS = [
+        '\u0627\u0644\u0623\u062d\u062f',    // Sun
+        '\u0627\u0644\u0627\u062b\u0646\u064a\u0646', // Mon
+        '\u0627\u0644\u062b\u0644\u0627\u062b\u0627\u0621',// Tue
+        '\u0627\u0644\u0623\u0631\u0628\u0639\u0627\u0621',// Wed
+        '\u0627\u0644\u062e\u0645\u064a\u0633', // Thu
+        '\u0627\u0644\u062c\u0645\u0639\u0629',  // Fri
+        '\u0627\u0644\u0633\u0628\u062a'     // Sat
+      ];
+      const ENG_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      offsets.forEach((offset, idx) => {
+        const d = new Date(Date.UTC(year, month, day + offset, 12, 0, 0));
+        const iso = d.toISOString().split('T')[0];
+        const dayFormatted = String(d.getUTCDate()).padStart(2, '0');
+        const monthFormatted = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const dayOfWeek = d.getUTCDay();
+
+        slots.push({
+          index: idx + 1,
+          offset: offset,
+          isoDate: iso,
+          formattedDate: `${dayFormatted}/${monthFormatted}`,
+          dayNameAr: ARABIC_DAYS[dayOfWeek],
+          dayNameEn: ENG_DAYS[dayOfWeek],
+          isWorkDate: offset === 0
+        });
+      });
+
+      return slots;
+    }
+
+    // Retrieve active schedule selection for a given machine line
+    function getActiveSelectedDates(activeLine, currentDate) {
+      if (window.activeMachineSchedules && Array.isArray(window.activeMachineSchedules[activeLine])) {
+        return window.activeMachineSchedules[activeLine];
+      }
+      const batch = getBatchData(currentDate);
+      if (batch && batch[activeLine] && Array.isArray(batch[activeLine].selectedDates)) {
+        return batch[activeLine].selectedDates;
+      }
+      const stored = localStorage.getItem(`almanar_sched_${activeLine}`);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {}
+      }
+      return [currentDate];
+    }
+
+    // Toggle specific day in 6-day production run matrix
+    function toggleScheduleDay(dateStr) {
+      const lineSelect = document.getElementById('lineSelect');
+      const activeLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+
+      let dates = [...getActiveSelectedDates(activeLine, currentDate)];
+      if (dates.includes(dateStr)) {
+        dates = dates.filter(d => d !== dateStr);
+      } else {
+        dates.push(dateStr);
+      }
+
+      window.activeMachineSchedules[activeLine] = dates;
+      localStorage.setItem(`almanar_sched_${activeLine}`, JSON.stringify(dates));
+
+      setMachineReadinessState('draft');
+      renderSchedulerMatrix();
+    }
+
+    // Render interactive 6-day matrix UI
+    function renderSchedulerMatrix() {
+      const grid = document.getElementById('scheduleDaysGrid');
+      if (!grid) return;
+
+      const dateInput = document.getElementById('reportDate');
+      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const lineSelect = document.getElementById('lineSelect');
+      const activeLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
+
+      const slots = getScheduleDates(currentDate);
+      const selectedDates = getActiveSelectedDates(activeLine, currentDate);
+
+      grid.innerHTML = '';
+
+      slots.forEach(slot => {
+        const isChecked = selectedDates.includes(slot.isoDate);
+        const card = document.createElement('div');
+
+        let borderClass = 'border-slate-200';
+        let bgClass = 'bg-slate-50 text-slate-700 hover:bg-slate-100';
+        let checkmarkHtml = '<span class="w-4 h-4 rounded border border-slate-300 flex items-center justify-center bg-white text-[10px] text-transparent">\u2714</span>';
+
+        if (isChecked) {
+          borderClass = slot.isWorkDate ? 'border-2 border-emerald-600 ring-2 ring-emerald-500/20' : 'border-emerald-500';
+          bgClass = 'bg-emerald-50/95 text-emerald-950 font-bold shadow-2xs';
+          checkmarkHtml = '<span class="w-4 h-4 rounded bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">\u2714</span>';
+        } else if (slot.isWorkDate) {
+          borderClass = 'border-2 border-blue-400';
+          bgClass = 'bg-blue-50/50 text-blue-950';
+        }
+
+        card.className = `cursor-pointer rounded-lg p-2 border ${borderClass} ${bgClass} transition flex flex-col justify-between select-none relative`;
+        card.onclick = () => toggleScheduleDay(slot.isoDate);
+
+        let workBadgeHtml = '';
+        if (slot.isWorkDate) {
+          workBadgeHtml = `
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-700 text-white shadow-2xs">
+              \u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0639\u0645\u0644
+            </span>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-1 mb-1">
+            <span class="text-[10px] font-extrabold uppercase tracking-tight">${slot.dayNameAr} (${slot.dayNameEn})</span>
+            ${checkmarkHtml}
+          </div>
+          <div class="flex items-baseline justify-between mt-0.5">
+            <span class="text-xs font-black font-mono tracking-tight">${slot.formattedDate}</span>
+            <span class="text-[8px] font-mono text-slate-400">${slot.isoDate.substring(5)}</span>
+          </div>
+          <div class="mt-1 flex items-center justify-between">
+            <span class="text-[8px] font-bold text-slate-500 font-mono">Day ${slot.index}</span>
+            ${workBadgeHtml}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      decodeUnicodeUI();
+    }
+
+    // Ambient Readiness Indicator & Commit Button State Controller
+    function setMachineReadinessState(state) {
+      const container = document.getElementById('machineReadyStatus');
+      const dot = document.getElementById('readyStatusDot');
+      const text = document.getElementById('readyStatusText');
+      const commitBtn = document.getElementById('btnCommitSetup');
+      const commitIcon = document.getElementById('btnCommitSetupIcon');
+      const commitText = document.getElementById('btnCommitSetupText');
+
+      if (!container || !dot || !text) return;
+
+      if (state === 'ready') {
+        container.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-300 bg-emerald-50 border-emerald-300 text-emerald-800';
+        dot.className = 'w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]';
+        text.textContent = '\u2714\ufe0f \u062c\u0627\u0647\u0632 \u0648\u0645\u0639\u062a\u0645\u062f \u0644\u0644\u062a\u0634\u063a\u064a\u0644';
+
+        if (commitBtn) {
+          commitBtn.className = 'px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer';
+          if (commitIcon) commitIcon.textContent = '\u2714\ufe0f';
+          if (commitText) commitText.textContent = '\u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a';
+        }
+      } else {
+        container.className = 'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-300 bg-amber-50 border-amber-200 text-amber-700';
+        dot.className = 'w-3 h-3 rounded-full animate-pulse bg-amber-500';
+        text.textContent = '\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f';
+
+        if (commitBtn) {
+          commitBtn.className = 'px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer';
+          if (commitIcon) commitIcon.textContent = '\ud83d\udd12';
+          if (commitText) commitText.textContent = '\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a';
+        }
+      }
+    }
+
+    // Step 1: Item Code Selection changed (Auto-fill Spec, Weight & Length, Hourly Rate, Recalc Shift Targets)
     function handleItemCodeChange() {
       const catalog = getCatalog();
       const itemCodeEl = document.getElementById('itemCodeSelect');
@@ -1330,13 +1556,13 @@
       if (matches.length > 0) {
         const primary = matches[0];
 
-        // 1. Fill Product Name & Specification (#prodSpec / #productSpec alias)
+        // 1. Auto-fill Product Specification (#prodSpec / #productSpec alias)
         const prodSpec = document.getElementById('prodSpec');
         if (prodSpec) prodSpec.value = primary.itemName;
         const prodSpecAlias = document.getElementById('productSpec');
         if (prodSpecAlias) prodSpecAlias.value = primary.itemName;
 
-        // 2. Fill Pipe Length & Nominal Weight (#prodLengthWeight / #nominalWeight / #nomWeight)
+        // 2. Auto-fill Weight & Length (#prodLengthWeight / #nominalWeight / #nomWeight / #pipeLength)
         const prodLenWt = document.getElementById('prodLengthWeight');
         if (prodLenWt) prodLenWt.value = primary.lengthWeight;
 
@@ -1346,21 +1572,27 @@
         const nomWtAlias = document.getElementById('nominalWeight');
         if (nomWtAlias) nomWtAlias.value = numWeight.toFixed(2);
 
-        // 3. Step 2 check: Look up combination (Item Code + Selected Line)
+        const pipeLenEl = document.getElementById('pipeLength');
+        if (pipeLenEl) {
+          const m = primary.lengthWeight.match(/^(\d+M)/i);
+          pipeLenEl.value = m ? m[1].toUpperCase() : '6M';
+        }
+
+        // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr (#hourlyRate / #hourlyTargetMeta / #toolbarRateInput)
         const exactMatch = catalog.find(e => 
           String(e.itemCode).trim() === itemCode && String(e.machineLine).trim() === currentLine
         );
 
-        if (exactMatch) {
-          syncHourlyRate(exactMatch.hourlyRate);
-          showToast(`Target Rate: ${exactMatch.hourlyRate} Pcs/Hr (${itemCode} on ${currentLine})`);
-        } else {
-          // If no specific combination exists, allow manual hourly rate entry without breaking stepper
-          showToast(`Item ${itemCode} selected. Custom or manual rate allowed.`);
-        }
+        const targetRate = exactMatch ? exactMatch.hourlyRate : (primary.hourlyRate || 47);
+        syncHourlyRate(targetRate);
 
+        // 4. Recalculate shift targets (Shift 1 = 12 * Rate, Shift 2 = 12 * Rate, Total = 24 * Rate)
         recalcShiftSummaries();
         saveToStorage();
+
+        // 5. Ambient state transitions to Draft / In Setup
+        setMachineReadinessState('draft');
+        showToast(`Target Rate: ${targetRate} Pcs/Hr (${itemCode} on ${currentLine})`);
       }
     }
 
@@ -2393,7 +2625,7 @@
       showToast(`\\u2705 \\u062a\\u0645 \\u062a\\u0631\\u062d\\u064a\\u0644 \\u062c\\u0645\\u064a\\u0639 \\u0627\\u0644\\u0633\\u062c\\u0644\\u0627\\u062a \\u0627\\u0644\\u0633\\u0627\\u0628\\u0642\\u0629 (${successCount}) \\u0625\\u0644\\u0649 \\u0642\\u0627\\u0639\\u062f\\u0629 \\u0627\\u0644\\u0628\\u064a\\u0627\\u0646\\u0627\\u062a \\u0628\\u0646\\u062c\\u0627\\u062d!`);
     }
 
-    // Explicit Machine Commit / Locking Engine
+    // Explicit Machine Commitment, 6-Day Schedule Propagation & Readiness Lock
     function lockAndCommitActiveMachine() {
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
@@ -2417,7 +2649,13 @@
       });
 
       const nomWeightVal = nomWt ? nomWt.value : extractNominalWeight(prodLenWt ? prodLenWt.value : '').toFixed(2);
-      const lengthWeightVal = prodLenWt ? prodLenWt.value : `6M - ${nomWeightVal} Kg/Pc`;
+      const lengthWeightVal = prodLenWt ? prodLenWt.value : ('6M - ' + nomWeightVal + ' Kg/Pc');
+
+      // 6-day production schedule selection
+      let selectedDates = getActiveSelectedDates(activeLine, currentDate);
+      if (!selectedDates.includes(currentDate)) {
+        selectedDates.push(currentDate);
+      }
 
       const machinePayload = {
         itemCode: itemSelect ? itemSelect.value : '',
@@ -2425,6 +2663,8 @@
         nominalWeight: nomWeightVal,
         lengthWeight: lengthWeightVal,
         hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
+        capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '300 Kg/h',
+        selectedDates: selectedDates,
         hourlyData: hourlyData,
         supervisorRemarks1: document.getElementById('s1_remarks') ? document.getElementById('s1_remarks').value : '',
         supervisorRemarks2: document.getElementById('s2_remarks') ? document.getElementById('s2_remarks').value : '',
@@ -2432,26 +2672,55 @@
         daySign: document.getElementById('daySignature') ? document.getElementById('daySignature').value : '',
         nightLead: document.getElementById('nightLeadName') ? document.getElementById('nightLeadName').value : '',
         nightSign: document.getElementById('nightSignature') ? document.getElementById('nightSignature').value : '',
-        speed: document.getElementById('stdSpeed') ? document.getElementById('stdSpeed').value : '4 M/Min',
-        capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '300 Kg/h',
         timestamp: Date.now()
       };
 
-      // 1. Save into almanar_batch_${currentDate}[activeLine]
+      // 1. Save into active date batch & daily key
       const batch = getBatchData(currentDate);
       batch[activeLine] = machinePayload;
       saveBatchData(currentDate, batch);
-
-      // 2. Also save to daily key for state continuity
       saveToStorage();
 
-      // 3. Mark line tab as committed (\u2705)
+      // 2. Multi-day schedule propagation across all checked dates
+      selectedDates.forEach(d => {
+        if (d !== currentDate) {
+          const dBatch = getBatchData(d) || {};
+          const existing = dBatch[activeLine] || {};
+          const replicated = Object.assign({}, existing, {
+            itemCode: machinePayload.itemCode,
+            prodSpec: machinePayload.prodSpec,
+            nominalWeight: machinePayload.nominalWeight,
+            lengthWeight: machinePayload.lengthWeight,
+            hourlyRate: machinePayload.hourlyRate,
+            capacity: machinePayload.capacity,
+            selectedDates: machinePayload.selectedDates,
+            timestamp: Date.now()
+          });
+          if (!replicated.hourlyData || replicated.hourlyData.length === 0) {
+            replicated.hourlyData = [];
+          }
+          dBatch[activeLine] = replicated;
+          saveBatchData(d, dBatch);
+
+          const dailyKey = getDailyStorageKey(d, activeLine);
+          localStorage.setItem(dailyKey, JSON.stringify(replicated));
+
+          // Queue cloud sync for replicated date
+          syncMachineToCloud(activeLine, d, replicated);
+        }
+      });
+
+      // 3. Mark Readiness Status as Operational Ready
+      setMachineReadinessState('ready');
+
+      // 4. Update tab icons and 6-day scheduler grid
       renderMachineTabs();
+      renderSchedulerMatrix();
 
-      // 4. Toast notification
-      showToast('\ud83d\udd12 \u062a\u0645 \u062a\u062b\u0628\u064a\u062a \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 \u0648\u0625\u0636\u0627\u0641\u062a\u0647\u0627 \u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0637\u0628\u0627\u0639\u0629');
+      // 5. Toast notification
+      showToast('\u2705 \u062a\u0645 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a (' + selectedDates.length + ' \u0623\u064a\u0627\u0645)');
 
-      // 5. Dual-Layer Central Database Cloud Sync
+      // 6. Dual-layer cloud sync for current date
       syncMachineToCloud(activeLine, currentDate, machinePayload);
       checkUnmigratedRecordsBadge();
     }
@@ -2506,6 +2775,7 @@
       }
 
       renderMachineTabs();
+      renderSchedulerMatrix();
 
       // Dual-Layer Persistence: Fetch latest cloud record in background
       fetchCloudMachineRecord(targetLine, currentDate);
@@ -2555,6 +2825,7 @@
       }
 
       renderMachineTabs();
+      renderSchedulerMatrix();
 
       // Dual-Layer Persistence: Fetch latest cloud record in background
       fetchCloudMachineRecord(currentLine, newDate);
@@ -2789,7 +3060,16 @@
       }
 
       renderMachineTabs();
+      renderSchedulerMatrix();
       decodeUnicodeUI();
+
+      // Ambient status listener on specs fields
+      ['prodSpec', 'prodLengthWeight', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', () => setMachineReadinessState('draft'));
+        }
+      });
 
       // Dual-Layer Persistence: Fetch latest cloud record for initial machine
       fetchCloudMachineRecord(initialLine, currentDate);
