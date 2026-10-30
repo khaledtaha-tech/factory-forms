@@ -10,7 +10,7 @@
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'u976858450_forms_hub');
 define('DB_USER', getenv('DB_USER') ?: 'u976858450_forms_admin');
-define('DB_PASS', getenv('DB_PASS') ?: 'F0rms#Hub$2026@P0lymer!');
+define('DB_PASS', getenv('DB_PASS') ?: 'FormsHub2026SecurePassX9');
 define('DB_PORT', (int)(getenv('DB_PORT') ?: 3306));
 define('DB_REMOTE_HOST', 'srv1650.hstgr.io');
 
