@@ -54,7 +54,7 @@
       }
 
       /* Hide interactive toolbars, modals, tabs, and toasts */
-      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus {
+      .no-print, button, .action-bar, #toast, #catalogModal, #machineTabsContainer, #machineTabsBar, #cloudSyncStatus, #btnMigrateLegacy {
         display: none !important;
       }
 
@@ -243,6 +243,9 @@
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         <span>\u0645\u062a\u0635\u0644 \u0628\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a</span>
       </div>
+      <button id="btnMigrateLegacy" type="button" onclick="runOneClickCloudMigration()" class="hidden px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-bold shadow flex items-center gap-1.5 transition animate-pulse" title="Migrate historical local records to central MySQL database">
+        <span>\u2601\ufe0f \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0633\u0627\u0628\u0642\u0629 (<span id="unmigratedCount">0</span>)</span>
+      </button>
     </div>
 
     <!-- Smart Hourly Rate Stepper, Catalog Trigger & Controls -->
@@ -2127,6 +2130,8 @@
         const res = await response.json();
         if (res && res.status === 'success') {
           updateCloudSyncStatus('connected');
+          markKeyAsSynced(`${date}_${machineLine}`);
+          checkUnmigratedRecordsBadge();
           showToast("\\u2705 \\u062a\\u0645 \\u0627\\u0644\\u062d\\u0641\\u0638 \\u0627\\u0644\\u0633\\u062d\\u0627\\u0628\\u064a \\u0628\\u0642\\u0627\\u0639\\u062f\\u0629 \\u0627\\u0644\\u0628\\u064a\\u0627\\u0646\\u0627\\u062a \\u0628\\u0646\\u062c\\u0627\\u062d");
         } else {
           console.warn('Cloud sync error:', res);
@@ -2211,6 +2216,181 @@
       }
     }
 
+    // ==============================================================================
+    // ONE-CLICK HISTORICAL LOCALSTORAGE TO MYSQL MIGRATION ENGINE
+    // ==============================================================================
+    function getSyncedKeys() {
+      try {
+        const raw = localStorage.getItem('almanar_synced_keys');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+      return [];
+    }
+
+    function markKeyAsSynced(compositeKey) {
+      try {
+        const keys = getSyncedKeys();
+        if (!keys.includes(compositeKey)) {
+          keys.push(compositeKey);
+          localStorage.setItem('almanar_synced_keys', JSON.stringify(keys));
+        }
+      } catch (e) {}
+    }
+
+    function getUnmigratedLocalStorageRecords() {
+      const syncedKeys = getSyncedKeys();
+      const pending = [];
+      const seenCompositeKeys = new Set();
+
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+
+          // 1. Scan almanar_batch_* keys
+          if (key.startsWith('almanar_batch_')) {
+            const dateStr = key.replace('almanar_batch_', '').trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+              try {
+                const batchObj = JSON.parse(localStorage.getItem(key));
+                if (batchObj && typeof batchObj === 'object') {
+                  Object.keys(batchObj).forEach(line => {
+                    const recordData = batchObj[line];
+                    if (recordData && typeof recordData === 'object') {
+                      const compositeKey = `${dateStr}_${line}`;
+                      if (!syncedKeys.includes(compositeKey) && !seenCompositeKeys.has(compositeKey)) {
+                        seenCompositeKeys.add(compositeKey);
+                        pending.push({
+                          date: dateStr,
+                          line: line,
+                          data: recordData,
+                          compositeKey: compositeKey
+                        });
+                      }
+                    }
+                  });
+                }
+              } catch (e) {}
+            }
+          }
+
+          // 2. Scan legacy almanar_daily_YYYY-MM-DD_* keys
+          const dailyMatch = key.match(/^almanar_daily_(\d{4}-\d{2}-\d{2})_(.+)$/);
+          if (dailyMatch) {
+            const dateStr = dailyMatch[1];
+            const line = dailyMatch[2];
+            const compositeKey = `${dateStr}_${line}`;
+            if (!syncedKeys.includes(compositeKey) && !seenCompositeKeys.has(compositeKey)) {
+              try {
+                const recordData = JSON.parse(localStorage.getItem(key));
+                if (recordData && typeof recordData === 'object') {
+                  const hasContent = (recordData.rows && recordData.rows.some(r => r.good || r.downtime || r.cause || r.reject)) ||
+                                     recordData.s1_remarks || recordData.s2_remarks;
+                  if (hasContent) {
+                    seenCompositeKeys.add(compositeKey);
+                    pending.push({
+                      date: dateStr,
+                      line: line,
+                      data: recordData,
+                      compositeKey: compositeKey
+                    });
+                  }
+                }
+              } catch (e) {}
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error scanning unmigrated records:', err);
+      }
+
+      return pending;
+    }
+
+    function checkUnmigratedRecordsBadge() {
+      const btn = document.getElementById('btnMigrateLegacy');
+      const countEl = document.getElementById('unmigratedCount');
+      if (!btn || !countEl) return;
+
+      const pending = getUnmigratedLocalStorageRecords();
+      if (pending.length > 0) {
+        countEl.textContent = pending.length;
+        btn.classList.remove('hidden');
+        decodeUnicodeUI();
+      } else {
+        btn.classList.add('hidden');
+      }
+    }
+
+    async function runOneClickCloudMigration() {
+      const btn = document.getElementById('btnMigrateLegacy');
+      const pending = getUnmigratedLocalStorageRecords();
+
+      if (pending.length === 0) {
+        showToast("\\u2705 \\u062c\\u0645\\u064a\\u0639 \\u0627\\u0644\\u0628\\u064a\\u0627\\u0646\\u0627\\u062a \\u0627\\u0644\\u0633\\u0627\\u0628\\u0642\\u0629 \\u0645\\u0631\\u062d\\u0644\\u0629 \\u0628\\u0627\\u0644\\u0641\\u0639\\u0644 \\u0644\\u0642\\u0627\\u0626\\u0645\\u0629 \\u0627\\u0644\\u0633\\u062d\\u0627\\u0628");
+        checkUnmigratedRecordsBadge();
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.remove('animate-pulse');
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+      }
+
+      updateCloudSyncStatus('syncing');
+      let successCount = 0;
+      const total = pending.length;
+
+      for (let i = 0; i < total; i++) {
+        const item = pending[i];
+        if (btn) {
+          btn.innerHTML = `<span>\\u23f3 \\u062c\\u0627\\u0631\\u064a \\u062a\\u0631\\u062d\\u064a\\u0644 (${i + 1}/${total})...</span>`;
+          decodeUnicodeUI();
+        }
+
+        try {
+          const payload = {
+            action: 'save',
+            form_type: 'extrusion_daily',
+            form_ref: 'DOC-EXT.-03',
+            entry_date: item.date,
+            machine_line: item.line,
+            form_data: item.data
+          };
+
+          const response = await fetch('../api.php?action=save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const res = await response.json();
+          if (res && (res.status === 'success' || response.ok)) {
+            markKeyAsSynced(item.compositeKey);
+            successCount++;
+          } else {
+            console.warn('Migration item warning:', item, res);
+          }
+        } catch (err) {
+          console.error('Migration network error for item:', item, err);
+        }
+      }
+
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+
+      updateCloudSyncStatus('connected');
+      checkUnmigratedRecordsBadge();
+
+      showToast(`\\u2705 \\u062a\\u0645 \\u062a\\u0631\\u062d\\u064a\\u0644 \\u062c\\u0645\\u064a\\u0639 \\u0627\\u0644\\u0633\\u062c\\u0644\\u0627\\u062a \\u0627\\u0644\\u0633\\u0627\\u0628\\u0642\\u0629 (${successCount}) \\u0625\\u0644\\u0649 \\u0642\\u0627\\u0639\\u062f\\u0629 \\u0627\\u0644\\u0628\\u064a\\u0627\\u0646\\u0627\\u062a \\u0628\\u0646\\u062c\\u0627\\u062d!`);
+    }
+
     // Explicit Machine Commit / Locking Engine
     function lockAndCommitActiveMachine() {
       const dateInput = document.getElementById('reportDate');
@@ -2271,6 +2451,7 @@
 
       // 5. Dual-Layer Central Database Cloud Sync
       syncMachineToCloud(activeLine, currentDate, machinePayload);
+      checkUnmigratedRecordsBadge();
     }
 
     // Switch active machine with complete data isolation
@@ -2610,6 +2791,9 @@
 
       // Dual-Layer Persistence: Fetch latest cloud record for initial machine
       fetchCloudMachineRecord(initialLine, currentDate);
+
+      // Check for unmigrated local storage historical records
+      checkUnmigratedRecordsBadge();
 
       window.addEventListener('afterprint', () => {
         document.body.classList.remove('batch-mode');

@@ -724,6 +724,7 @@
                 console.error("فشل قراءة المهام من التخزين", e);
                 tasks = [...INITIAL_TASKS];
             }
+            fetchMonjezCloudTasks();
         }
 
         function saveTasks() {
@@ -731,9 +732,53 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
                 updateStats();
                 updatePeopleDatalistAndFilter();
+                syncMonjezToCloud();
             } catch (e) {
                 console.error("فشل حفظ المهام", e);
                 showToast("تعذر حفظ البيانات في الذاكرة المحلية", "fa-circle-xmark");
+            }
+        }
+
+        /* ================== Dual-Layer Cloud Synchronization (api.php) ================== */
+        async function syncMonjezToCloud() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                await fetch('../api.php?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save',
+                        form_type: 'task_tracker',
+                        form_ref: 'MONJEZ-V2',
+                        entry_date: today,
+                        machine_line: 'TASK_MANAGER',
+                        form_data: { tasks: tasks, updatedAt: new Date().toISOString() }
+                    })
+                });
+            } catch (e) {
+                console.warn('Cloud sync offline for tasks', e);
+            }
+        }
+
+        async function fetchMonjezCloudTasks() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const res = await fetch(`../api.php?action=load&form_type=task_tracker&entry_date=${today}&machine_line=TASK_MANAGER`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.status === 'success' && data.record && data.record.form_data && Array.isArray(data.record.form_data.tasks)) {
+                        const cloudTasks = data.record.form_data.tasks;
+                        if (cloudTasks.length > 0 && JSON.stringify(cloudTasks) !== JSON.stringify(tasks)) {
+                            tasks = cloudTasks;
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+                            renderTasks();
+                            updateStats();
+                            updatePeopleDatalistAndFilter();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load cloud tasks', e);
             }
         }
 
