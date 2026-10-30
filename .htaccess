@@ -8,7 +8,14 @@ Options -Indexes
 # Default charset
 AddDefaultCharset UTF-8
 
-# Protect sensitive and hidden files (.git, .env, .htaccess, etc.)
+# Central Access Gatekeeper: Route all direct requests to forms/*.html through guard.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^forms/([^/]+\.html)$ guard.php?file=$1 [L,QSA]
+</IfModule>
+
+# Protect sensitive and hidden files (.git, .env, .htaccess, config, etc.)
 <FilesMatch "^\.">
     <IfModule mod_authz_core.c>
         Require all denied

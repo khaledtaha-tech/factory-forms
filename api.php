@@ -230,11 +230,84 @@ try {
             ]);
             break;
 
+        /**
+         * --------------------------------------------------------------------------
+         * ACTION: get_protection (GET / POST)
+         * Returns the array of currently protected form filenames
+         * --------------------------------------------------------------------------
+         */
+        case 'get_protection':
+            $configFile = __DIR__ . '/config/protected_forms.json';
+            $protectedFiles = [];
+            if (file_exists($configFile)) {
+                $rawJson = file_get_contents($configFile);
+                $decoded = json_decode($rawJson, true);
+                if (is_array($decoded)) {
+                    $protectedFiles = $decoded;
+                }
+            }
+
+            sendJsonResponse([
+                'status'          => 'success',
+                'protected_files' => $protectedFiles
+            ]);
+            break;
+
+        /**
+         * --------------------------------------------------------------------------
+         * ACTION: update_protection (POST)
+         * Receives { protected_files: ["monjez_tasks_v2.html", ...] } and updates config
+         * --------------------------------------------------------------------------
+         */
+        case 'update_protection':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+                sendJsonResponse([
+                    'status'  => 'error',
+                    'message' => 'The update_protection action requires a POST request with payload.'
+                ], 405);
+            }
+
+            $rawFiles = $params['protected_files'] ?? null;
+            if (!is_array($rawFiles)) {
+                sendJsonResponse([
+                    'status'  => 'error',
+                    'message' => 'Missing or invalid protected_files array in payload.'
+                ], 400);
+            }
+
+            $sanitizedFiles = [];
+            foreach ($rawFiles as $fileItem) {
+                if (is_string($fileItem) && trim($fileItem) !== '') {
+                    $sanitizedFiles[] = basename(trim($fileItem));
+                }
+            }
+            $sanitizedFiles = array_values(array_unique($sanitizedFiles));
+
+            $configDir = __DIR__ . '/config';
+            if (!is_dir($configDir)) {
+                @mkdir($configDir, 0755, true);
+            }
+            $configFile = $configDir . '/protected_forms.json';
+            $encodedJson = json_encode($sanitizedFiles, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+            if (file_put_contents($configFile, $encodedJson) === false) {
+                sendJsonResponse([
+                    'status'  => 'error',
+                    'message' => 'Failed to save configuration to disk.'
+                ], 500);
+            }
+
+            sendJsonResponse([
+                'status'          => 'success',
+                'protected_files' => $sanitizedFiles
+            ]);
+            break;
+
         default:
             sendJsonResponse([
                 'status'            => 'error',
                 'message'           => 'Invalid or unsupported action requested.',
-                'supported_actions' => ['save', 'load', 'list', 'status', 'init']
+                'supported_actions' => ['save', 'load', 'list', 'status', 'init', 'get_protection', 'update_protection']
             ], 400);
             break;
     }

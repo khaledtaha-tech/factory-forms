@@ -1,2 +1,8 @@
 # Disable directory browsing
 Options -Indexes
+
+# Central Access Gatekeeper fallback
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^([^/]+\.html)$ ../guard.php?file=$1 [L,QSA]
+</IfModule>
