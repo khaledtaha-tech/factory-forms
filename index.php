@@ -272,6 +272,8 @@ foreach ($publicForms as $pf) {
         }
     </script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         body {
             font-family: 'Tajawal', sans-serif;
@@ -291,6 +293,36 @@ foreach ($publicForms as $pf) {
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Compatibility utilities for Iqama Renewal Card */
+        .card { background-color: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 1rem; }
+        .card-body { display: flex; flex-direction: column; padding: 1.5rem; }
+        .d-flex { display: flex !important; }
+        .d-inline-flex { display: inline-flex !important; }
+        .flex-column { flex-direction: column !important; }
+        .flex-grow-1 { flex-grow: 1 !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .align-items-center { align-items: center !important; }
+        .justify-content-center { justify-content: center !important; }
+        .text-center { text-align: center !important; }
+        .text-muted { color: #64748b !important; }
+        .text-dark { color: #0f172a !important; }
+        .fw-bold { font-weight: 700 !important; }
+        .fw-medium { font-weight: 500 !important; }
+        .font-monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important; }
+        .rounded-pill { border-radius: 9999px !important; }
+        .rounded-circle { border-radius: 50% !important; }
+        .bg-primary { background-color: #2563eb !important; color: #ffffff !important; }
+        .bg-light { background-color: #f8fafc !important; }
+        .bg-secondary { background-color: #64748b !important; }
+        .border { border: 1px solid #e2e8f0 !important; }
+        .border-top { border-top: 1px solid #e2e8f0 !important; }
+        .badge { display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; line-height: 1; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 0.75rem; font-size: 0.8125rem; transition: all 0.2s ease; cursor: pointer; text-decoration: none; padding: 0.5rem 0.75rem; }
+        .btn-primary { background-color: #2563eb !important; color: #ffffff !important; border: 1px solid #2563eb !important; box-shadow: 0 1px 2px 0 rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { background-color: #1d4ed8 !important; border-color: #1d4ed8 !important; }
+        .btn-light { background-color: #ffffff !important; color: #334155 !important; border: 1px solid #e2e8f0 !important; }
+        .btn-light:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">

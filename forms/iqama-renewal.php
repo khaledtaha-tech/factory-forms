@@ -1,71 +1,75 @@
 <?php
-/**
- * ==============================================================================
- * متابعة تجديد الإقامة - مصنع المنار للبلاستيك
- * Iqama Renewal & Installment Tracker - Al-Manar Plastic Factory
- * ==============================================================================
- */
+// === إعدادات قاعدة البيانات ===
+$db_host = 'localhost';
+$db_user = 'u976858450_forms_admin'; 
+$db_pass = 'FormsHub2026SecurePassX9'; 
+$db_name = 'u976858450_forms_hub'; 
 
-require_once __DIR__ . '/../config.php';
-$pdo = getDbConnection();
-ensureIqamaInstallmentsTableExists();
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("خطأ في الاتصال بقاعدة البيانات: " . $e->getMessage());
+}
 
-// Handle New Installment Form Submission
+// === إعدادات الدورات (تواريخ ومبالغ) ===
+$cycles_config = [
+    '2026-2027' => [
+        'req_amount' => 2000,
+        'start_date' => '2026-03-11',
+        'end_date'   => '2027-03-10'
+    ],
+    '2027-2028' => [
+        'req_amount' => 2000,
+        'start_date' => '2027-03-11',
+        'end_date'   => '2028-03-10'
+    ]
+];
+
+$current_cycle = isset($_GET['cycle']) ? $_GET['cycle'] : '2026-2027';
+$cycle_info = isset($cycles_config[$current_cycle]) ? $cycles_config[$current_cycle] : $cycles_config['2026-2027'];
+
+// === معالجة حفظ البيانات ورفع الملف ===
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_installment'])) {
-    $cycle_code    = trim($_POST['cycle_code'] ?? '2026-2027');
-    $amount        = floatval($_POST['amount'] ?? 0);
-    $transfer_date = trim($_POST['transfer_date'] ?? date('Y-m-d'));
-    $notes         = trim($_POST['notes'] ?? '');
-
-    $upload_dir = __DIR__ . '/../uploads/iqama/';
-    if (!is_dir($upload_dir)) {
-        @mkdir($upload_dir, 0755, true);
-    }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_installment'])) {
+    $cycle_code = $_POST['cycle_code'];
+    $amount = $_POST['amount'];
+    $transfer_date = $_POST['transfer_date'];
+    $notes = $_POST['notes'];
+    
+    $upload_dir = 'uploads/iqama/';
+    if (!is_dir($upload_dir)) { mkdir($upload_dir, 0777, true); }
 
     $file_path = '';
-    if (isset($_FILES['receipt_file']) && $_FILES['receipt_file']['error'] === UPLOAD_ERR_OK) {
-        $file_name = time() . '_' . preg_replace('/[^a-zA-Z0-9_\.-]/', '_', basename($_FILES['receipt_file']['name']));
+    if (isset($_FILES['receipt_file']) && $_FILES['receipt_file']['error'] == 0) {
+        $file_name = time() . '_' . basename($_FILES['receipt_file']['name']);
         $target_file = $upload_dir . $file_name;
         $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-        if (in_array($file_type, ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic'])) {
+        
+        if (in_array($file_type, ['pdf', 'png', 'jpg', 'jpeg'])) {
             if (move_uploaded_file($_FILES['receipt_file']['tmp_name'], $target_file)) {
-                $file_path = 'uploads/iqama/' . $file_name;
+                $file_path = $target_file;
             }
         }
     }
 
-    if ($amount > 0 && !empty($transfer_date)) {
-        $stmt = $pdo->prepare("INSERT INTO iqama_installments (cycle_code, amount, transfer_date, file_path, notes) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt->execute([$cycle_code, $amount, $transfer_date, !empty($file_path) ? $file_path : null, !empty($notes) ? $notes : null])) {
-            $message = '<div class="alert alert-success alert-dismissible fade show" role="alert">تم حفظ الدفعة بنجاح.' . (!empty($file_path) ? ' ورفع ملف الإيصال.' : '') . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-        } else {
-            $message = '<div class="alert alert-danger alert-dismissible fade show" role="alert">حدث خطأ أثناء حفظ البيانات في قاعدة البيانات.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-        }
+    $stmt = $pdo->prepare("INSERT INTO iqama_installments (cycle_code, amount, transfer_date, file_path, notes) VALUES (?, ?, ?, ?, ?)");
+    if ($stmt->execute([$cycle_code, $amount, $transfer_date, $file_path, $notes])) {
+        $message = '<div class="alert alert-success">تم حفظ الدفعة بنجاح.</div>';
     } else {
-        $message = '<div class="alert alert-warning alert-dismissible fade show" role="alert">يرجى إدخال مبلغ صحيح وتاريخ الحوالة.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+        $message = '<div class="alert alert-danger">حدث خطأ أثناء الحفظ.</div>';
     }
 }
 
-// Fetch Installments for Selected Cycle
-$current_cycle = isset($_GET['cycle']) ? trim($_GET['cycle']) : '2026-2027';
-$stmt = $pdo->prepare("SELECT * FROM iqama_installments WHERE cycle_code = ? ORDER BY transfer_date ASC, id ASC");
+// === جلب البيانات والحسابات ===
+$stmt = $pdo->prepare("SELECT * FROM iqama_installments WHERE cycle_code = ? ORDER BY transfer_date ASC");
 $stmt->execute([$current_cycle]);
 $installments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Distinct cycles for filter dropdown
-$cyclesStmt = $pdo->query("SELECT DISTINCT cycle_code FROM iqama_installments ORDER BY cycle_code DESC");
-$availableCycles = $cyclesStmt->fetchAll(PDO::FETCH_COLUMN);
-if (!in_array('2026-2027', $availableCycles)) {
-    array_unshift($availableCycles, '2026-2027');
-}
-
-// Summary Metrics
-$required_amount = 7500.00;
+$required_amount = $cycle_info['req_amount'];
 $total_paid = 0;
 foreach ($installments as $inst) {
-    $total_paid += floatval($inst['amount']);
+    $total_paid += $inst['amount'];
 }
 
 $remaining = $required_amount - $total_paid;
@@ -80,166 +84,142 @@ if ($remaining < 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متابعة تجديد الإقامة | مصنع المنار للبلاستيك</title>
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="alternate icon" type="image/x-icon" href="../favicon.ico">
+    <title>متابعة تجديد الإقامة</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        .stat-card { border-radius: 12px; padding: 20px; text-align: center; color: white; transition: 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .card-info { background: linear-gradient(135deg, #0284c7, #0ea5e9); }
-        .card-success { background: linear-gradient(135deg, #059669, #10b981); }
-        .card-danger { background: linear-gradient(135deg, #e11d48, #f43f5e); }
-        .card-completed { background: linear-gradient(135deg, #15803d, #22c55e); }
-        .card-warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        .table-responsive { max-height: 520px; overflow-y: auto; }
+        .stat-card { border-radius: 10px; padding: 20px; text-align: center; color: white; transition: 0.3s; }
+        .card-info { background-color: #0dcaf0; color: #333; }
+        .card-success { background-color: #20c997; }
+        .card-danger { background-color: #dc3545; }
+        .card-completed { background-color: #198754; }
+        .card-warning { background-color: #ffc107; color: #333; }
+        .table-responsive { max-height: 500px; overflow-y: auto; }
+        .cycle-badge { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
     </style>
 </head>
 <body>
 
-<div class="container py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+<div class="container mt-4">
+    <!-- الترويسة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="text-success fw-bold mb-1"><i class="fa-solid fa-id-card me-2"></i> متابعة تجديد إقامة الزوجة</h3>
-            <p class="text-muted small mb-0">مصنع المنار للبلاستيك | نظام إدارة الحوالات وسجل الدفعات</p>
+            <h3 class="text-success fw-bold"><i class="fa-solid fa-id-card me-2"></i>متابعة تجديد إقامة الزوجة</h3>
+            <p class="text-muted mb-0">مصنع المنار للبلاستيك | نظام إدارة الحوالات وسجل الدفعات</p>
         </div>
-        <a href="../index.php" class="btn btn-outline-success fw-bold px-3">
-            <i class="fa-solid fa-arrow-right me-1"></i> العودة للبوابة الرئيسية
-        </a>
+        <a href="../index.php" class="btn btn-outline-success"><i class="fa-solid fa-arrow-right me-2"></i>العودة للبوابة الرئيسية</a>
     </div>
 
     <?= $message ?>
 
-    <!-- Metrics Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
-            <div class="stat-card card-info">
-                <h6 class="text-white-50 small mb-1">المبلغ المطلوب</h6>
-                <h3 class="fw-bold mb-0" id="reqAmount"><?= number_format($required_amount, 2) ?> <small class="fs-6">SAR</small></h3>
-            </div>
+    <!-- شريط معلومات الدورة -->
+    <div class="alert cycle-badge d-flex justify-content-between align-items-center mb-4 shadow-sm">
+        <div>
+            <strong>إعدادات الدورة الحالية:</strong> تغطي الفترة من <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['start_date'] ?></span> وحتى <span class="text-primary fw-bold" dir="ltr"><?= $cycle_info['end_date'] ?></span>
         </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="stat-card card-success">
-                <h6 class="text-white-50 small mb-1">إجمالي المحول</h6>
-                <h3 class="fw-bold mb-0" id="totalPaid"><?= number_format($total_paid, 2) ?> <small class="fs-6">SAR</small></h3>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="stat-card <?= $remaining <= 0 ? 'card-completed' : 'card-danger' ?>" id="remCard">
-                <h6 class="text-white-50 small mb-1">المتبقي</h6>
-                <h3 class="fw-bold mb-0" id="remAmount"><?= number_format($remaining, 2) ?> <small class="fs-6">SAR</small></h3>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-            <div class="stat-card card-warning">
-                <h6 class="text-white-50 small mb-1">الفائض</h6>
-                <h3 class="fw-bold mb-0" id="surplusAmount"><?= number_format($surplus, 2) ?> <small class="fs-6">SAR</small></h3>
-            </div>
+        <div>
+            <strong>تاريخ التجديد المستهدف:</strong> <span class="text-danger fw-bold" dir="ltr"><?= $cycle_info['start_date'] ?></span>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- New Payment Form -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white text-success fw-bold py-3 border-bottom">
-                    <i class="fa-solid fa-plus-circle me-1"></i> تسجيل دفعة جديدة
-                </div>
-                <div class="card-body p-3 p-sm-4">
-                    <form method="POST" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">كود الدورة</label>
-                            <input type="text" class="form-control" name="cycle_code" id="cycleCode" value="<?= htmlspecialchars($current_cycle) ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">المبلغ (ريال)</label>
-                            <input type="number" class="form-control" name="amount" step="0.01" min="0.01" required placeholder="0.00">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">تاريخ الحوالة</label>
-                            <input type="date" class="form-control" name="transfer_date" value="<?= date('Y-m-d') ?>" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">إيصال السداد (صورة أو PDF)</label>
-                            <input type="file" class="form-control" name="receipt_file" accept=".pdf,.png,.jpg,.jpeg,.webp,.heic">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold">ملاحظات (اختياري)</label>
-                            <textarea class="form-control" name="notes" rows="2" placeholder="تفاصيل البنك أو رقم الحوالة..."></textarea>
-                        </div>
-                        <button type="submit" name="save_installment" class="btn btn-success w-100 py-2 fw-bold" id="submitBtn">
-                            <i class="fa-solid fa-check me-1"></i> حفظ ورفع الإيصال
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+    <!-- لوحة المؤشرات -->
+    <div class="row mb-4">
+        <div class="col-md-3"><div class="stat-card card-info shadow-sm"><h6>المبلغ المطلوب</h6><h3 dir="ltr">SAR <?= number_format($required_amount, 2) ?></h3></div></div>
+        <div class="col-md-3"><div class="stat-card card-success shadow-sm"><h6>إجمالي المحول</h6><h3 dir="ltr">SAR <?= number_format($total_paid, 2) ?></h3></div></div>
+        <div class="col-md-3"><div class="stat-card <?= $remaining == 0 ? 'card-completed' : 'card-danger' ?> shadow-sm"><h6>المتبقي</h6><h3 dir="ltr">SAR <?= number_format($remaining, 2) ?></h3></div></div>
+        <div class="col-md-3"><div class="stat-card card-warning shadow-sm"><h6>الفائض</h6><h3 dir="ltr">SAR <?= number_format($surplus, 2) ?></h3></div></div>
+    </div>
 
-        <!-- Remittances Table -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-3 h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom">
-                    <span class="text-success fw-bold"><i class="fa-solid fa-list me-1"></i> سجل الدفعات المسجلة</span>
-                    <form method="GET" class="d-flex align-items-center gap-2 m-0 p-0">
-                        <label class="small text-muted fw-bold text-nowrap">الدورة:</label>
-                        <select name="cycle" id="cycleFilter" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                            <?php foreach ($availableCycles as $cyc): ?>
-                            <option value="<?= htmlspecialchars($cyc) ?>" <?= $current_cycle === $cyc ? 'selected' : '' ?>>دورة <?= htmlspecialchars($cyc) ?></option>
-                            <?php endforeach; ?>
+    <div class="row">
+        <!-- جدول الحوالات -->
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <span class="text-success fw-bold"><i class="fa-solid fa-list-check me-2"></i>سجل الدفعات المسجلة</span>
+                    <form method="GET" class="d-flex align-items-center m-0 p-0">
+                        <label class="me-2 text-muted small fw-bold">الدورة:</label>
+                        <select name="cycle" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                            <option value="2026-2027" <?= $current_cycle == '2026-2027' ? 'selected' : '' ?>>دورة 2026-2027</option>
+                            <option value="2027-2028" <?= $current_cycle == '2027-2028' ? 'selected' : '' ?>>دورة 2027-2028</option>
                         </select>
                     </form>
                 </div>
                 <div class="card-body p-0 table-responsive">
-                    <table class="table table-hover table-striped text-center mb-0 align-middle">
+                    <table class="table table-hover text-center mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
                                 <th>#</th>
                                 <th>التاريخ</th>
+                                <th>تصنيف الدفعة</th>
                                 <th>المبلغ</th>
                                 <th>تراكمي</th>
                                 <th>الإيصال</th>
-                                <th>ملاحظات</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBody">
-                            <?php if (empty($installments)): ?>
-                            <tr>
-                                <td colspan="6" class="py-5 text-muted">لا توجد أي دفعات مسجلة لهذه الدورة حتى الآن.</td>
-                            </tr>
-                            <?php else: ?>
+                        <tbody>
                             <?php 
                             $cumulative = 0;
-                            $seq = 1;
+                            $count = 1;
                             foreach ($installments as $inst): 
-                                $cumulative += floatval($inst['amount']);
+                                $cumulative += $inst['amount'];
+                                $is_advance = strtotime($inst['transfer_date']) < strtotime($cycle_info['start_date']);
+                                $badge_class = $is_advance ? 'bg-primary' : 'bg-secondary';
+                                $badge_text = $is_advance ? 'دفع مقدم' : 'داخل الدورة';
                             ?>
                             <tr>
-                                <td class="text-muted small"><?= $seq++ ?></td>
-                                <td><?= htmlspecialchars($inst['transfer_date']) ?></td>
-                                <td class="text-success fw-bold"><?= number_format($inst['amount'], 2) ?> SAR</td>
-                                <td class="fw-bold text-muted"><?= number_format($cumulative, 2) ?> SAR</td>
-                                <td>
-                                    <?php if (!empty($inst['file_path'])): ?>
-                                    <a href="../<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="badge bg-secondary p-2 text-decoration-none">
-                                        <i class="fa-solid fa-paperclip me-1"></i> عرض الإيصال
-                                    </a>
+                                <td class="align-middle text-muted"><?= $count++ ?></td>
+                                <td class="align-middle" dir="ltr"><?= htmlspecialchars($inst['transfer_date']) ?></td>
+                                <td class="align-middle"><span class="badge <?= $badge_class ?> rounded-pill px-2"><?= $badge_text ?></span></td>
+                                <td class="align-middle text-success fw-bold" dir="ltr">SAR <?= number_format($inst['amount'], 2) ?></td>
+                                <td class="align-middle fw-bold text-muted" dir="ltr">SAR <?= number_format($cumulative, 2) ?></td>
+                                <td class="align-middle">
+                                    <?php if($inst['file_path']): ?>
+                                        <a href="<?= htmlspecialchars($inst['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-paperclip"></i> عرض</a>
                                     <?php else: ?>
-                                    <span class="text-muted small">—</span>
+                                        <span class="text-muted small">-</span>
                                     <?php endif; ?>
-                                </td>
-                                <td class="text-muted small text-truncate" style="max-width: 150px;" title="<?= htmlspecialchars($inst['notes'] ?? '') ?>">
-                                    <?= htmlspecialchars($inst['notes'] ?? '—') ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
-                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- نموذج إضافة الدفعة -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white text-success fw-bold py-3"><i class="fa-solid fa-circle-plus me-2"></i>تسجيل دفعة جديدة</div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">كود الدورة</label>
+                            <input type="text" class="form-control bg-light" name="cycle_code" value="<?= htmlspecialchars($current_cycle) ?>" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">المبلغ (ريال)</label>
+                            <input type="number" class="form-control" name="amount" step="any" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">تاريخ الحوالة</label>
+                            <input type="date" class="form-control" name="transfer_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">إيصال السداد (اختياري)</label>
+                            <input type="file" class="form-control" name="receipt_file" accept=".pdf,.png,.jpg,.jpeg">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">ملاحظات</label>
+                            <textarea class="form-control" name="notes" rows="2"></textarea>
+                        </div>
+                        <button type="submit" name="save_installment" class="btn btn-success w-100 fw-bold shadow-sm">حفظ الدفعة</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
