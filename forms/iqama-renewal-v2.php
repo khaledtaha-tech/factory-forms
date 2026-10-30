@@ -1,9 +1,9 @@
 <?php
 // === إعدادات قاعدة البيانات ===
 $db_host = 'localhost';
-$db_user = 'YOUR_DB_USER'; // عدل هنا
-$db_pass = 'YOUR_DB_PASSWORD'; // عدل هنا
-$db_name = 'YOUR_DB_NAME'; // عدل هنا
+$db_user = 'u976858450_forms_admin'; 
+$db_pass = 'FormsHub2026SecurePassX9'; 
+$db_name = 'u976858450_forms_hub'; 
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass);
@@ -99,7 +99,7 @@ if ($remaining < 0) {
             <h3 class="text-success"><i class="fa-solid fa-id-card"></i> متابعة تجديد إقامة الزوجة</h3>
             <p class="text-muted mb-0">نظام إدارة الحوالات وإيصالات السداد</p>
         </div>
-        <a href="index.php" class="btn btn-outline-success"><i class="fa-solid fa-arrow-right"></i> عودة للبوابة</a>
+        <a href="../index.php" class="btn btn-outline-success"><i class="fa-solid fa-arrow-right"></i> عودة للبوابة</a>
     </div>
 
     <?= $message ?>
