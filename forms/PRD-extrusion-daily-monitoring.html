@@ -1489,27 +1489,87 @@
       renderMachineTabs();
     }
 
-    // Populate Item Code and Machine Line dropdowns
-    function populateDropdowns(preserveItemCode, preserveLine) {
+    // ==============================================================================
+    // 1. ROBUST MACHINE LINE COMPARATOR (Flexible Name Matching)
+    // ==============================================================================
+    function isSameMachineLine(lineA, lineB) {
+      if (!lineA || !lineB) return false;
+      const a = String(lineA).trim().toLowerCase();
+      const b = String(lineB).trim().toLowerCase();
+      if (a === b) return true;
+
+      const extractNum = (str) => {
+        const m = str.match(/\b(?:l|line)[\s\-_]*0*(\d+)\b/i);
+        if (m) return parseInt(m[1], 10);
+        const m2 = str.match(/^l0*(\d+)/i);
+        if (m2) return parseInt(m2[1], 10);
+        return null;
+      };
+
+      const numA = extractNum(a);
+      const numB = extractNum(b);
+      if (numA !== null && numB !== null) {
+        return numA === numB;
+      }
+      return a.includes(b) || b.includes(a);
+    }
+
+    // ==============================================================================
+    // 2. LINE-SPECIFIC ITEM CODE EXTRACTOR (Per-Machine Dynamic Query)
+    // ==============================================================================
+    function getItemCodesForLine(targetLine) {
       const catalog = getCatalog();
+      if (!Array.isArray(catalog) || catalog.length === 0) return [];
+      const line = targetLine || (document.getElementById('lineSelect') ? document.getElementById('lineSelect').value : '') || '';
+
+      // Strict filter for catalog entries mapped to this specific machine line
+      const matched = catalog.filter(item => isSameMachineLine(item.machineLine, line));
+      const codes = [...new Set(matched.map(item => String(item.itemCode).trim()).filter(Boolean))];
+
+      // If registered codes exist for this machine, return them strictly
+      if (codes.length > 0) {
+        return codes;
+      }
+      // Safe fallback to all unique codes only if the machine has no catalog entries registered yet
+      return [...new Set(catalog.map(item => String(item.itemCode).trim()).filter(Boolean))];
+    }
+
+    // ==============================================================================
+    // 3. REFACTORED DROPDOWN POPULATION ENGINE (Strict Line Isolation)
+    // ==============================================================================
+    function populateDropdowns(preserveItemCode, preserveLine) {
       const itemSelect = document.getElementById('itemCodeSelect');
-      if (!itemSelect) return;
+      const lineSelect = document.getElementById('lineSelect');
 
-      const uniqueCodes = [...new Set(catalog.map(e => String(e.itemCode).trim()).filter(Boolean))];
-      const currentItem = preserveItemCode || itemSelect.value || uniqueCodes[0] || '307';
+      const lines = getActiveMachineLines();
+      const activeLine = preserveLine || (lineSelect && lineSelect.value ? lineSelect.value : lines[0]);
 
-      // Rebuild Item Code options
-      itemSelect.innerHTML = '';
-      uniqueCodes.forEach(code => {
-        const opt = document.createElement('option');
-        opt.value = code;
-        opt.textContent = code;
-        if (code === currentItem) opt.selected = true;
-        itemSelect.appendChild(opt);
-      });
+      // 1. Sync Machine Line dropdown and top tabs
+      populateLineDropdown(activeLine);
 
-      // Synchronize Machine Line dropdown & tabs
-      populateLineDropdown(preserveLine);
+      // 2. Populate Item Code dropdown filtered strictly by activeLine
+      if (itemSelect) {
+        const availableCodes = getItemCodesForLine(activeLine);
+        const hasPreserved = preserveItemCode && availableCodes.includes(String(preserveItemCode).trim());
+        const currentItem = hasPreserved
+          ? String(preserveItemCode).trim()
+          : (availableCodes[0] || '307');
+
+        itemSelect.innerHTML = '';
+        availableCodes.forEach(code => {
+          const opt = document.createElement('option');
+          opt.value = code;
+          opt.textContent = code;
+          if (code === currentItem) opt.selected = true;
+          itemSelect.appendChild(opt);
+        });
+
+        // If the preserved code did not belong to this machine, trigger spec update for the new default code
+        if (preserveItemCode && !hasPreserved && availableCodes.length > 0) {
+          handleItemCodeChange();
+        }
+      }
+
       renderMachineTabs();
     }
 
@@ -1707,7 +1767,9 @@
       }
     }
 
-    // Step 1: Item Code Selection changed (Auto-fill Spec, Weight & Length, Hourly Rate, Recalc Shift Targets)
+    // ==============================================================================
+    // 4. ITEM CODE SELECTION HANDLER (Prioritizes Active Line Specs & Rate)
+    // ==============================================================================
     function handleItemCodeChange() {
       const catalog = getCatalog();
       const itemCodeEl = document.getElementById('itemCodeSelect');
@@ -1717,11 +1779,14 @@
       const itemCode = itemCodeEl.value.trim();
       const currentLine = lineSelectEl.value.trim();
 
-      // Find matching entries for the selected Item Code
+      // Find exact match for the active machine line first
+      const exactMatch = catalog.find(e => 
+        String(e.itemCode).trim() === itemCode && isSameMachineLine(e.machineLine, currentLine)
+      );
       const matches = catalog.filter(e => String(e.itemCode).trim() === itemCode);
-      if (matches.length > 0) {
-        const primary = matches[0];
+      const primary = exactMatch || (matches.length > 0 ? matches[0] : null);
 
+      if (primary) {
         // 1. Auto-fill Product Specification (#prodSpec / #productSpec alias)
         const prodSpec = document.getElementById('prodSpec');
         if (prodSpec) prodSpec.value = primary.itemName;
@@ -1744,12 +1809,8 @@
           pipeLenEl.value = m ? m[1].toUpperCase() : '6M';
         }
 
-        // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr (#hourlyRate / #hourlyTargetMeta / #toolbarRateInput)
-        const exactMatch = catalog.find(e => 
-          String(e.itemCode).trim() === itemCode && String(e.machineLine).trim() === currentLine
-        );
-
-        const targetRate = exactMatch ? exactMatch.hourlyRate : (primary.hourlyRate || 47);
+        // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr
+        const targetRate = primary.hourlyRate || 47;
         syncHourlyRate(targetRate);
 
         // 4. Recalculate shift targets (Shift 1 = 12 * Rate, Shift 2 = 12 * Rate, Total = 24 * Rate)
@@ -2462,15 +2523,21 @@
       updateActiveTabUI(line);
     }
 
+    // ==============================================================================
+    // 5. CLEAN MACHINE INITIALIZER (Defaults to Active Machine's First Code)
+    // ==============================================================================
     function initializeCleanMachine(line, date) {
       const catalog = getCatalog();
-      const match = catalog.find(e => String(e.machineLine).trim() === line);
-      const itemCode = match ? match.itemCode : (catalog[0] ? catalog[0].itemCode : '307');
+      const lineCodes = getItemCodesForLine(line);
+      const firstItemCode = lineCodes[0] || '307';
+      const match = catalog.find(e => String(e.itemCode).trim() === firstItemCode && isSameMachineLine(e.machineLine, line))
+                 || catalog.find(e => isSameMachineLine(e.machineLine, line))
+                 || catalog[0];
 
       const cleanData = {
         date: date || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : new Date().toISOString().split('T')[0]),
         rate: match ? match.hourlyRate : 47,
-        itemCode: itemCode,
+        itemCode: match ? match.itemCode : firstItemCode,
         spec: match ? match.itemName : '',
         line: line,
         lengthWeight: match ? match.lengthWeight : '',
