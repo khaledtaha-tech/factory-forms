@@ -1464,18 +1464,38 @@
       return Boolean(batch && batch[line]);
     }
 
+    function getStoredMachineRecord(date, line) {
+      try {
+        const raw = localStorage.getItem(getDailyStorageKey(date, line));
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Every selected operating day is one independent A4 print job.
+    // The live scheduler is deliberately the source of truth so the counters
+    // update immediately, before the operator presses the commit button.
     function getOperationalPrintJobs(anchorDate) {
-      const slots = getScheduleDates(anchorDate || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : ''));
+      const scheduleDate = anchorDate || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : '');
+      const validDates = new Set(getScheduleDates(scheduleDate).map(slot => slot.isoDate));
       const jobs = [];
-      slots.forEach(slot => {
-        const batch = getBatchData(slot.isoDate);
-        getActiveMachineLines().forEach(line => {
-          const data = batch && batch[line];
-          if (data && Array.isArray(data.selectedDates) && data.selectedDates.includes(slot.isoDate)) {
-            jobs.push({ line, date: slot.isoDate, data });
-          }
+
+      getActiveMachineLines().forEach(line => {
+        const selectedDates = [...new Set(getActiveSelectedDates(line, scheduleDate))]
+          .filter(date => validDates.has(date));
+        if (selectedDates.length === 0) return;
+
+        const anchorBatch = getBatchData(scheduleDate);
+        const anchorData = (anchorBatch && anchorBatch[line]) || getStoredMachineRecord(scheduleDate, line) || {};
+
+        selectedDates.forEach(date => {
+          const dayBatch = getBatchData(date);
+          const dayData = (dayBatch && dayBatch[line]) || getStoredMachineRecord(date, line) || anchorData;
+          jobs.push({ line, date, data: dayData });
         });
       });
+
       return jobs.sort((a, b) => a.line.localeCompare(b.line, undefined, { numeric: true, sensitivity: 'base' }) || a.date.localeCompare(b.date));
     }
 
@@ -1488,11 +1508,11 @@
       if (summary) {
         const details = Object.keys(grouped).map(line => `${line}: ${grouped[line]}`).join(' | ');
         summary.textContent = lang === 'en'
-          ? `Ready to print: ${count} A4 page(s)${details ? ' — ' + details : ''}`
-          : decodeUnicodeText(`\u062c\u0627\u0647\u0632 \u0644\u0644\u0637\u0628\u0627\u0639\u0629: ${count} \u0635\u0641\u062d\u0629 A4${details ? ' — ' + details : ''}`);
+          ? `Selected sheets: ${count} A4 page(s)${details ? ' — ' + details : ''}`
+          : decodeUnicodeText(`\u0627\u0644\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0645\u062e\u062a\u0627\u0631\u0629: ${count} \u0635\u0641\u062d\u0629 A4${details ? ' — ' + details : ''}`);
       }
       const label = document.getElementById('batchPrintLabel');
-      if (label) label.textContent = lang === 'en' ? `Print Ready Sheets (${count} Pages A4)` : decodeUnicodeText(`\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u062c\u0627\u0647\u0632\u0629 (${count} \u0635\u0641\u062d\u0629 A4)`);
+      if (label) label.textContent = lang === 'en' ? `Print Selected Sheets (${count} Pages A4)` : decodeUnicodeText(`\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u0645\u062e\u062a\u0627\u0631\u0629 (${count} \u0635\u0641\u062d\u0629 A4)`);
       const badge = document.getElementById('batchPrintCountBadge');
       if (badge) badge.textContent = String(count);
       const btn = document.getElementById('btnPrintBatch');
