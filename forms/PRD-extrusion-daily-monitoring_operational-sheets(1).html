@@ -3245,7 +3245,14 @@
         }
 
         const dateEl = clone.querySelector('#reportDate');
-        if (dateEl) dateEl.setAttribute('value', job.date);
+        if (dateEl) {
+          // Set both the live input value and its HTML attribute for print clones.
+          // cloneNode preserves the original live value, so changing only the
+          // attribute would print the anchor date on every page.
+          dateEl.value = job.date;
+          dateEl.defaultValue = job.date;
+          dateEl.setAttribute('value', job.date);
+        }
 
         const itemEl = clone.querySelector('#itemCodeSelect');
         if (itemEl) itemEl.innerHTML = `<option value="${data.itemCode}" selected>${data.itemCode}</option>`;
