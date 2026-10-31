@@ -1709,15 +1709,11 @@
       if (window.activeMachineSchedules && Array.isArray(window.activeMachineSchedules[scheduleKey])) {
         return window.activeMachineSchedules[scheduleKey];
       }
-      const batch = getBatchData(currentDate);
-      if (batch && batch[activeLine] && Array.isArray(batch[activeLine].selectedDates)) {
-        return batch[activeLine].selectedDates;
-      }
       const stored = localStorage.getItem(`almanar_sched_${currentDate}_${activeLine}`);
-      if (stored) {
+      if (stored !== null) {
         try {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) return parsed;
         } catch (e) {}
       }
       return [];
