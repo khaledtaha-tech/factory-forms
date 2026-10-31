@@ -282,14 +282,14 @@
         <span data-i18n="reset">Reset</span>
       </button>
 
-      <button type="button" onclick="printCurrentMachine()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg shadow-sm transition" title="Print Current Machine (1 Page A4)">
+      <button type="button" onclick="printCurrentMachine()" class="hidden" title="Print Current Machine (1 Page A4)">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
         <span data-i18n="printMachine">Print Machine (1 Page)</span>
       </button>
 
-      <button id="btnPrintBatch" type="button" onclick="printAllLinesBatch()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed" title="Print the selected machines only, one A4 page per machine">
+      <button id="btnPrintBatch" type="button" onclick="printAllLinesBatch()" class="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed" title="Print ready operational sheets only">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-        <span id="batchPrintLabel">Print Selected Batch (0 Pages A4)</span>
+        <span id="batchPrintLabel">Print Ready Sheets (0 Pages A4)</span>
         <span id="batchPrintCountBadge" class="min-w-5 h-5 px-1 inline-flex items-center justify-center rounded-full bg-white/20 border border-white/40 text-[10px] font-black tabular-nums">0</span>
       </button>
     </div>
@@ -306,7 +306,6 @@
           <span data-i18n="machineLines" class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">\u062e\u0637\u0648\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c:</span>
         </span>
         <span id="activeMachineBadge" class="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md"></span>
-        <span id="printQueueSummary" class="text-[11px] font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-md"></span>
       </div>
 
       <!-- Ambient Readiness State Indicator & Dual Action Buttons -->
@@ -324,7 +323,7 @@
         </button>
 
         <!-- Button 2: Print Current Machine Report -->
-        <button id="btnPrintMachine" type="button" onclick="printCurrentMachine()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629">
+        <button id="btnPrintMachine" type="button" onclick="printCurrentMachine()" class="hidden" title="\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
           <span>\u0637\u0628\u0627\u0639\u0629 \u062a\u0642\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629</span>
         </button>
@@ -332,16 +331,10 @@
     </div>
 
     <!-- Machine Tabs Bar (L-01 to L-07) -->
-    <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-      <span class="text-[10px] font-bold text-slate-500" data-i18n="printQueueHint">Select only the ready machine reports required in this print batch.</span>
-      <div class="flex items-center gap-1.5">
-        <button id="btnSelectAllPrint" type="button" onclick="selectAllPrintQueue()" class="px-2.5 py-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-md transition" data-i18n="selectAllPrint">Select All for Print</button>
-        <button id="btnDeselectAllPrint" type="button" onclick="deselectAllPrintQueue()" class="px-2.5 py-1.5 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-md transition" data-i18n="deselectAllPrint">Deselect All</button>
-      </div>
-    </div>
     <div id="machineTabsBar" class="flex flex-wrap gap-1.5 mb-2.5">
       <!-- Tabs populated dynamically via renderMachineTabs() -->
     </div>
+    <div id="printBatchSummary" class="mb-2.5 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-bold text-emerald-900"></div>
 
     <!-- 6-DAY PRODUCTION RUN MATRIX WIDGET -->
     <div id="schedulerMatrix" class="pt-2.5 border-t border-slate-200">
@@ -1015,9 +1008,6 @@
         workDate: "\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0639\u0645\u0644",
         printMachine: "\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 (\u0635\u0641\u062d\u0629 \u0648\u0627\u062d\u062f\u0629)",
         printBatch: "\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u062c\u0645\u064a\u0639 (\u062f\u0641\u0639\u0629)",
-        selectAllPrint: "\u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0643\u0644 \u0644\u0644\u0637\u0628\u0627\u0639\u0629",
-        deselectAllPrint: "\u0625\u0644\u063a\u0627\u0621 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0643\u0644",
-        printQueueHint: "\u062d\u062f\u062f \u0641\u0642\u0637 \u062a\u0642\u0627\u0631\u064a\u0631 \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a \u0627\u0644\u062c\u0627\u0647\u0632\u0629 \u0627\u0644\u0645\u0637\u0644\u0648\u0628\u0629 \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u062f\u0641\u0639\u0629.",
         connectedToDb: "\u0645\u062a\u0635\u0644 \u0628\u0642\u0627\u0639\u062f\u0629 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a",
         migrateLegacy: "\u2601\ufe0f \u062a\u0631\u062d\u064a\u0644 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0633\u0627\u0628\u0642\u0629",
         readyStatusDraft: "\u0642\u064a\u062f \u0627\u0644\u0625\u0639\u062f\u0627\u062f - \u064a\u0631\u062c\u0649 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f",
@@ -1053,9 +1043,6 @@
         workDate: "Work Date",
         printMachine: "Print Machine (1 Page)",
         printBatch: "Print All Lines (Batch)",
-        selectAllPrint: "Select All for Print",
-        deselectAllPrint: "Deselect All",
-        printQueueHint: "Select only the ready machine reports required in this print batch.",
         connectedToDb: "Connected to Database",
         migrateLegacy: "☁️ Migrate Legacy Records",
         readyStatusDraft: "Draft / In Setup - Please Commit",
@@ -1104,17 +1091,16 @@
 
       // 4. Update Ambient Readiness & Commit Buttons
       if (typeof window.currentMachineReadinessState === 'string') {
-        setMachineReadinessState(window.currentMachineReadinessState, true);
+        setMachineReadinessState(window.currentMachineReadinessState);
       } else {
         const dateInput = document.getElementById('reportDate');
         const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
         const lineSelect = document.getElementById('lineSelect');
         const currentLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
-        const isLocked = isMachineReadyForPrint(currentDate, currentLine);
-        setMachineReadinessState(isLocked ? 'ready' : 'draft', true);
+        const batch = getBatchData(currentDate);
+        const isLocked = Boolean(batch && batch[currentLine]);
+        setMachineReadinessState(isLocked ? 'ready' : 'draft');
       }
-
-      updatePrintQueueUI();
 
       // 5. If Catalog Modal is open, re-render its table immediately
       const modal = document.getElementById('catalogModal');
@@ -1123,6 +1109,14 @@
       }
 
       decodeUnicodeUI();
+    }
+
+    function getLocalISODate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     const STORAGE_KEY = 'AL_MANAR_EXTRUSION_DAILY_MONITORING_DATA';
@@ -1456,166 +1450,42 @@
       return Boolean(batch && batch[line]);
     }
 
-    const PRINT_QUEUE_STORAGE_PREFIX = 'almanar_print_queue_';
-    const DRAFT_MACHINE_STORAGE_PREFIX = 'almanar_draft_machines_';
-
-    function getCurrentReportDate() {
-      const dateInput = document.getElementById('reportDate');
-      return dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+    function getOperationalPrintJobs(anchorDate) {
+      const slots = getScheduleDates(anchorDate || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : ''));
+      const jobs = [];
+      slots.forEach(slot => {
+        const batch = getBatchData(slot.isoDate);
+        getActiveMachineLines().forEach(line => {
+          const data = batch && batch[line];
+          if (data && Array.isArray(data.selectedDates) && data.selectedDates.includes(slot.isoDate)) {
+            jobs.push({ line, date: slot.isoDate, data });
+          }
+        });
+      });
+      return jobs.sort((a, b) => a.line.localeCompare(b.line, undefined, { numeric: true, sensitivity: 'base' }) || a.date.localeCompare(b.date));
     }
 
-    function getPrintQueueStorageKey(date) {
-      return PRINT_QUEUE_STORAGE_PREFIX + (date || getCurrentReportDate());
-    }
-
-    function getDraftMachineStorageKey(date) {
-      return DRAFT_MACHINE_STORAGE_PREFIX + (date || getCurrentReportDate());
-    }
-
-    function getDraftMachineLines(date) {
-      try {
-        const raw = localStorage.getItem(getDraftMachineStorageKey(date));
-        const stored = raw ? JSON.parse(raw) : [];
-        return Array.isArray(stored) ? getActiveMachineLines().filter(line => stored.includes(line)) : [];
-      } catch (e) {
-        console.error('Error reading draft machine state:', e);
-        return [];
-      }
-    }
-
-    function saveDraftMachineLines(date, lines) {
-      const validLines = getActiveMachineLines().filter(line => Array.isArray(lines) && lines.includes(line));
-      try {
-        localStorage.setItem(getDraftMachineStorageKey(date), JSON.stringify(validLines));
-      } catch (e) {
-        console.error('Error saving draft machine state:', e);
-      }
-    }
-
-    function isMachineReadyForPrint(date, line) {
-      const batch = getBatchData(date);
-      return Boolean(batch && batch[line]) && !getDraftMachineLines(date).includes(line);
-    }
-
-    function updateActiveMachineDraftState(state) {
-      const reportDate = getCurrentReportDate();
-      const lineSelect = document.getElementById('lineSelect');
-      const activeLine = lineSelect && lineSelect.value ? lineSelect.value.trim() : '';
-      if (!activeLine) return;
-
-      const drafts = new Set(getDraftMachineLines(reportDate));
-      if (state === 'ready') drafts.delete(activeLine);
-      else drafts.add(activeLine);
-      saveDraftMachineLines(reportDate, [...drafts]);
-
-      if (state !== 'ready') {
-        const queue = getPrintQueue(reportDate).filter(line => line !== activeLine);
-        savePrintQueue(reportDate, queue);
-      }
-    }
-
-    function getReadyMachineLines(date) {
-      return getActiveMachineLines().filter(line => isMachineReadyForPrint(date, line));
-    }
-
-    function getPrintQueue(date) {
-      const lines = getActiveMachineLines();
-      try {
-        const raw = localStorage.getItem(getPrintQueueStorageKey(date));
-        const stored = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(stored)) return [];
-        return lines.filter(line => stored.includes(line));
-      } catch (e) {
-        console.error('Error reading print queue:', e);
-        return [];
-      }
-    }
-
-    function savePrintQueue(date, lines) {
-      const validLines = getActiveMachineLines().filter(line => Array.isArray(lines) && lines.includes(line));
-      try {
-        localStorage.setItem(getPrintQueueStorageKey(date), JSON.stringify(validLines));
-      } catch (e) {
-        console.error('Error saving print queue:', e);
-      }
-    }
-
-    function getSelectedPrintLines(date) {
-      const queued = new Set(getPrintQueue(date));
-      return getReadyMachineLines(date).filter(line => queued.has(line));
-    }
-
-    function updatePrintQueueUI(date) {
-      const reportDate = date || getCurrentReportDate();
-      const totalLines = getActiveMachineLines().length;
-      const readyLines = getReadyMachineLines(reportDate);
-      const selectedLines = getSelectedPrintLines(reportDate);
-      const count = selectedLines.length;
+    function updateOperationalPrintCounter(date) {
+      const jobs = getOperationalPrintJobs(date);
       const lang = localStorage.getItem('almanar_lang') || 'ar';
-
-      const summary = document.getElementById('printQueueSummary');
+      const grouped = jobs.reduce((acc, job) => { acc[job.line] = (acc[job.line] || 0) + 1; return acc; }, {});
+      const count = jobs.length;
+      const summary = document.getElementById('printBatchSummary');
       if (summary) {
+        const details = Object.keys(grouped).map(line => `${line}: ${grouped[line]}`).join(' | ');
         summary.textContent = lang === 'en'
-          ? `Ready & selected for print: ${count} of ${totalLines}`
-          : decodeUnicodeText(`\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0627\u062a \u0627\u0644\u062c\u0627\u0647\u0632\u0629 \u0648\u0627\u0644\u0645\u062d\u062f\u062f\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629: ${count} \u0645\u0646 ${totalLines}`);
+          ? `Ready to print: ${count} A4 page(s)${details ? ' — ' + details : ''}`
+          : decodeUnicodeText(`\u062c\u0627\u0647\u0632 \u0644\u0644\u0637\u0628\u0627\u0639\u0629: ${count} \u0635\u0641\u062d\u0629 A4${details ? ' — ' + details : ''}`);
       }
-
       const label = document.getElementById('batchPrintLabel');
-      if (label) {
-        label.textContent = lang === 'en'
-          ? `Print Selected Batch (${count} ${count === 1 ? 'Page' : 'Pages'} A4)`
-          : decodeUnicodeText(`\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u062f\u0641\u0639\u0629 \u0627\u0644\u0645\u062d\u062f\u062f\u0629 (${count} \u0635\u0641\u062d\u0627\u062a A4)`);
-      }
-
-      const countBadge = document.getElementById('batchPrintCountBadge');
-      if (countBadge) countBadge.textContent = String(count);
-
-      const batchBtn = document.getElementById('btnPrintBatch');
-      if (batchBtn) {
-        batchBtn.disabled = count === 0;
-        batchBtn.title = lang === 'en'
-          ? `Print exactly ${count} selected A4 page${count === 1 ? '' : 's'}`
-          : decodeUnicodeText(`\u0637\u0628\u0627\u0639\u0629 ${count} \u0635\u0641\u062d\u0629 A4 \u0645\u062d\u062f\u062f\u0629 \u0641\u0642\u0637`);
-      }
-
-      const selectAllBtn = document.getElementById('btnSelectAllPrint');
-      if (selectAllBtn) selectAllBtn.disabled = readyLines.length === 0;
-      const deselectAllBtn = document.getElementById('btnDeselectAllPrint');
-      if (deselectAllBtn) deselectAllBtn.disabled = count === 0;
+      if (label) label.textContent = lang === 'en' ? `Print Ready Sheets (${count} Pages A4)` : decodeUnicodeText(`\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u0623\u0648\u0631\u0627\u0642 \u0627\u0644\u062c\u0627\u0647\u0632\u0629 (${count} \u0635\u0641\u062d\u0629 A4)`);
+      const badge = document.getElementById('batchPrintCountBadge');
+      if (badge) badge.textContent = String(count);
+      const btn = document.getElementById('btnPrintBatch');
+      if (btn) btn.disabled = count === 0;
     }
 
-    function setMachinePrintQueueState(line, selected) {
-      const reportDate = getCurrentReportDate();
-      const readyLines = getReadyMachineLines(reportDate);
-      if (!readyLines.includes(line)) {
-        const lang = localStorage.getItem('almanar_lang') || 'ar';
-        showToast(lang === 'en'
-          ? 'Approve the machine operational setup before adding it to the print queue.'
-          : decodeUnicodeText('\u064a\u0631\u062c\u0649 \u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a \u0644\u0644\u0645\u0627\u0643\u064a\u0646\u0629 \u0642\u0628\u0644 \u0625\u0636\u0627\u0641\u062a\u0647\u0627 \u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0637\u0628\u0627\u0639\u0629.'));
-        renderMachineTabs();
-        return;
-      }
-
-      const queue = new Set(getPrintQueue(reportDate));
-      if (selected) queue.add(line);
-      else queue.delete(line);
-      savePrintQueue(reportDate, [...queue]);
-      renderMachineTabs();
-    }
-
-    function selectAllPrintQueue() {
-      const reportDate = getCurrentReportDate();
-      savePrintQueue(reportDate, getReadyMachineLines(reportDate));
-      renderMachineTabs();
-    }
-
-    function deselectAllPrintQueue() {
-      const reportDate = getCurrentReportDate();
-      savePrintQueue(reportDate, []);
-      renderMachineTabs();
-    }
-
-    // Render top machine tabs with independent print queue toggles.
+    // Render Top Machine Tabs Bar (#machineTabsBar) with Commit Status Badges
     function renderMachineTabs() {
       const container = document.getElementById('machineTabsBar') || document.getElementById('machineTabsList');
       if (!container) return;
@@ -1626,62 +1496,38 @@
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
       const batch = getBatchData(currentDate);
 
-      const selectedLines = new Set(getSelectedPrintLines(currentDate));
       container.innerHTML = '';
       lines.forEach(line => {
-        const tab = document.createElement('div');
-        tab.className = 'inline-flex items-stretch rounded-lg overflow-hidden border transition ' + (selectedLines.has(line) ? 'border-emerald-500 ring-1 ring-emerald-300' : 'border-slate-300');
-
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.dataset.line = line;
         btn.onclick = () => switchMachineLine(line);
 
         const isActive = (line === currentLine);
-        const isLocked = isMachineReadyForPrint(currentDate, line);
+        const isLocked = Boolean(batch && batch[line]);
 
         if (isActive) {
           btn.className = isLocked
-            ? 'px-3 py-1.5 bg-indigo-700 text-white font-extrabold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer ring-2 ring-indigo-300'
-            : 'px-3 py-1.5 bg-blue-600 text-white font-extrabold text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer';
+            ? 'px-3 py-1.5 bg-indigo-700 text-white font-extrabold rounded-lg text-xs shadow-xs border border-indigo-700 transition flex items-center gap-1.5 cursor-pointer ring-2 ring-indigo-300'
+            : 'px-3 py-1.5 bg-blue-600 text-white font-extrabold rounded-lg text-xs shadow-xs border border-blue-600 transition flex items-center gap-1.5 cursor-pointer';
         } else {
           btn.className = isLocked
-            ? 'px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer'
-            : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs hover:border-slate-400 transition flex items-center gap-1.5 cursor-pointer';
+            ? 'px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg text-xs border border-emerald-300 transition flex items-center gap-1.5 cursor-pointer'
+            : 'px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 hover:border-slate-400 transition flex items-center gap-1.5 cursor-pointer';
         }
 
         const badgeHtml = isLocked ? '<span class="text-xs" title="Locked & Ready for Print">\u2705</span>' : '';
         btn.innerHTML = `<span>${line}</span>${badgeHtml}`;
-
-        const queueLabel = document.createElement('label');
-        queueLabel.className = isLocked
-          ? 'flex items-center justify-center px-2 cursor-pointer bg-emerald-50 hover:bg-emerald-100 border-l border-emerald-300'
-          : 'flex items-center justify-center px-2 cursor-not-allowed bg-slate-100 border-l border-slate-300';
-        queueLabel.title = isLocked ? 'Include this ready machine in the batch print queue' : 'Approve this machine before adding it to the print queue';
-        queueLabel.addEventListener('click', event => event.stopPropagation());
-
-        const queueCheckbox = document.createElement('input');
-        queueCheckbox.type = 'checkbox';
-        queueCheckbox.checked = isLocked && selectedLines.has(line);
-        queueCheckbox.disabled = !isLocked;
-        queueCheckbox.className = 'w-4 h-4 accent-emerald-600 cursor-pointer disabled:cursor-not-allowed';
-        queueCheckbox.setAttribute('aria-label', `Print queue: ${line}`);
-        queueCheckbox.addEventListener('click', event => event.stopPropagation());
-        queueCheckbox.addEventListener('change', event => setMachinePrintQueueState(line, event.target.checked));
-        queueLabel.appendChild(queueCheckbox);
-
-        tab.appendChild(btn);
-        tab.appendChild(queueLabel);
-        container.appendChild(tab);
+        container.appendChild(btn);
       });
 
       const badge = document.getElementById('activeMachineBadge');
-      const isLocked = isMachineReadyForPrint(currentDate, currentLine);
+      const isLocked = Boolean(batch && batch[currentLine]);
       if (badge) {
         badge.innerHTML = isLocked ? `<span>${currentLine}</span> <span class="text-xs">\ud83d\udd12</span>` : `<span>${currentLine}</span>`;
       }
-      setMachineReadinessState(isLocked ? 'ready' : 'draft', true);
-      updatePrintQueueUI(currentDate);
+      setMachineReadinessState(isLocked ? 'ready' : 'draft');
+      updateOperationalPrintCounter(currentDate);
     }
 
     // Update active tab styling
@@ -1823,21 +1669,22 @@
 
     // Retrieve active schedule selection for a given machine line
     function getActiveSelectedDates(activeLine, currentDate) {
-      if (window.activeMachineSchedules && Array.isArray(window.activeMachineSchedules[activeLine])) {
-        return window.activeMachineSchedules[activeLine];
+      const scheduleKey = `${currentDate}_${activeLine}`;
+      if (window.activeMachineSchedules && Array.isArray(window.activeMachineSchedules[scheduleKey])) {
+        return window.activeMachineSchedules[scheduleKey];
       }
       const batch = getBatchData(currentDate);
       if (batch && batch[activeLine] && Array.isArray(batch[activeLine].selectedDates)) {
         return batch[activeLine].selectedDates;
       }
-      const stored = localStorage.getItem(`almanar_sched_${activeLine}`);
+      const stored = localStorage.getItem(`almanar_sched_${currentDate}_${activeLine}`);
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         } catch (e) {}
       }
-      return [currentDate];
+      return [];
     }
 
     // Toggle specific day in 6-day production run matrix
@@ -1854,11 +1701,13 @@
         dates.push(dateStr);
       }
 
-      window.activeMachineSchedules[activeLine] = dates;
-      localStorage.setItem(`almanar_sched_${activeLine}`, JSON.stringify(dates));
+      const scheduleKey = `${currentDate}_${activeLine}`;
+      window.activeMachineSchedules[scheduleKey] = dates;
+      localStorage.setItem(`almanar_sched_${scheduleKey}`, JSON.stringify(dates));
 
       setMachineReadinessState('draft');
       renderSchedulerMatrix();
+      updateOperationalPrintCounter(currentDate);
     }
 
     // Render interactive 6-day matrix UI
@@ -1931,10 +1780,7 @@
     }
 
     // Ambient Readiness Indicator & Commit Button State Controller
-    function setMachineReadinessState(state, preserveStoredState = false) {
-      if (!preserveStoredState) {
-        updateActiveMachineDraftState(state);
-      }
+    function setMachineReadinessState(state) {
       window.currentMachineReadinessState = state;
       const container = document.getElementById('machineReadyStatus');
       const dot = document.getElementById('readyStatusDot');
@@ -1967,10 +1813,6 @@
           if (commitIcon) commitIcon.textContent = '\ud83d\udd12';
           if (commitText) commitText.textContent = lang === 'en' ? 'Commit Operational Setup' : decodeUnicodeText('\u0627\u0639\u062a\u0645\u0627\u062f \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u064a');
         }
-      }
-
-      if (!preserveStoredState) {
-        renderMachineTabs();
       }
     }
 
@@ -3093,8 +2935,9 @@
 
       // 6-day production schedule selection
       let selectedDates = getActiveSelectedDates(activeLine, currentDate);
-      if (!selectedDates.includes(currentDate)) {
-        selectedDates.push(currentDate);
+      if (selectedDates.length === 0) {
+        showToast(decodeUnicodeText('\u062d\u062f\u062f \u064a\u0648\u0645 \u062a\u0634\u063a\u064a\u0644 \u0648\u0627\u062d\u062f \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0642\u0628\u0644 \u0627\u0644\u0627\u0639\u062a\u0645\u0627\u062f.'));
+        return;
       }
 
       const machinePayload = {
@@ -3285,9 +3128,6 @@
         saveBatchData(currentDate, batch);
       }
 
-      const queue = getPrintQueue(currentDate).filter(line => line !== currentLine);
-      savePrintQueue(currentDate, queue);
-
       const key = getDailyStorageKey(currentDate, currentLine);
       localStorage.removeItem(key);
 
@@ -3302,22 +3142,14 @@
       window.print();
     }
 
-    // Batch printing uses only ready machines explicitly selected in the print queue.
+    // Batch printing: one A4 page for every approved machine and selected operating date.
     function printAllLinesBatch() {
       saveToStorage();
       const dateInput = document.getElementById('reportDate');
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
-      const batch = getBatchData(currentDate);
-      const selectedLines = getSelectedPrintLines(currentDate)
-        .filter(line => Boolean(batch[line]))
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-
-      if (selectedLines.length === 0) {
-        const lang = localStorage.getItem('almanar_lang') || 'ar';
-        showToast(lang === 'en'
-          ? 'Select at least one ready machine for batch printing.'
-          : decodeUnicodeText('\u064a\u0631\u062c\u0649 \u062a\u062d\u062f\u064a\u062f \u0645\u0627\u0643\u064a\u0646\u0629 \u062c\u0627\u0647\u0632\u0629 \u0648\u0627\u062d\u062f\u0629 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u0644\u0637\u0628\u0627\u0639\u0629 \u0627\u0644\u062f\u0641\u0639\u0629.'));
-        updatePrintQueueUI(currentDate);
+      const printJobs = getOperationalPrintJobs(currentDate);
+      if (printJobs.length === 0) {
+        showToast(decodeUnicodeText('\u0644\u0627 \u062a\u0648\u062c\u062f \u0623\u0648\u0631\u0627\u0642 \u062c\u0627\u0647\u0632\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629. \u062d\u062f\u062f \u0623\u064a\u0627\u0645 \u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0648\u0627\u0639\u062a\u0645\u062f \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629.'));
         return;
       }
 
@@ -3327,9 +3159,10 @@
 
       batchContainer.innerHTML = '';
 
-      selectedLines.forEach((line, index) => {
-        const isLast = (index === selectedLines.length - 1);
-        const data = batch[line];
+      printJobs.forEach((job, index) => {
+        const line = job.line;
+        const data = job.data;
+        const isLast = (index === printJobs.length - 1);
 
         const clone = singleSheet.cloneNode(true);
         clone.removeAttribute('id');
@@ -3339,7 +3172,7 @@
         }
 
         const dateEl = clone.querySelector('#reportDate');
-        if (dateEl) dateEl.setAttribute('value', data.date || currentDate);
+        if (dateEl) dateEl.setAttribute('value', job.date);
 
         const itemEl = clone.querySelector('#itemCodeSelect');
         if (itemEl) itemEl.innerHTML = `<option value="${data.itemCode}" selected>${data.itemCode}</option>`;
@@ -3481,7 +3314,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       const dateInput = document.getElementById('reportDate');
       if (dateInput && !dateInput.value) {
-        dateInput.value = new Date().toISOString().split('T')[0];
+        dateInput.value = getLocalISODate();
       }
 
       const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
@@ -3507,22 +3340,12 @@
       applyAppLanguage(localStorage.getItem('almanar_lang') || 'ar');
 
       // Ambient status listener on specs fields
-      ['prodSpec', 'prodLengthWeight', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity', 's1_remarks', 's2_remarks', 'dayLeadName', 'daySignature', 'nightLeadName', 'nightSignature'].forEach(id => {
+      ['prodSpec', 'prodLengthWeight', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.addEventListener('input', () => setMachineReadinessState('draft'));
         }
       });
-
-      const hourlyTableBody = document.getElementById('tableBody');
-      if (hourlyTableBody) {
-        hourlyTableBody.addEventListener('input', event => {
-          const target = event.target;
-          if (target && target.matches('.good-input, .cause-input, .downtime-input, .reject-input')) {
-            setMachineReadinessState('draft');
-          }
-        });
-      }
 
       // Dual-Layer Persistence: Fetch latest cloud record for initial machine
       fetchCloudMachineRecord(initialLine, currentDate);
