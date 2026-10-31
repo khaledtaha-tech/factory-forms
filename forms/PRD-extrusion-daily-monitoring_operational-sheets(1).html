@@ -86,6 +86,22 @@
         overflow: hidden !important;
       }
 
+      /* Make the hourly production log consume all available A4 height. */
+      #sheetContent {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        flex-direction: column !important;
+      }
+      #hourlyLogSection {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+      }
+      #monitoringTable {
+        height: 100% !important;
+      }
+
       /* Fixed table layout */
       table {
         width: 100% !important;
@@ -199,6 +215,22 @@
       flex-direction: column;
       justify-content: space-between;
       box-sizing: border-box;
+    }
+
+    /* The operational log expands instead of leaving unused space above sign-off. */
+    #sheetContent {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+      flex-direction: column;
+    }
+    #hourlyLogSection {
+      display: flex;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    #monitoringTable {
+      height: 100%;
     }
 
     .hourly-row, .hourly-row td {
@@ -370,7 +402,7 @@
        MAIN DOCUMENT SHEET (DOUBLE-BORDER A4 CONTAINER)
        ============================================================================== -->
   <main id="singleSheetContainer" class="sheet-container text-slate-900 flex flex-col justify-between">
-    <div>
+    <div id="sheetContent">
       <!-- 1. HEADER SECTION & ISO CONTROL BOX -->
       <div class="border-b-2 border-slate-900 pb-1.5 mb-1.5">
         <div class="grid grid-cols-12 items-stretch gap-2">
@@ -500,7 +532,7 @@
       </div>
 
       <!-- 3. TABLE ARCHITECTURE: 24 HOURLY ROWS & SHIFT SUMMARIES -->
-      <div class="border border-slate-900 overflow-hidden">
+      <div id="hourlyLogSection" class="border border-slate-900 overflow-hidden">
         <table class="w-full border-collapse text-[8px] tabular-nums" id="monitoringTable">
           <thead>
             <tr class="bg-slate-200 text-slate-950 font-extrabold border-b border-slate-900 text-center">
