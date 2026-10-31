@@ -225,9 +225,22 @@
     .cell-input:focus {
       background-color: #e0f2fe;
     }
+
+    @media screen and (min-width: 1180px) {
+      body { padding: 14px 18px !important; }
+      #desktopAppLayout { max-width: 1920px; margin: 0 auto; display: grid; grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); gap: 16px; align-items: start; }
+      #desktopAppLayout > header { grid-column: 1; grid-row: 1; max-width: none !important; margin: 0 !important; position: sticky; top: 14px; z-index: 10; }
+      #desktopAppLayout > #machineTabsContainer { grid-column: 1; grid-row: 2; max-width: none !important; margin: 0 !important; position: sticky; top: 250px; }
+      #desktopAppLayout > #singleSheetContainer { grid-column: 2; grid-row: 1 / span 2; max-width: none !important; width: 100%; min-height: calc(100vh - 28px); margin: 0 !important; }
+      #desktopAppLayout #scheduleDaysGrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      #desktopAppLayout #machineTabsBar { gap: 6px; }
+      #desktopAppLayout #machineTabsBar button { padding-left: 9px; padding-right: 9px; }
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen py-4 px-2 selection:bg-amber-500 selection:text-white">
+
+  <div id="desktopAppLayout">
 
   <!-- ==============================================================================
        TOP ACTION BAR (NON-PRINT)
@@ -884,6 +897,7 @@
       </div>
     </div>
   </main>
+  </div>
 
   <!-- ==============================================================================
        BATCH PRINT CONTAINER (CLONED PAGES FOR MULTI-MACHINE PRINTING)
@@ -1493,7 +1507,7 @@
       const lineSelect = document.getElementById('lineSelect');
       const currentLine = (lineSelect && lineSelect.value) ? lineSelect.value : lines[0];
       const dateInput = document.getElementById('reportDate');
-      const currentDate = dateInput ? dateInput.value : new Date().toISOString().split('T')[0];
+      const currentDate = dateInput ? dateInput.value : getLocalISODate();
       const batch = getBatchData(currentDate);
 
       container.innerHTML = '';
@@ -3321,7 +3335,7 @@
       const initialLine = 'L-01 - KTS 350 TDH';
 
       const initialKey = getDailyStorageKey(currentDate, initialLine);
-      const saved = localStorage.getItem(initialKey) || localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(initialKey);
 
       if (saved) {
         try {
