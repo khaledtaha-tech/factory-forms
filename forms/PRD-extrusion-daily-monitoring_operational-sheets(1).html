@@ -2364,7 +2364,52 @@
       return '';
     }
 
-    // Handle Excel file upload and parsing tailored for Machine_Mold_Standards workbook
+    // Find the row that holds the operational catalog headings.  The master
+    // workbook can contain many sheets and supporting sections, so we never
+    // assume the table starts at A1 unless it actually contains these fields.
+    function findCatalogHeaderRow(worksheet) {
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
+      const lastRow = Math.min(range.e.r, range.s.r + 300);
+      const lastCol = Math.min(range.e.c, range.s.c + 40);
+
+      for (let rowIndex = range.s.r; rowIndex <= lastRow; rowIndex++) {
+        const headings = [];
+        for (let colIndex = range.s.c; colIndex <= lastCol; colIndex++) {
+          const cell = worksheet[XLSX.utils.encode_cell({ r: rowIndex, c: colIndex })];
+          if (cell && cell.v !== undefined && cell.v !== null) headings.push(String(cell.v));
+        }
+
+        const normalized = headings.map(value => value.trim().toLowerCase().replace(/[\s_\-\/\\()%*.]+/g, ''));
+        const hasMachineLine = normalized.some(value => ['machineline', 'machine', 'line'].includes(value));
+        const hasProductCode = normalized.some(value => ['productcode', 'product', 'itemcode', 'code'].includes(value));
+        const hasPrintedTarget = normalized.some(value => value === 'printedsoptarget85' || value === 'printedsoptarget');
+
+        if (hasMachineLine && hasProductCode && hasPrintedTarget) return rowIndex;
+      }
+
+      return null;
+    }
+
+    // Return the catalog sheet from the production-planning master workbook.
+    // The operational table is Table15 in the "Sizes output" sheet. SheetJS
+    // Community does not reliably expose Excel table names, so the header row
+    // is located by its three required fields as a safe cross-version check.
+    function getCatalogWorksheet(workbook) {
+      const exactSheet = workbook.SheetNames.find(name => name.trim().toLowerCase() === 'sizes output');
+      if (!exactSheet) {
+        return { error: 'لم يتم العثور على شيت Sizes output داخل ملف الإكسل.' };
+      }
+
+      const worksheet = workbook.Sheets[exactSheet];
+      const headerRow = findCatalogHeaderRow(worksheet);
+      if (headerRow === null) {
+        return { error: 'شيت Sizes output موجود، لكن لم يتم العثور على جدول Table15 أو أعمدته المطلوبة.' };
+      }
+
+      return { worksheet, sheetName: exactSheet, headerRow };
+    }
+
+    // Handle Excel file upload from the master planning workbook.
     function handleExcelImport(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -2386,13 +2431,17 @@
             return;
           }
 
-          let targetSheetName = workbook.SheetNames.find(name => name.trim().toLowerCase() === 'machine_mold_standards');
-          if (!targetSheetName) {
-            targetSheetName = workbook.SheetNames[0];
+          const catalogSource = getCatalogWorksheet(workbook);
+          if (catalogSource.error) {
+            alert(catalogSource.error);
+            event.target.value = '';
+            return;
           }
 
-          const worksheet = workbook.Sheets[targetSheetName];
-          const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+          const rawRows = XLSX.utils.sheet_to_json(catalogSource.worksheet, {
+            range: catalogSource.headerRow,
+            defval: ''
+          });
 
           if (!rawRows || rawRows.length === 0) {
             alert('The uploaded sheet is empty.');
@@ -2425,12 +2474,6 @@
             const rateStr = findRowValue(row, [
               'Printed SOP Target (85%)', 'Printed SOP Target', 'Printed_SOP_Target', 'PrintedSOPTarget', 'SOP Target'
             ]);
-            if (!rateStr) {
-              rateStr = findRowValue(row, [
-                'Hourly_Rate', 'Hourly Rate', 'hourlyrate', 'rate', 'hourly_rate', 'hourly',
-                '\u0645\u0639\u062f\u0644 \u0627\u0644\u0633\u0627\u0639\u0629', '\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0646\u062a\u0627\u062c', '\u0627\u0644\u0645\u0639\u062f\u0644'
-              ]);
-            }
             const hourlyRate = Math.round(parseFloat(rateStr)) || parseInt(rateStr) || 0;
 
             const sourceTimestamp = findRowValue(row, [
@@ -2478,7 +2521,7 @@
 
           // Display toast notification
           const skippedNote = skippedRows > 0 ? ` — \u062a\u0645 \u062a\u062c\u0627\u0648\u0632 ${skippedRows} \u0635\u0641 \u0644\u0639\u062f\u0645 \u062a\u0648\u0641\u0631 \u0627\u0644\u062e\u0637 / \u0627\u0644\u0643\u0648\u062f / Printed SOP Target (85%)` : '';
-          showToast(`\u2713 \u062a\u0645 \u0627\u0633\u062a\u064a\u0631\u0627\u062f (${parsedCatalog.length}) \u0635\u0646\u0641 \u0628\u0646\u062c\u0627\u062d${skippedNote}`);
+          showToast(`\u2713 \u062a\u0645 \u0627\u0633\u062a\u064a\u0631\u0627\u062f (${parsedCatalog.length}) \u0635\u0646\u0641 \u0645\u0646 Sizes output / Table15 \u0628\u0646\u062c\u0627\u062d${skippedNote}`);
         } catch (err) {
           console.error('Excel Import Error:', err);
           alert('Error parsing Excel file: ' + err.message);
