@@ -250,6 +250,14 @@ foreach ($publicForms as $pf) {
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        // Apply the saved theme before the page is painted, avoiding a white flash.
+        try {
+            if (localStorage.getItem('forms_portal_theme') === 'dark') {
+                document.documentElement.classList.add('theme-dark');
+            }
+        } catch (e) {}
+    </script>
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -324,6 +332,61 @@ foreach ($publicForms as $pf) {
         .btn-light { background-color: #ffffff !important; color: #334155 !important; border: 1px solid #e2e8f0 !important; }
         .btn-light:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
 
+        /* ===== Portal themes ===== */
+        .theme-toggle {
+            min-width: 114px;
+        }
+        .theme-dark body {
+            background: radial-gradient(circle at 80% -10%, #18365b 0, transparent 30%), #0a1220;
+            color: #e2e8f0;
+        }
+        .theme-dark .portal-header {
+            background: rgba(10, 18, 32, .88) !important;
+            border-color: rgba(51, 65, 85, .9) !important;
+            box-shadow: 0 1px 0 rgba(148, 163, 184, .08);
+        }
+        .theme-dark .portal-header h1 { color: #f8fafc !important; }
+        .theme-dark .portal-header p { color: #94a3b8 !important; }
+        .theme-dark .portal-header :is(.bg-white, .bg-slate-100) {
+            background-color: #17243a !important;
+            border-color: #31415a !important;
+            color: #dbeafe !important;
+        }
+        .theme-dark .portal-panel {
+            background: linear-gradient(145deg, rgba(20, 32, 52, .96), rgba(13, 23, 40, .96)) !important;
+            border-color: #293a55 !important;
+            box-shadow: 0 16px 32px -26px rgba(0, 0, 0, .9) !important;
+        }
+        .theme-dark .portal-panel input,
+        .theme-dark .portal-panel select {
+            background: #0f1b2e !important;
+            border-color: #32435e !important;
+            color: #e2e8f0 !important;
+        }
+        .theme-dark .portal-panel :is(.text-slate-900, .text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400) {
+            color: #b9c8dc !important;
+        }
+        .theme-dark .portal-panel .border-t { border-color: #263954 !important; }
+        .theme-dark .category-pill:not(.active) { background: #17243a !important; color: #bfdbfe !important; }
+        .theme-dark .form-card,
+        .theme-dark .card {
+            background: linear-gradient(145deg, #17253b 0%, #101b2d 100%) !important;
+            border-color: #2a3c58 !important;
+            box-shadow: 0 18px 34px -28px rgba(0, 0, 0, .95) !important;
+        }
+        .theme-dark .form-card:hover { border-color: #4f698d !important; }
+        .theme-dark .form-card :is(.text-slate-900, .text-slate-800) { color: #f8fafc !important; }
+        .theme-dark .form-card :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400) { color: #b9c8dc !important; }
+        .theme-dark .form-card :is(.bg-slate-50, .bg-slate-50\/80, .bg-white) { background-color: #132137 !important; }
+        .theme-dark .form-card :is(.border-slate-100, .border-slate-200) { border-color: #2b3d58 !important; }
+        .theme-dark .form-card-footer { background: rgba(8, 17, 31, .48) !important; }
+        .theme-dark .form-card--featured {
+            border-color: #d97706 !important;
+            box-shadow: 0 18px 34px -24px rgba(245, 158, 11, .28) !important;
+        }
+        .theme-dark .form-card--featured .form-card-title { color: #fbbf24 !important; }
+        .theme-dark footer { border-color: #24344e !important; color: #94a3b8 !important; }
+
         /* Portal cards: a cleaner operational dashboard hierarchy. */
         .form-card {
             position: relative;
@@ -361,7 +424,7 @@ foreach ($publicForms as $pf) {
 <body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
 
     <!-- Header Navigation -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 shadow-xs">
+    <header class="portal-header bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 
@@ -420,6 +483,16 @@ foreach ($publicForms as $pf) {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
                         <span id="lockButtonLabel">\u0642\u0641\u0644 \u0627\u0644\u0623\u0645\u0627\u0646</span>
+                    </button>
+
+                    <!-- Light / dark portal theme -->
+                    <button type="button" id="themeToggle" onclick="togglePortalTheme()"
+                            class="theme-toggle inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
+                            title="\u062a\u0628\u062f\u064a\u0644 \u062b\u064a\u0645 \u0627\u0644\u0628\u0648\u0627\u0628\u0629">
+                        <svg id="themeIcon" class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364-.707-.707M6.343 6.343l-.707-.707m12.728 0-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <span id="themeLabel">\u062b\u064a\u0645 \u062f\u0627\u0643\u0646</span>
                     </button>
 
                     <!-- GitHub Repository Link -->
@@ -484,7 +557,7 @@ foreach ($publicForms as $pf) {
         </div>
 
         <!-- Search & Filter Bar -->
-        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 mb-8">
+        <div class="portal-panel bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 mb-8">
             <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
                 
                 <!-- Search Input -->
@@ -1235,6 +1308,9 @@ foreach ($publicForms as $pf) {
 
             // Initialize unlocked state from storage/cookie
             applyUnlockedState(isPortalUnlocked());
+
+            // Keep the header control synchronized with the theme applied before paint.
+            setPortalTheme(document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
         });
 
         function copyFormLink(relativeUrl) {
@@ -1264,6 +1340,29 @@ foreach ($publicForms as $pf) {
                     toast.classList.add('translate-y-24', 'opacity-0');
                 }, 3000);
             }
+        }
+
+        function setPortalTheme(theme) {
+            const isDark = theme === 'dark';
+            document.documentElement.classList.toggle('theme-dark', isDark);
+
+            try { localStorage.setItem('forms_portal_theme', isDark ? 'dark' : 'light'); } catch (e) {}
+
+            const label = document.getElementById('themeLabel');
+            const icon = document.getElementById('themeIcon');
+            const button = document.getElementById('themeToggle');
+            if (label) label.textContent = isDark ? '\u062b\u064a\u0645 \u0641\u0627\u062a\u062d' : '\u062b\u064a\u0645 \u062f\u0627\u0643\u0646';
+            if (button) button.title = isDark ? '\u0627\u0644\u062a\u062d\u0648\u0644 \u0625\u0644\u0649 \u0627\u0644\u062b\u064a\u0645 \u0627\u0644\u0641\u0627\u062a\u062d' : '\u0627\u0644\u062a\u062d\u0648\u0644 \u0625\u0644\u0649 \u0627\u0644\u062b\u064a\u0645 \u0627\u0644\u062f\u0627\u0643\u0646';
+            if (icon) {
+                icon.className = `w-3.5 h-3.5 ${isDark ? 'text-sky-300' : 'text-amber-500'}`;
+                icon.innerHTML = isDark
+                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9 9 0 1015.354 20.354z"></path>'
+                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364-.707-.707M6.343 6.343l-.707-.707m12.728 0-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            }
+        }
+
+        function togglePortalTheme() {
+            setPortalTheme(document.documentElement.classList.contains('theme-dark') ? 'light' : 'dark');
         }
 
         function decodeUnicodeText() {
