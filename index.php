@@ -323,6 +323,39 @@ foreach ($publicForms as $pf) {
         .btn-primary:hover { background-color: #1d4ed8 !important; border-color: #1d4ed8 !important; }
         .btn-light { background-color: #ffffff !important; color: #334155 !important; border: 1px solid #e2e8f0 !important; }
         .btn-light:hover { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+
+        /* Portal cards: a cleaner operational dashboard hierarchy. */
+        .form-card {
+            position: relative;
+            min-height: 340px;
+            isolation: isolate;
+        }
+        .form-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 auto;
+            height: 4px;
+            background: linear-gradient(90deg, #0f766e, #10b981);
+            opacity: 0;
+            transition: opacity .2s ease;
+            z-index: 1;
+        }
+        .form-card:hover::before { opacity: 1; }
+        .form-card--featured {
+            border-color: #fbbf24 !important;
+            box-shadow: 0 12px 28px -18px rgba(180, 83, 9, .42);
+        }
+        .form-card--featured::before {
+            opacity: 1;
+            background: linear-gradient(90deg, #f59e0b, #ea580c);
+        }
+        .form-card--featured .form-card-title { color: #9a3412; }
+        .form-card--featured .form-card-title:hover { color: #7c2d12; }
+        .form-card--featured .form-card-footer { background: #fffaf0; }
+
+        @media (max-width: 640px) {
+            .form-card { min-height: 320px; }
+        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
@@ -587,7 +620,8 @@ foreach ($publicForms as $pf) {
                     </div>
                 </div>
                 <?php else: ?>
-                <div class="form-card bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
+                <?php $isFeaturedOperationalForm = str_starts_with(strtolower($form['code']), 'prd-') || str_contains(strtolower($form['filename']), 'extrusion'); ?>
+                <div class="form-card <?= $isFeaturedOperationalForm ? 'form-card--featured' : '' ?> bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
                      data-title="<?= htmlspecialchars(mb_strtolower($form['title'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-subtitle="<?= htmlspecialchars(mb_strtolower(!empty($form['subtitle']) ? $form['subtitle'] : u('\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643'), 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
                      data-code="<?= htmlspecialchars(mb_strtolower($form['code'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
@@ -632,7 +666,7 @@ foreach ($publicForms as $pf) {
                         </div>
 
                         <!-- Form Title & Subtitle -->
-                        <h3 class="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition line-clamp-2 leading-snug mb-1">
+                        <h3 class="form-card-title text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition line-clamp-2 leading-snug mb-1">
                             <?= htmlspecialchars($form['title'], ENT_QUOTES, 'UTF-8') ?>
                         </h3>
 
@@ -672,7 +706,7 @@ foreach ($publicForms as $pf) {
                     </div>
 
                     <!-- Action Footer -->
-                    <div class="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2">
+                    <div class="form-card-footer p-4 bg-slate-50/80 border-t border-slate-100 flex items-center gap-2">
                         <!-- Open / Preview Link -->
                         <a href="<?= htmlspecialchars($form['relative_url'], ENT_QUOTES, 'UTF-8') ?>" 
                            target="_blank" 
@@ -1240,6 +1274,17 @@ foreach ($publicForms as $pf) {
                     node.nodeValue = node.nodeValue.replace(/\\u([0-9a-fA-F]{4})/g, (match, grp) => String.fromCharCode(parseInt(grp, 16)));
                 }
             }
+
+            // Text nodes were decoded already, but attributes such as the
+            // search placeholder were still showing literal \uXXXX values.
+            document.querySelectorAll('[placeholder], [title], [aria-label]').forEach(el => {
+                ['placeholder', 'title', 'aria-label'].forEach(attr => {
+                    const value = el.getAttribute(attr);
+                    if (value && value.includes('\\u')) {
+                        el.setAttribute(attr, value.replace(/\\u([0-9a-fA-F]{4})/g, (match, grp) => String.fromCharCode(parseInt(grp, 16))));
+                    }
+                });
+            });
         }
         decodeUnicodeText();
     </script>
