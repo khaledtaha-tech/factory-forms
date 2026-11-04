@@ -2459,6 +2459,23 @@
       return '';
     }
 
+    // The current master sheet stores the line and machine in two columns.
+    // Rebuild the app's stable display key, e.g. "L-06 - KTS 700".
+    function buildMachineLine(lineValue, machineValue, combinedValue) {
+      const combined = String(combinedValue || '').trim();
+      if (combined) return combined;
+      const line = String(lineValue || '').trim();
+      const machine = String(machineValue || '').trim();
+      if (line && machine) return `${line} - ${machine}`;
+      return line || machine;
+    }
+
+    function splitMachineLine(machineLine) {
+      const value = String(machineLine || '').trim();
+      const match = value.match(/^\s*(L-?\d+)\s*-\s*(.+)$/i);
+      return match ? { line: match[1].toUpperCase().replace(/^L(\d)/, 'L-$1'), machine: match[2].trim() } : { line: value, machine: '' };
+    }
+
     // Find the row that holds the operational catalog headings.  The master
     // workbook can contain many sheets and supporting sections, so we never
     // assume the table starts at A1 unless it actually contains these fields.
@@ -2475,11 +2492,12 @@
         }
 
         const normalized = headings.map(value => value.trim().toLowerCase().replace(/[\s_\-\/\\()%*.]+/g, ''));
-        const hasMachineLine = normalized.some(value => ['machineline', 'machine', 'line'].includes(value));
+        const hasCombinedMachineLine = normalized.includes('machineline');
+        const hasSplitMachineLine = normalized.includes('line') && normalized.includes('machine');
         const hasProductCode = normalized.some(value => ['productcode', 'product', 'itemcode', 'code'].includes(value));
         const hasPrintedTarget = normalized.some(value => value === 'printedsoptarget85' || value === 'printedsoptarget');
 
-        if (hasMachineLine && hasProductCode && hasPrintedTarget) return rowIndex;
+        if ((hasCombinedMachineLine || hasSplitMachineLine) && hasProductCode && hasPrintedTarget) return rowIndex;
       }
 
       return null;
@@ -2548,10 +2566,13 @@
           let skippedRows = 0;
 
           rawRows.forEach(row => {
-            const machineLine = findRowValue(row, [
-              'Machine Line', 'Machine_Line', 'MachineLine', 'machineline', 'line', 'machine_line', 'machine',
+            const combinedMachineLine = findRowValue(row, [
+              'Machine Line', 'Machine_Line', 'MachineLine', 'machineline',
               '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629 / \u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629/\u0627\u0644\u062e\u0637', '\u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629', '\u0627\u0644\u062e\u0637'
             ]);
+            const lineValue = findRowValue(row, ['Line', 'Production Line', 'Line No']);
+            const machineValue = findRowValue(row, ['Machine', 'Machine Name']);
+            const machineLine = buildMachineLine(lineValue, machineValue, combinedMachineLine);
 
             const itemCode = findRowValue(row, [
               'Product Code', 'Product_Code', 'ProductCode', 'Item_Code', 'itemcode', 'code', 'item_code',
@@ -2649,23 +2670,29 @@
 
       // This is the controlled upload template. Column D is intentionally
       // retained as a reference-only actual rate; the app reads column E only.
-      const exportRows = catalog.map(item => ({
-        'Machine Line': String(item.machineLine || ''),
-        'Product Code': String(item.itemCode || ''),
-        'Raw Description': String(item.itemName || ''),
-        'Weight_Per_Meter_Kg': getWeightPerMeterKg(item) || '',
-        'Actual Rate (Pcs/h)': '',
-        'Printed SOP Target (85%)': parseInt(item.hourlyRate) || 0,
-        'Updated / Created Timestamp': item.updatedAt || new Date().toISOString().slice(0, 10)
-      }));
+      const exportRows = catalog.map(item => {
+        const parts = splitMachineLine(item.machineLine);
+        return {
+          'Line': parts.line,
+          'Machine': parts.machine,
+          'Product Code': String(item.itemCode || ''),
+          'Raw Description': String(item.itemName || ''),
+          'Weight_Per_Meter_Kg': getWeightPerMeterKg(item) || '',
+          'Actual Rate (Pcs/h)': '',
+          'Printed SOP Target (85%)': parseInt(item.hourlyRate) || 0,
+          'Updated / Created Timestamp': item.updatedAt || new Date().toISOString().slice(0, 10)
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(exportRows);
 
       // Auto-fit column widths
       worksheet['!cols'] = [
-        { wch: 26 }, // Machine Line
+        { wch: 12 }, // Line
+        { wch: 20 }, // Machine
         { wch: 15 }, // Product Code
         { wch: 58 }, // Raw Description
+        { wch: 20 }, // Weight per metre
         { wch: 20 }, // Actual Rate (reference only)
         { wch: 28 }, // Printed SOP Target (85%)
         { wch: 25 }  // Updated / Created Timestamp
