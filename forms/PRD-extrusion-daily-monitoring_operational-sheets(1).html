@@ -147,6 +147,12 @@
         appearance: none !important;
       }
 
+      /* Blank downtime/reject means zero; never print faint placeholder zeroes. */
+      .downtime-input::placeholder,
+      .reject-input::placeholder {
+        color: transparent !important;
+      }
+
       select::-ms-expand {
         display: none !important;
       }
@@ -406,7 +412,7 @@
       <!-- 1. HEADER SECTION & ISO CONTROL BOX -->
       <div class="border-b-2 border-slate-900 pb-1.5 mb-1.5">
         <div class="grid grid-cols-12 items-stretch gap-2">
-          
+
           <!-- Factory Name & Identity (Left) -->
           <div class="col-span-4 flex flex-col justify-between">
             <div>
@@ -466,7 +472,7 @@
       <!-- 2. PRODUCTION PARAMETERS BAR (TOP METADATA INPUTS & TWO-TIER LOOKUP) -->
       <div class="border border-slate-900 bg-slate-50/80 mb-1.5 p-1 text-[8px]">
         <div class="grid grid-cols-12 gap-1.5 items-center">
-          
+
           <!-- [1] Item Code Selection (Step 1) -->
           <div class="col-span-2 border-r border-slate-300 pr-1.5">
             <label for="itemCodeSelect" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
@@ -510,10 +516,11 @@
             <label for="prodLengthWeight" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [6] Length &amp; Nom Wt:
             </label>
-            <input type="text" id="prodLengthWeight" value="6M - 6.00 Kg/Pc" oninput="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none" title="Pipe Length & Nominal Weight">
-            <input type="hidden" id="nomWeight" value="6.00">
-            <input type="hidden" id="nominalWeight" value="6.00">
-            <input type="hidden" id="pipeLength" value="6M">
+            <input type="text" id="prodLengthWeight" value="6.00M - Weight pending" onchange="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none" title="Enter the required pipe length in metres, e.g. 5.85">
+            <input type="hidden" id="nomWeight" value="">
+            <input type="hidden" id="nominalWeight" value="">
+            <input type="hidden" id="baseWeightAtSixM" value="">
+            <input type="hidden" id="pipeLength" value="6.00">
           </div>
 
           <!-- [7] Hourly Target Baseline (Pcs/Hr) -->
@@ -524,6 +531,7 @@
               </label>
             </div>
             <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center" title="Hourly Target in Pcs/Hr">
+            <div id="linearRateMeta" class="text-[7px] leading-tight text-center font-bold text-amber-800 tabular-nums">— m/h · — m/min</div>
             <input type="hidden" id="hourlyRate" value="47">
             <input type="hidden" id="stdSpeed" value="">
           </div>
@@ -879,7 +887,7 @@
     <!-- 5. BOTTOM SUPERVISOR SIGN-OFF SECTION & FOOTER -->
     <div class="mt-2 pt-1 border-t-2 border-slate-900">
       <div class="grid grid-cols-2 gap-2 text-[8px]">
-        
+
         <!-- Day Shift Supervisor Sign-off -->
         <div class="border border-slate-900 p-1.5 bg-slate-50 sign-box flex flex-col justify-between">
           <div class="flex items-center justify-between border-b border-slate-300 pb-0.5">
@@ -941,7 +949,7 @@
        ============================================================================== -->
   <div id="catalogModal" class="no-print fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
-      
+
       <!-- Modal Header -->
       <div class="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -962,6 +970,7 @@
               <th data-i18n="thLine" class="p-2 border border-slate-200 w-44">\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c</th>
               <th data-i18n="thCode" class="p-2 border border-slate-200 w-24">\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641</th>
               <th data-i18n="thSpec" class="p-2 border border-slate-200">\u0627\u0644\u0648\u0635\u0641 \u0627\u0644\u062e\u0627\u0645</th>
+              <th class="p-2 border border-slate-200 w-28 text-center">Weight kg/Pc<br><span class="text-[10px] font-medium text-slate-500">for 6.00 m</span></th>
               <th data-i18n="thRate" class="p-2 border border-slate-200 w-36 text-center">\u0645\u0633\u062a\u0647\u062f\u0641 SOP \u0627\u0644\u0645\u0637\u0628\u0648\u0639 (85%)</th>
               <th data-i18n="thAction" class="p-2 border border-slate-200 w-16 text-center">\u0625\u062c\u0631\u0627\u0621</th>
             </tr>
@@ -1243,13 +1252,75 @@
       }, 2500);
     }
 
-    // Extract numeric weight from string e.g. "6M - 6.00 Kg/Pc" -> 6.00
+    // Extract numeric weight from a display string e.g. "6.00M - 6.00 Kg/Pc" -> 6.00.
+    // Never invent a default: production sheets must use the approved Excel weight.
     function extractNominalWeight(str) {
-      if (!str) return 6.0;
+      if (!str) return 0;
       const match = String(str).match(/(\d+(\.\d+)?)\s*(kg|kilo)/i);
       if (match) return parseFloat(match[1]);
-      const num = parseFloat(String(str).replace(/[^0-9.]/g, ''));
-      return isNaN(num) || num <= 0 ? 6.0 : num;
+      return 0;
+    }
+
+    function getPipeLengthMeters() {
+      const input = document.getElementById('pipeLength');
+      const length = parseFloat(input ? input.value : '');
+      return Number.isFinite(length) && length > 0 ? length : 6;
+    }
+
+    function formatLengthWeight(lengthMeters, weightKg) {
+      if (!Number.isFinite(weightKg) || weightKg <= 0) {
+        return `${lengthMeters.toFixed(2)}M - Weight missing`;
+      }
+      return `${lengthMeters.toFixed(2)}M - ${weightKg.toFixed(2)} Kg/Pc`;
+    }
+
+    // Weight in the master Excel is always the 6.00 m piece weight.
+    // A different operating length changes piece weight in the same proportion.
+    function applyLengthAndWeight(lengthMeters, baseWeightAtSixM) {
+      const length = Number.isFinite(Number(lengthMeters)) && Number(lengthMeters) > 0 ? Number(lengthMeters) : 6;
+      const baseWeight = parseFloat(baseWeightAtSixM);
+      const actualWeight = Number.isFinite(baseWeight) && baseWeight > 0 ? baseWeight * (length / 6) : 0;
+
+      const lengthEl = document.getElementById('pipeLength');
+      if (lengthEl) lengthEl.value = length.toFixed(2);
+      const baseEl = document.getElementById('baseWeightAtSixM');
+      if (baseEl) baseEl.value = Number.isFinite(baseWeight) && baseWeight > 0 ? baseWeight.toFixed(4) : '';
+      const visibleEl = document.getElementById('prodLengthWeight');
+      if (visibleEl) visibleEl.value = formatLengthWeight(length, actualWeight);
+      const nomWt = document.getElementById('nomWeight');
+      if (nomWt) nomWt.value = actualWeight > 0 ? actualWeight.toFixed(4) : '';
+      const nomWtAlias = document.getElementById('nominalWeight');
+      if (nomWtAlias) nomWtAlias.value = actualWeight > 0 ? actualWeight.toFixed(4) : '';
+
+      updateLinearRates();
+      return actualWeight;
+    }
+
+    function updateLinearRates() {
+      const rate = parseFloat(document.getElementById('toolbarRateInput')?.value) || 0;
+      const length = getPipeLengthMeters();
+      const metresPerHour = rate * length;
+      const metresPerMinute = metresPerHour / 60;
+      const speed = document.getElementById('stdSpeed');
+      if (speed) speed.value = metresPerMinute > 0 ? `${metresPerMinute.toFixed(2)} M/Min` : '';
+      const meta = document.getElementById('linearRateMeta');
+      if (meta) meta.textContent = metresPerHour > 0
+        ? `${metresPerHour.toFixed(1)} m/h · ${metresPerMinute.toFixed(2)} m/min`
+        : '— m/h · — m/min';
+    }
+
+    function hasApprovedWeight(data) {
+      return (parseFloat(data?.baseWeightAtSixM) || 0) > 0 && (parseFloat(data?.nominalWeight || data?.weight) || 0) > 0;
+    }
+
+    function requireCurrentApprovedWeight() {
+      const baseWeight = parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0;
+      const actualWeight = parseFloat(document.getElementById('nomWeight')?.value) || 0;
+      if (baseWeight > 0 && actualWeight > 0) return true;
+      const line = document.getElementById('lineSelect')?.value || 'selected machine';
+      const item = document.getElementById('itemCodeSelect')?.value || 'selected item';
+      showToast(`⚠️ Weight kg/Pc is missing for ${item} on ${line}. Add the 6 m weight in Sizes output, re-import Excel, then print.`);
+      return false;
     }
 
     // Step hourly rate via stepper buttons
@@ -1269,6 +1340,8 @@
       if (metaInput) metaInput.value = rate;
       const hourlyRateHidden = document.getElementById('hourlyRate');
       if (hourlyRateHidden) hourlyRateHidden.value = rate;
+
+      updateLinearRates();
 
       // Recalculate 24 hourly rows cumulative standard baseline
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
@@ -1305,7 +1378,7 @@
     // Recalculate all shift summaries, scrap allowances, and efficiencies
     function recalcShiftSummaries() {
       const rate = parseInt(document.getElementById('toolbarRateInput').value) || 47;
-      const nomWeight = parseNum(document.getElementById('nomWeight').value) || 6.0;
+      const nomWeight = parseNum(document.getElementById('nomWeight').value);
 
       let s1Good = 0, s1Downtime = 0, s1Reject = 0;
       let s2Good = 0, s2Downtime = 0, s2Reject = 0;
@@ -1489,9 +1562,9 @@
       const linesFromCatalog = catalog
         .map(item => (item.machineLine || '').trim())
         .filter(line => line.length > 0 && !line.toLowerCase().includes('twin screw'));
-      
+
       const uniqueLines = Array.from(new Set(linesFromCatalog));
-      
+
       // Sort naturally (L-01, L-02, ... L-07)
       uniqueLines.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
@@ -1953,7 +2026,7 @@
       const currentLine = lineSelectEl.value.trim();
 
       // Find exact match for the active machine line first
-      const exactMatch = catalog.find(e => 
+      const exactMatch = catalog.find(e =>
         String(e.itemCode).trim() === itemCode && isSameMachineLine(e.machineLine, currentLine)
       );
       const matches = catalog.filter(e => String(e.itemCode).trim() === itemCode);
@@ -1966,21 +2039,9 @@
         const prodSpecAlias = document.getElementById('productSpec');
         if (prodSpecAlias) prodSpecAlias.value = primary.itemName;
 
-        // 2. Auto-fill Weight & Length (#prodLengthWeight / #nominalWeight / #nomWeight / #pipeLength)
-        const prodLenWt = document.getElementById('prodLengthWeight');
-        if (prodLenWt) prodLenWt.value = primary.lengthWeight;
-
-        const numWeight = extractNominalWeight(primary.lengthWeight);
-        const nomWt = document.getElementById('nomWeight');
-        if (nomWt) nomWt.value = numWeight.toFixed(2);
-        const nomWtAlias = document.getElementById('nominalWeight');
-        if (nomWtAlias) nomWtAlias.value = numWeight.toFixed(2);
-
-        const pipeLenEl = document.getElementById('pipeLength');
-        if (pipeLenEl) {
-          const m = primary.lengthWeight.match(/^(\d+M)/i);
-          pipeLenEl.value = m ? m[1].toUpperCase() : '6M';
-        }
+        // 2. Excel Weight kg/Pc is the source of truth and represents 6.00 m.
+        // A missing source weight remains missing; it can never be calculated.
+        applyLengthAndWeight(6, primary.baseWeightKg);
 
         // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr
         const targetRate = primary.hourlyRate || 47;
@@ -1992,7 +2053,11 @@
 
         // 5. Ambient state transitions to Draft / In Setup
         setMachineReadinessState('draft');
-        showToast(`Target Rate: ${targetRate} Pcs/Hr (${itemCode} on ${currentLine})`);
+        if (!(parseFloat(primary.baseWeightKg) > 0)) {
+          showToast(`⚠️ Weight kg/Pc is missing for ${itemCode} on ${currentLine}. This sheet cannot be committed or printed.`);
+        } else {
+          showToast(`Target Rate: ${targetRate} Pcs/Hr (${itemCode} on ${currentLine})`);
+        }
       }
     }
 
@@ -2004,15 +2069,21 @@
       switchMachineLine(line);
     }
 
-    // Manual edit on Length & Nominal Weight field
+    // The operator may type only the required length (for example 5.85).
+    // Weight is then scaled from the approved 6.00 m Excel weight.
     function handleLengthWeightInput(val) {
-      const numWeight = extractNominalWeight(val);
-      const nomWt = document.getElementById('nomWeight');
-      if (nomWt) nomWt.value = numWeight.toFixed(2);
-      const nomWtAlias = document.getElementById('nominalWeight');
-      if (nomWtAlias) nomWtAlias.value = numWeight.toFixed(2);
+      const length = parseFloat(String(val).replace(',', '.'));
+      if (!Number.isFinite(length) || length <= 0) {
+        showToast('Enter a valid pipe length in metres, for example 5.85.');
+        const baseWeight = parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0;
+        applyLengthAndWeight(getPipeLengthMeters(), baseWeight);
+        return;
+      }
+      const baseWeight = parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0;
+      applyLengthAndWeight(length, baseWeight);
       recalcShiftSummaries();
       saveToStorage();
+      setMachineReadinessState('draft');
     }
 
     // ==============================================================================
@@ -2226,6 +2297,9 @@
             <input type="text" class="cat-item-name catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemName)}">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
+            <input type="number" min="0" step="0.001" class="cat-item-weight w-full px-1.5 py-1 text-xs font-black text-center text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.baseWeightKg || ''}" placeholder="Required">
+          </td>
+          <td class="p-1.5 border border-slate-200 text-center">
             <input type="number" min="1" max="5000" class="cat-item-rate catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.hourlyRate}">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
@@ -2253,6 +2327,9 @@
         </td>
         <td class="p-1.5 border border-slate-200">
           <input type="text" class="cat-item-name catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" placeholder="uPVC PIPE ...">
+        </td>
+        <td class="p-1.5 border border-slate-200 text-center">
+          <input type="number" min="0" step="0.001" class="cat-item-weight w-full px-1.5 py-1 text-xs font-black text-center text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" placeholder="Required">
         </td>
         <td class="p-1.5 border border-slate-200 text-center">
           <input type="number" min="1" max="5000" class="cat-item-rate catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" placeholder="40" value="40">
@@ -2284,18 +2361,20 @@
         const nameInput = tr.querySelector('.cat-item-name') || tr.querySelector('.catalog-name');
         const lineInput = tr.querySelector('.cat-item-line') || tr.querySelector('.catalog-line');
         const rateInput = tr.querySelector('.cat-item-rate') || tr.querySelector('.catalog-rate');
+        const weightInput = tr.querySelector('.cat-item-weight');
 
         const code = codeInput ? codeInput.value.trim() : '';
         const name = nameInput ? nameInput.value.trim() : '';
         const line = lineInput ? lineInput.value.trim() : '';
         const rate = rateInput ? parseInt(rateInput.value) || 0 : 0;
+        const baseWeightKg = weightInput ? parseFloat(weightInput.value) || 0 : 0;
 
         if (code && line && rate > 0) {
-          const derived = cleanPipeString(name || code);
           newCatalog.push({
             itemCode: code,
             itemName: name || code,
-            lengthWeight: derived.lengthWeight || '6M - Auto Kg/Pc',
+            baseWeightKg: baseWeightKg > 0 ? baseWeightKg : null,
+            lengthWeight: baseWeightKg > 0 ? formatLengthWeight(6, baseWeightKg) : '',
             machineLine: line,
             hourlyRate: rate,
             updatedAt: new Date().toISOString()
@@ -2468,6 +2547,13 @@
               '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641', '\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629'
             ]);
 
+            // This is the approved piece weight for a 6.00 m pipe. Do not
+            // infer it from OD/thickness or use any theoretical formula.
+            const weightStr = findRowValue(row, [
+              'Weight kg/Pc', 'Weight Kg/Pc', 'Weight kg per Pc', 'Weight', 'Weight_kg_Pc', 'WeightKgPc'
+            ]);
+            const baseWeightKg = parseFloat(String(weightStr).replace(',', '.')) || 0;
+
             // IMPORTANT: The operating target is taken only from the green
             // "Printed SOP Target (85%)" column. Actual/real rate is a
             // reference-only field and is deliberately never imported.
@@ -2487,12 +2573,11 @@
               return;
             }
 
-            const derived = cleanPipeString(itemName || itemCode);
-
             parsedCatalog.push({
               itemCode: itemCode,
               itemName: itemName || itemCode,
-              lengthWeight: derived.lengthWeight || '6M - Auto Kg/Pc',
+              baseWeightKg: baseWeightKg > 0 ? baseWeightKg : null,
+              lengthWeight: baseWeightKg > 0 ? formatLengthWeight(6, baseWeightKg) : '',
               machineLine: machineLine,
               hourlyRate: hourlyRate,
               updatedAt: sourceTimestamp || new Date().toISOString()
@@ -2552,6 +2637,7 @@
         'Machine Line': String(item.machineLine || ''),
         'Product Code': String(item.itemCode || ''),
         'Raw Description': String(item.itemName || ''),
+        'Weight kg/Pc': item.baseWeightKg || '',
         'Actual Rate (Pcs/h)': '',
         'Printed SOP Target (85%)': parseInt(item.hourlyRate) || 0,
         'Updated / Created Timestamp': item.updatedAt || new Date().toISOString().slice(0, 10)
@@ -2636,6 +2722,8 @@
       const prodSpec = document.getElementById('prodSpec');
       const prodLenWt = document.getElementById('prodLengthWeight');
       const nomWt = document.getElementById('nomWeight');
+      const baseWt = document.getElementById('baseWeightAtSixM');
+      const pipeLength = document.getElementById('pipeLength');
 
       const data = {
         date: document.getElementById('reportDate').value,
@@ -2644,6 +2732,8 @@
         spec: prodSpec ? prodSpec.value : '',
         line: lineSelect ? lineSelect.value : '',
         lengthWeight: prodLenWt ? prodLenWt.value : '',
+        baseWeightAtSixM: baseWt ? baseWt.value : '',
+        pipeLength: pipeLength ? pipeLength.value : '6.00',
         speed: document.getElementById('stdSpeed').value,
         capacity: document.getElementById('nomCapacity').value,
         weight: nomWt ? nomWt.value : '',
@@ -2700,16 +2790,12 @@
         const prodSpecAlias = document.getElementById('productSpec');
         if (prodSpecAlias) prodSpecAlias.value = data.spec;
       }
-      if (data.lengthWeight) {
-        const prodLenWt = document.getElementById('prodLengthWeight');
-        if (prodLenWt) prodLenWt.value = data.lengthWeight;
-      }
-      if (data.weight) {
-        const nomWt = document.getElementById('nomWeight');
-        if (nomWt) nomWt.value = data.weight;
-        const nomWtAlias = document.getElementById('nominalWeight');
-        if (nomWtAlias) nomWtAlias.value = data.weight;
-      }
+      const catalogEntry = getCatalog().find(entry =>
+        String(entry.itemCode).trim() === String(itemCode).trim() && isSameMachineLine(entry.machineLine, line)
+      );
+      const baseWeight = parseFloat(data.baseWeightAtSixM) || parseFloat(catalogEntry?.baseWeightKg) || 0;
+      const savedLength = parseFloat(data.pipeLength) || parseFloat(String(data.lengthWeight || '').replace(',', '.')) || 6;
+      applyLengthAndWeight(savedLength, baseWeight);
       if (data.speed) document.getElementById('stdSpeed').value = data.speed;
       if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
       if (data.s1_remarks !== undefined) document.getElementById('s1_remarks').value = data.s1_remarks;
@@ -2755,10 +2841,12 @@
         itemCode: match ? match.itemCode : firstItemCode,
         spec: match ? match.itemName : '',
         line: line,
-        lengthWeight: match ? match.lengthWeight : '',
-        speed: '4 M/Min',
+        lengthWeight: match && match.baseWeightKg ? formatLengthWeight(6, parseFloat(match.baseWeightKg)) : '',
+        baseWeightAtSixM: match ? match.baseWeightKg : '',
+        pipeLength: '6.00',
+        speed: '',
         capacity: '300 Kg/h',
-        weight: match ? extractNominalWeight(match.lengthWeight).toFixed(2) : '6.00',
+        weight: match && match.baseWeightKg ? Number(match.baseWeightKg).toFixed(4) : '',
         s1_remarks: '',
         s2_remarks: '',
         dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
@@ -2863,6 +2951,8 @@
                 itemCode: cloudData.itemCode || '307',
                 spec: cloudData.prodSpec || cloudData.spec || '',
                 lengthWeight: cloudData.lengthWeight || (cloudData.nominalWeight ? `6M - ${cloudData.nominalWeight} Kg/Pc` : ''),
+                baseWeightAtSixM: cloudData.baseWeightAtSixM || '',
+                pipeLength: cloudData.pipeLength || '6.00',
                 weight: cloudData.nominalWeight || cloudData.weight || '',
                 rate: cloudData.hourlyRate || cloudData.rate || 47,
                 speed: cloudData.speed || '4 M/Min',
@@ -3080,10 +3170,14 @@
       const lineSelect = document.getElementById('lineSelect');
       const activeLine = lineSelect ? lineSelect.value.trim() : 'L-01 - KTS 350 TDH';
 
+      if (!requireCurrentApprovedWeight()) return;
+
       const itemSelect = document.getElementById('itemCodeSelect');
       const prodSpec = document.getElementById('prodSpec');
       const prodLenWt = document.getElementById('prodLengthWeight');
       const nomWt = document.getElementById('nomWeight');
+      const baseWt = document.getElementById('baseWeightAtSixM');
+      const pipeLength = document.getElementById('pipeLength');
 
       const hourlyData = [];
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
@@ -3097,7 +3191,7 @@
       });
 
       const nomWeightVal = nomWt ? nomWt.value : extractNominalWeight(prodLenWt ? prodLenWt.value : '').toFixed(2);
-      const lengthWeightVal = prodLenWt ? prodLenWt.value : ('6M - ' + nomWeightVal + ' Kg/Pc');
+      const lengthWeightVal = prodLenWt ? prodLenWt.value : ('6.00M - ' + nomWeightVal + ' Kg/Pc');
 
       // 6-day production schedule selection
       let selectedDates = getActiveSelectedDates(activeLine, currentDate);
@@ -3110,6 +3204,8 @@
         itemCode: itemSelect ? itemSelect.value : '',
         prodSpec: prodSpec ? prodSpec.value : '',
         nominalWeight: nomWeightVal,
+        baseWeightAtSixM: baseWt ? baseWt.value : '',
+        pipeLength: pipeLength ? pipeLength.value : '6.00',
         lengthWeight: lengthWeightVal,
         hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
         capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '300 Kg/h',
@@ -3139,6 +3235,8 @@
             itemCode: machinePayload.itemCode,
             prodSpec: machinePayload.prodSpec,
             nominalWeight: machinePayload.nominalWeight,
+            baseWeightAtSixM: machinePayload.baseWeightAtSixM,
+            pipeLength: machinePayload.pipeLength,
             lengthWeight: machinePayload.lengthWeight,
             hourlyRate: machinePayload.hourlyRate,
             capacity: machinePayload.capacity,
@@ -3205,6 +3303,8 @@
           itemCode: targetData.itemCode || '307',
           spec: targetData.prodSpec || targetData.spec || '',
           lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
+          baseWeightAtSixM: targetData.baseWeightAtSixM || '',
+          pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
           speed: targetData.speed || '4 M/Min',
@@ -3255,6 +3355,8 @@
           itemCode: targetData.itemCode || '307',
           spec: targetData.prodSpec || targetData.spec || '',
           lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
+          baseWeightAtSixM: targetData.baseWeightAtSixM || '',
+          pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
           speed: targetData.speed || '4 M/Min',
@@ -3312,6 +3414,7 @@
     }
 
     function printCurrentMachine() {
+      if (!requireCurrentApprovedWeight()) return;
       saveToStorage();
       document.body.classList.remove('batch-mode');
       window.print();
@@ -3325,6 +3428,13 @@
       const printJobs = getOperationalPrintJobs(currentDate);
       if (printJobs.length === 0) {
         showToast(decodeUnicodeText('\u0644\u0627 \u062a\u0648\u062c\u062f \u0623\u0648\u0631\u0627\u0642 \u062c\u0627\u0647\u0632\u0629 \u0644\u0644\u0637\u0628\u0627\u0639\u0629. \u062d\u062f\u062f \u0623\u064a\u0627\u0645 \u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0648\u0627\u0639\u062a\u0645\u062f \u0627\u0644\u0645\u0627\u0643\u064a\u0646\u0629.'));
+        return;
+      }
+
+      const missingWeights = printJobs.filter(job => !hasApprovedWeight(job.data));
+      if (missingWeights.length > 0) {
+        const affected = missingWeights.map(job => `${job.line} (${job.data?.itemCode || 'item'})`).join(', ');
+        showToast(`⚠️ Cannot print: Weight kg/Pc is missing for ${affected}. Complete the 6 m weight in Sizes output and re-import Excel.`);
         return;
       }
 
@@ -3371,6 +3481,9 @@
         const lenWtEl = clone.querySelector('#prodLengthWeight');
         if (lenWtEl) lenWtEl.setAttribute('value', lengthWeightVal);
 
+        const lengthEl = clone.querySelector('#pipeLength');
+        if (lengthEl) lengthEl.setAttribute('value', data.pipeLength || '6.00');
+
         const speedEl = clone.querySelector('#stdSpeed');
         if (speedEl) speedEl.setAttribute('value', data.speed || '4 M/Min');
 
@@ -3412,8 +3525,10 @@
 
           const goodVal = rowData ? (rowData.good || '') : '';
           const causeVal = rowData ? (rowData.cause || '') : '';
-          const downVal = rowData ? (rowData.downtime || '') : '';
-          const rejVal = rowData ? (rowData.reject || '') : '';
+          const savedDownVal = rowData ? (rowData.downtime || '') : '';
+          const savedRejVal = rowData ? (rowData.reject || '') : '';
+          const downVal = parseNum(savedDownVal) === 0 ? '' : savedDownVal;
+          const rejVal = parseNum(savedRejVal) === 0 ? '' : savedRejVal;
 
           const goodInput = row.querySelector('.good-input');
           if (goodInput) goodInput.setAttribute('value', goodVal);
