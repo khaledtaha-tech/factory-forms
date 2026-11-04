@@ -483,7 +483,7 @@
             </select>
           </div>
 
-          <!-- [2] Product Name & Specification (Expanded to 4 columns) -->
+          <!-- [2] Product Name & Specification -->
           <div class="col-span-3 border-r border-slate-300 pr-1.5 param-col-spec">
             <label for="prodSpec" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [2] Product Spec:
@@ -975,7 +975,7 @@
               <th data-i18n="thLine" class="p-2 border border-slate-200 w-44">\u062e\u0637 \u0627\u0644\u0625\u0646\u062a\u0627\u062c</th>
               <th data-i18n="thCode" class="p-2 border border-slate-200 w-24">\u0643\u0648\u062f \u0627\u0644\u0635\u0646\u0641</th>
               <th data-i18n="thSpec" class="p-2 border border-slate-200">\u0627\u0644\u0648\u0635\u0641 \u0627\u0644\u062e\u0627\u0645</th>
-              <th class="p-2 border border-slate-200 w-28 text-center">Weight kg/Pc<br><span class="text-[10px] font-medium text-slate-500">for 6.00 m</span></th>
+              <th class="p-2 border border-slate-200 w-28 text-center">Weight per metre<br><span class="text-[10px] font-medium text-slate-500">Kg/m</span></th>
               <th data-i18n="thRate" class="p-2 border border-slate-200 w-36 text-center">\u0645\u0633\u062a\u0647\u062f\u0641 SOP \u0627\u0644\u0645\u0637\u0628\u0648\u0639 (85%)</th>
               <th data-i18n="thAction" class="p-2 border border-slate-200 w-16 text-center">\u0625\u062c\u0631\u0627\u0621</th>
             </tr>
@@ -1279,17 +1279,18 @@
       return `${lengthMeters.toFixed(2)}M - ${weightKg.toFixed(2)} Kg/Pc`;
     }
 
-    // Weight in the master Excel is always the 6.00 m piece weight.
-    // A different operating length changes piece weight in the same proportion.
-    function applyLengthAndWeight(lengthMeters, baseWeightAtSixM) {
+    // Weight in the master Excel is always Kg/m. The form derives the
+    // piece weight from the current operating length, starting at 6.00 m.
+    function applyLengthAndWeight(lengthMeters, weightPerMeterKg) {
       const length = Number.isFinite(Number(lengthMeters)) && Number(lengthMeters) > 0 ? Number(lengthMeters) : 6;
-      const baseWeight = parseFloat(baseWeightAtSixM);
-      const actualWeight = Number.isFinite(baseWeight) && baseWeight > 0 ? baseWeight * (length / 6) : 0;
+      const weightPerMeter = parseFloat(weightPerMeterKg);
+      const actualWeight = Number.isFinite(weightPerMeter) && weightPerMeter > 0 ? weightPerMeter * length : 0;
+      const baseWeightAtSixM = Number.isFinite(weightPerMeter) && weightPerMeter > 0 ? weightPerMeter * 6 : 0;
 
       const lengthEl = document.getElementById('pipeLength');
       if (lengthEl) lengthEl.value = length.toFixed(2);
       const baseEl = document.getElementById('baseWeightAtSixM');
-      if (baseEl) baseEl.value = Number.isFinite(baseWeight) && baseWeight > 0 ? baseWeight.toFixed(4) : '';
+      if (baseEl) baseEl.value = baseWeightAtSixM > 0 ? baseWeightAtSixM.toFixed(4) : '';
       const visibleEl = document.getElementById('prodLengthWeight');
       if (visibleEl) visibleEl.value = formatLengthWeight(length, actualWeight);
       const nomWt = document.getElementById('nomWeight');
@@ -1299,6 +1300,15 @@
 
       updateLinearRates();
       return actualWeight;
+    }
+
+    // Legacy catalog records stored a 6 m piece weight as baseWeightKg.
+    // Divide those records by six so old saved sheets keep their exact output.
+    function getWeightPerMeterKg(data) {
+      const direct = parseFloat(data?.weightPerMeterKg);
+      if (Number.isFinite(direct) && direct > 0) return direct;
+      const legacyPieceWeight = parseFloat(data?.baseWeightKg ?? data?.baseWeightAtSixM);
+      return Number.isFinite(legacyPieceWeight) && legacyPieceWeight > 0 ? legacyPieceWeight / 6 : 0;
     }
 
     function updateLinearRates() {
@@ -1325,7 +1335,7 @@
       if (baseWeight > 0 && actualWeight > 0) return true;
       const line = document.getElementById('lineSelect')?.value || 'selected machine';
       const item = document.getElementById('itemCodeSelect')?.value || 'selected item';
-      showToast(`⚠️ Weight kg/Pc is missing for ${item} on ${line}. Add the 6 m weight in Sizes output, re-import Excel, then print.`);
+      showToast(`⚠️ Weight per metre (Kg/m) is missing for ${item} on ${line}. Add it in Sizes output, re-import Excel, then print.`);
       return false;
     }
 
@@ -2045,9 +2055,9 @@
         const prodSpecAlias = document.getElementById('productSpec');
         if (prodSpecAlias) prodSpecAlias.value = primary.itemName;
 
-        // 2. Excel Weight kg/Pc is the source of truth and represents 6.00 m.
-        // A missing source weight remains missing; it can never be calculated.
-        applyLengthAndWeight(6, primary.baseWeightKg);
+        // 2. Excel Weight_Per_Meter_Kg is the source of truth. The form
+        // derives the 6.00 m piece weight and all length-dependent outputs.
+        applyLengthAndWeight(6, getWeightPerMeterKg(primary));
 
         // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr
         const targetRate = primary.hourlyRate || 47;
@@ -2059,8 +2069,8 @@
 
         // 5. Ambient state transitions to Draft / In Setup
         setMachineReadinessState('draft');
-        if (!(parseFloat(primary.baseWeightKg) > 0)) {
-          showToast(`⚠️ Weight kg/Pc is missing for ${itemCode} on ${currentLine}. This sheet cannot be committed or printed.`);
+        if (!(getWeightPerMeterKg(primary) > 0)) {
+          showToast(`⚠️ Weight per metre (Kg/m) is missing for ${itemCode} on ${currentLine}. This sheet cannot be committed or printed.`);
         } else {
           showToast(`Target Rate: ${targetRate} Pcs/Hr (${itemCode} on ${currentLine})`);
         }
@@ -2076,17 +2086,17 @@
     }
 
     // The operator may type only the required length (for example 5.85).
-    // Weight is then scaled from the approved 6.00 m Excel weight.
+    // Piece weight is then calculated from the approved Kg/m Excel weight.
     function handleLengthWeightInput(val) {
       const length = parseFloat(String(val).replace(',', '.'));
       if (!Number.isFinite(length) || length <= 0) {
         showToast('Enter a valid pipe length in metres, for example 5.85.');
-        const baseWeight = parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0;
-        applyLengthAndWeight(getPipeLengthMeters(), baseWeight);
+        const weightPerMeter = (parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0) / 6;
+        applyLengthAndWeight(getPipeLengthMeters(), weightPerMeter);
         return;
       }
-      const baseWeight = parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0;
-      applyLengthAndWeight(length, baseWeight);
+      const weightPerMeter = (parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0) / 6;
+      applyLengthAndWeight(length, weightPerMeter);
       recalcShiftSummaries();
       saveToStorage();
       setMachineReadinessState('draft');
@@ -2303,7 +2313,7 @@
             <input type="text" class="cat-item-name catalog-name w-full px-2 py-1 text-xs text-slate-800 border border-slate-300 rounded focus:border-emerald-500 outline-none" value="${escapeHtml(entry.itemName)}">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
-            <input type="number" min="0" step="0.001" class="cat-item-weight w-full px-1.5 py-1 text-xs font-black text-center text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.baseWeightKg || ''}" placeholder="Required">
+            <input type="number" min="0" step="0.001" class="cat-item-weight w-full px-1.5 py-1 text-xs font-black text-center text-slate-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${getWeightPerMeterKg(entry) || ''}" placeholder="Required" title="Weight per metre in Kg/m">
           </td>
           <td class="p-1.5 border border-slate-200 text-center">
             <input type="number" min="1" max="5000" class="cat-item-rate catalog-rate w-full px-1.5 py-1 text-xs font-black text-center text-amber-900 border border-slate-300 rounded focus:border-emerald-500 outline-none tabular-nums" value="${entry.hourlyRate}">
@@ -2373,14 +2383,14 @@
         const name = nameInput ? nameInput.value.trim() : '';
         const line = lineInput ? lineInput.value.trim() : '';
         const rate = rateInput ? parseInt(rateInput.value) || 0 : 0;
-        const baseWeightKg = weightInput ? parseFloat(weightInput.value) || 0 : 0;
+        const weightPerMeterKg = weightInput ? parseFloat(weightInput.value) || 0 : 0;
 
         if (code && line && rate > 0) {
           newCatalog.push({
             itemCode: code,
             itemName: name || code,
-            baseWeightKg: baseWeightKg > 0 ? baseWeightKg : null,
-            lengthWeight: baseWeightKg > 0 ? formatLengthWeight(6, baseWeightKg) : '',
+            weightPerMeterKg: weightPerMeterKg > 0 ? weightPerMeterKg : null,
+            lengthWeight: weightPerMeterKg > 0 ? formatLengthWeight(6, weightPerMeterKg * 6) : '',
             machineLine: line,
             hourlyRate: rate,
             updatedAt: new Date().toISOString()
@@ -2553,12 +2563,12 @@
               '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0648\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629', '\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641', '\u0627\u0644\u0645\u0648\u0627\u0635\u0641\u0629'
             ]);
 
-            // This is the approved piece weight for a 6.00 m pipe. Do not
-            // infer it from OD/thickness or use any theoretical formula.
+            // This is the approved weight per metre. Do not infer it from
+            // OD/thickness or use any theoretical formula.
             const weightStr = findRowValue(row, [
-              'Weight kg/Pc', 'Weight Kg/Pc', 'Weight kg per Pc', 'Weight', 'Weight_kg_Pc', 'WeightKgPc'
+              'Weight_Per_Meter_Kg', 'Weight Per Meter Kg', 'Weight per metre Kg', 'Weight Kg/m', 'Weight kg/m'
             ]);
-            const baseWeightKg = parseFloat(String(weightStr).replace(',', '.')) || 0;
+            const weightPerMeterKg = parseFloat(String(weightStr).replace(',', '.')) || 0;
 
             // IMPORTANT: The operating target is taken only from the green
             // "Printed SOP Target (85%)" column. Actual/real rate is a
@@ -2582,8 +2592,8 @@
             parsedCatalog.push({
               itemCode: itemCode,
               itemName: itemName || itemCode,
-              baseWeightKg: baseWeightKg > 0 ? baseWeightKg : null,
-              lengthWeight: baseWeightKg > 0 ? formatLengthWeight(6, baseWeightKg) : '',
+              weightPerMeterKg: weightPerMeterKg > 0 ? weightPerMeterKg : null,
+              lengthWeight: weightPerMeterKg > 0 ? formatLengthWeight(6, weightPerMeterKg * 6) : '',
               machineLine: machineLine,
               hourlyRate: hourlyRate,
               updatedAt: sourceTimestamp || new Date().toISOString()
@@ -2643,7 +2653,7 @@
         'Machine Line': String(item.machineLine || ''),
         'Product Code': String(item.itemCode || ''),
         'Raw Description': String(item.itemName || ''),
-        'Weight kg/Pc': item.baseWeightKg || '',
+        'Weight_Per_Meter_Kg': getWeightPerMeterKg(item) || '',
         'Actual Rate (Pcs/h)': '',
         'Printed SOP Target (85%)': parseInt(item.hourlyRate) || 0,
         'Updated / Created Timestamp': item.updatedAt || new Date().toISOString().slice(0, 10)
@@ -2739,6 +2749,7 @@
         line: lineSelect ? lineSelect.value : '',
         lengthWeight: prodLenWt ? prodLenWt.value : '',
         baseWeightAtSixM: baseWt ? baseWt.value : '',
+        weightPerMeterKg: baseWt && parseFloat(baseWt.value) > 0 ? (parseFloat(baseWt.value) / 6).toFixed(6) : '',
         pipeLength: pipeLength ? pipeLength.value : '6.00',
         speed: document.getElementById('stdSpeed').value,
         capacity: document.getElementById('nomCapacity').value,
@@ -2799,9 +2810,9 @@
       const catalogEntry = getCatalog().find(entry =>
         String(entry.itemCode).trim() === String(itemCode).trim() && isSameMachineLine(entry.machineLine, line)
       );
-      const baseWeight = parseFloat(data.baseWeightAtSixM) || parseFloat(catalogEntry?.baseWeightKg) || 0;
+      const weightPerMeter = parseFloat(data.weightPerMeterKg) || (parseFloat(data.baseWeightAtSixM) || 0) / 6 || getWeightPerMeterKg(catalogEntry);
       const savedLength = parseFloat(data.pipeLength) || parseFloat(String(data.lengthWeight || '').replace(',', '.')) || 6;
-      applyLengthAndWeight(savedLength, baseWeight);
+      applyLengthAndWeight(savedLength, weightPerMeter);
       if (data.speed) document.getElementById('stdSpeed').value = data.speed;
       if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
       if (data.s1_remarks !== undefined) document.getElementById('s1_remarks').value = data.s1_remarks;
@@ -2847,12 +2858,13 @@
         itemCode: match ? match.itemCode : firstItemCode,
         spec: match ? match.itemName : '',
         line: line,
-        lengthWeight: match && match.baseWeightKg ? formatLengthWeight(6, parseFloat(match.baseWeightKg)) : '',
-        baseWeightAtSixM: match ? match.baseWeightKg : '',
+        lengthWeight: getWeightPerMeterKg(match) ? formatLengthWeight(6, getWeightPerMeterKg(match) * 6) : '',
+        weightPerMeterKg: getWeightPerMeterKg(match) || '',
+        baseWeightAtSixM: getWeightPerMeterKg(match) ? (getWeightPerMeterKg(match) * 6).toFixed(4) : '',
         pipeLength: '6.00',
         speed: '',
         capacity: '',
-        weight: match && match.baseWeightKg ? Number(match.baseWeightKg).toFixed(4) : '',
+        weight: getWeightPerMeterKg(match) ? Number(getWeightPerMeterKg(match) * 6).toFixed(4) : '',
         s1_remarks: '',
         s2_remarks: '',
         dayLead: document.getElementById('dayLeadName') ? document.getElementById('dayLeadName').value : '',
@@ -2958,6 +2970,7 @@
                 spec: cloudData.prodSpec || cloudData.spec || '',
                 lengthWeight: cloudData.lengthWeight || (cloudData.nominalWeight ? `6M - ${cloudData.nominalWeight} Kg/Pc` : ''),
                 baseWeightAtSixM: cloudData.baseWeightAtSixM || '',
+                weightPerMeterKg: cloudData.weightPerMeterKg || '',
                 pipeLength: cloudData.pipeLength || '6.00',
                 weight: cloudData.nominalWeight || cloudData.weight || '',
                 rate: cloudData.hourlyRate || cloudData.rate || 47,
@@ -3211,6 +3224,7 @@
         prodSpec: prodSpec ? prodSpec.value : '',
         nominalWeight: nomWeightVal,
         baseWeightAtSixM: baseWt ? baseWt.value : '',
+        weightPerMeterKg: baseWt && parseFloat(baseWt.value) > 0 ? (parseFloat(baseWt.value) / 6).toFixed(6) : '',
         pipeLength: pipeLength ? pipeLength.value : '6.00',
         lengthWeight: lengthWeightVal,
         hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
@@ -3242,6 +3256,7 @@
             prodSpec: machinePayload.prodSpec,
             nominalWeight: machinePayload.nominalWeight,
             baseWeightAtSixM: machinePayload.baseWeightAtSixM,
+            weightPerMeterKg: machinePayload.weightPerMeterKg,
             pipeLength: machinePayload.pipeLength,
             lengthWeight: machinePayload.lengthWeight,
             hourlyRate: machinePayload.hourlyRate,
@@ -3310,6 +3325,7 @@
           spec: targetData.prodSpec || targetData.spec || '',
           lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
           baseWeightAtSixM: targetData.baseWeightAtSixM || '',
+          weightPerMeterKg: targetData.weightPerMeterKg || '',
           pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
@@ -3362,6 +3378,7 @@
           spec: targetData.prodSpec || targetData.spec || '',
           lengthWeight: targetData.lengthWeight || (targetData.nominalWeight ? `6M - ${targetData.nominalWeight} Kg/Pc` : ''),
           baseWeightAtSixM: targetData.baseWeightAtSixM || '',
+          weightPerMeterKg: targetData.weightPerMeterKg || '',
           pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
@@ -3440,7 +3457,7 @@
       const missingWeights = printJobs.filter(job => !hasApprovedWeight(job.data));
       if (missingWeights.length > 0) {
         const affected = missingWeights.map(job => `${job.line} (${job.data?.itemCode || 'item'})`).join(', ');
-        showToast(`⚠️ Cannot print: Weight kg/Pc is missing for ${affected}. Complete the 6 m weight in Sizes output and re-import Excel.`);
+        showToast(`⚠️ Cannot print: Weight per metre (Kg/m) is missing for ${affected}. Complete it in Sizes output and re-import Excel.`);
         return;
       }
 
