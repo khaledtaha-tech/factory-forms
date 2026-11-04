@@ -173,7 +173,7 @@
         display: none !important;
       }
       .param-col-spec {
-        grid-column: span 4 / span 4 !important;
+        grid-column: span 3 / span 3 !important;
       }
       #prodLengthWeight {
         overflow: visible !important;
@@ -484,7 +484,7 @@
           </div>
 
           <!-- [2] Product Name & Specification (Expanded to 4 columns) -->
-          <div class="col-span-4 border-r border-slate-300 pr-1.5 param-col-spec">
+          <div class="col-span-3 border-r border-slate-300 pr-1.5 param-col-spec">
             <label for="prodSpec" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
               [2] Product Spec:
             </label>
@@ -503,12 +503,12 @@
             <input type="hidden" id="lineNo" value="L-01 - KTS 350 TDH">
           </div>
 
-          <!-- [5] Nominal Capacity -->
+          <!-- [5] Calculated machine output from Pcs/Hr × actual Kg/Pc -->
           <div class="col-span-1 border-r border-slate-300 pr-1.5">
             <label for="nomCapacity" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [5] Cap:
+              [5] Output:
             </label>
-            <input type="text" id="nomCapacity" value="300 Kg/h" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none truncate">
+            <input type="text" id="nomCapacity" value="— Kg/h" readonly class="w-full font-black text-[8px] text-slate-950 bg-transparent outline-none tabular-nums" title="Calculated output: Pcs/Hr × actual Kg/Pc">
           </div>
 
           <!-- [6] Pipe Length & Nominal Weight -->
@@ -531,9 +531,14 @@
               </label>
             </div>
             <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center" title="Hourly Target in Pcs/Hr">
-            <div id="linearRateMeta" class="text-[7px] leading-tight text-center font-bold text-amber-800 tabular-nums">— m/h · — m/min</div>
             <input type="hidden" id="hourlyRate" value="47">
             <input type="hidden" id="stdSpeed" value="">
+          </div>
+
+          <!-- [8] Calculated line speed, kept separate from Pcs/Hr -->
+          <div class="col-span-1 bg-sky-50 border border-sky-300 rounded-xs px-1 py-0.5 flex flex-col justify-center">
+            <label for="linearRateMeta" class="text-[7px] font-black text-sky-900 uppercase text-center">[8] Speed:</label>
+            <div id="linearRateMeta" class="text-[9px] leading-tight text-center font-black text-sky-950 tabular-nums">— m/min</div>
           </div>
 
         </div>
@@ -1299,14 +1304,15 @@
     function updateLinearRates() {
       const rate = parseFloat(document.getElementById('toolbarRateInput')?.value) || 0;
       const length = getPipeLengthMeters();
-      const metresPerHour = rate * length;
-      const metresPerMinute = metresPerHour / 60;
+      const metresPerMinute = (rate * length) / 60;
+      const actualWeight = parseFloat(document.getElementById('nomWeight')?.value) || 0;
+      const kilogramsPerHour = rate * actualWeight;
       const speed = document.getElementById('stdSpeed');
       if (speed) speed.value = metresPerMinute > 0 ? `${metresPerMinute.toFixed(2)} M/Min` : '';
       const meta = document.getElementById('linearRateMeta');
-      if (meta) meta.textContent = metresPerHour > 0
-        ? `${metresPerHour.toFixed(1)} m/h · ${metresPerMinute.toFixed(2)} m/min`
-        : '— m/h · — m/min';
+      if (meta) meta.textContent = metresPerMinute > 0 ? `${metresPerMinute.toFixed(2)} m/min` : '— m/min';
+      const output = document.getElementById('nomCapacity');
+      if (output) output.value = kilogramsPerHour > 0 ? `${kilogramsPerHour.toFixed(1)} Kg/h` : '— Kg/h';
     }
 
     function hasApprovedWeight(data) {
@@ -2845,7 +2851,7 @@
         baseWeightAtSixM: match ? match.baseWeightKg : '',
         pipeLength: '6.00',
         speed: '',
-        capacity: '300 Kg/h',
+        capacity: '',
         weight: match && match.baseWeightKg ? Number(match.baseWeightKg).toFixed(4) : '',
         s1_remarks: '',
         s2_remarks: '',
@@ -2956,7 +2962,7 @@
                 weight: cloudData.nominalWeight || cloudData.weight || '',
                 rate: cloudData.hourlyRate || cloudData.rate || 47,
                 speed: cloudData.speed || '4 M/Min',
-                capacity: cloudData.capacity || '300 Kg/h',
+                capacity: cloudData.capacity || '',
                 s1_remarks: cloudData.supervisorRemarks1 || cloudData.s1_remarks || '',
                 s2_remarks: cloudData.supervisorRemarks2 || cloudData.s2_remarks || '',
                 dayLead: cloudData.dayLead || '',
@@ -3208,7 +3214,7 @@
         pipeLength: pipeLength ? pipeLength.value : '6.00',
         lengthWeight: lengthWeightVal,
         hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
-        capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '300 Kg/h',
+        capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '— Kg/h',
         selectedDates: selectedDates,
         hourlyData: hourlyData,
         supervisorRemarks1: document.getElementById('s1_remarks') ? document.getElementById('s1_remarks').value : '',
@@ -3308,7 +3314,7 @@
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
           speed: targetData.speed || '4 M/Min',
-          capacity: targetData.capacity || '300 Kg/h',
+          capacity: targetData.capacity || '— Kg/h',
           s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
           s2_remarks: targetData.supervisorRemarks2 || targetData.s2_remarks || '',
           dayLead: targetData.dayLead || '',
@@ -3360,7 +3366,7 @@
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
           speed: targetData.speed || '4 M/Min',
-          capacity: targetData.capacity || '300 Kg/h',
+          capacity: targetData.capacity || '— Kg/h',
           s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
           s2_remarks: targetData.supervisorRemarks2 || targetData.s2_remarks || '',
           dayLead: targetData.dayLead || '',
@@ -3488,7 +3494,7 @@
         if (speedEl) speedEl.setAttribute('value', data.speed || '4 M/Min');
 
         const capEl = clone.querySelector('#nomCapacity');
-        if (capEl) capEl.setAttribute('value', data.capacity || '300 Kg/h');
+        if (capEl) capEl.setAttribute('value', data.capacity || '— Kg/h');
 
         const rate = parseInt(data.hourlyRate || data.rate) || 47;
         const rateEl = clone.querySelector('#hourlyTargetMeta');
