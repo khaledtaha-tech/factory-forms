@@ -175,12 +175,7 @@
       .param-col-spec {
         grid-column: span 3 / span 3 !important;
       }
-      #prodLengthWeight {
-        overflow: visible !important;
-        text-overflow: clip !important;
-        white-space: nowrap !important;
-        font-weight: 700 !important;
-      }
+      #pipeLength, #prodLengthWeight { font-weight: 800 !important; }
 
       /* Batch printing styles */
       #batchPrintContainer {
@@ -511,16 +506,19 @@
             <input type="text" id="nomCapacity" value="— Kg/h" readonly class="w-full font-black text-[8px] text-slate-950 bg-transparent outline-none tabular-nums" title="Calculated output: Pcs/Hr × actual Kg/Pc">
           </div>
 
-          <!-- [6] Pipe Length & Nominal Weight -->
-          <div class="col-span-2 border-r border-slate-300 pr-1.5 param-col-lenwt">
-            <label for="prodLengthWeight" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">
-              [6] Length &amp; Nom Wt:
-            </label>
-            <input type="text" id="prodLengthWeight" value="6.00M - Weight pending" onchange="handleLengthWeightInput(this.value)" class="w-full font-bold text-[8px] text-slate-950 bg-transparent outline-none" title="Enter the required pipe length in metres, e.g. 5.85">
+          <!-- [6] Operating Length (editable) and calculated pipe weight -->
+          <div class="col-span-2 border-r border-slate-300 pr-1.5 param-col-lenwt grid grid-cols-2 gap-1">
+            <div>
+              <label for="pipeLength" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">[6] Length (m):</label>
+              <input type="number" id="pipeLength" value="6.00" min="0.01" step="0.01" onchange="handlePipeLengthChange(this.value)" class="w-full border border-blue-400 bg-blue-50 rounded px-1 py-0.5 font-black text-[9px] text-blue-950 outline-none tabular-nums" title="Change only for this special size, e.g. 5.50 m">
+            </div>
+            <div>
+              <label for="prodLengthWeight" class="block text-[7px] font-extrabold text-slate-500 uppercase tracking-wide">Pipe Wt (Kg/Pc):</label>
+              <input type="text" id="prodLengthWeight" value="Weight pending" readonly class="w-full bg-transparent font-black text-[9px] text-slate-950 outline-none tabular-nums" title="Calculated from Weight per Meter × selected Length">
+            </div>
             <input type="hidden" id="nomWeight" value="">
             <input type="hidden" id="nominalWeight" value="">
             <input type="hidden" id="baseWeightAtSixM" value="">
-            <input type="hidden" id="pipeLength" value="6.00">
           </div>
 
           <!-- [7] Hourly Target Baseline (Pcs/Hr) -->
@@ -1262,8 +1260,10 @@
     // Never invent a default: production sheets must use the approved Excel weight.
     function extractNominalWeight(str) {
       if (!str) return 0;
-      const match = String(str).match(/(\d+(\.\d+)?)\s*(kg|kilo)/i);
+      const text = String(str).trim();
+      const match = text.match(/(\d+(\.\d+)?)\s*(kg|kilo)/i);
       if (match) return parseFloat(match[1]);
+      if (/^\d+(\.\d+)?$/.test(text)) return parseFloat(text);
       return 0;
     }
 
@@ -1293,7 +1293,7 @@
       const baseEl = document.getElementById('baseWeightAtSixM');
       if (baseEl) baseEl.value = baseWeightAtSixM > 0 ? baseWeightAtSixM.toFixed(4) : '';
       const visibleEl = document.getElementById('prodLengthWeight');
-      if (visibleEl) visibleEl.value = formatLengthWeight(length, actualWeight);
+      if (visibleEl) visibleEl.value = actualWeight > 0 ? actualWeight.toFixed(2) : 'Weight pending';
       const nomWt = document.getElementById('nomWeight');
       if (nomWt) nomWt.value = actualWeight > 0 ? actualWeight.toFixed(4) : '';
       const nomWtAlias = document.getElementById('nominalWeight');
@@ -2096,9 +2096,9 @@
       switchMachineLine(line);
     }
 
-    // The operator may type only the required length (for example 5.85).
-    // Piece weight is then calculated from the approved Kg/m Excel weight.
-    function handleLengthWeightInput(val) {
+    // The operator may alter only the operating length for a special size.
+    // Piece weight and pieces/hour are recalculated from the approved Kg/m.
+    function handlePipeLengthChange(val) {
       const length = parseFloat(String(val).replace(',', '.'));
       if (!Number.isFinite(length) || length <= 0) {
         showToast('Enter a valid pipe length in metres, for example 5.85.');
@@ -2111,6 +2111,11 @@
       applyLengthAndWeight(length, weightPerMeter);
       syncRateForSelectedLength();
       setMachineReadinessState('draft');
+    }
+
+    // Kept for backward compatibility with any older saved page markup.
+    function handleLengthWeightInput(val) {
+      handlePipeLengthChange(val);
     }
 
     // ==============================================================================
@@ -2851,7 +2856,8 @@
         String(entry.itemCode).trim() === String(itemCode).trim() && isSameMachineLine(entry.machineLine, line)
       );
       const weightPerMeter = parseFloat(data.weightPerMeterKg) || (parseFloat(data.baseWeightAtSixM) || 0) / 6 || getWeightPerMeterKg(catalogEntry);
-      const savedLength = parseFloat(data.pipeLength) || parseFloat(String(data.lengthWeight || '').replace(',', '.')) || 6;
+      const legacyLength = String(data.lengthWeight || '').match(/(\d+(?:\.\d+)?)\s*M/i);
+      const savedLength = parseFloat(data.pipeLength) || (legacyLength ? parseFloat(legacyLength[1]) : 0) || 6;
       applyLengthAndWeight(savedLength, weightPerMeter);
       if (data.speed) document.getElementById('stdSpeed').value = data.speed;
       if (data.capacity) document.getElementById('nomCapacity').value = data.capacity;
@@ -3547,8 +3553,9 @@
         const specEl = clone.querySelector('#prodSpec');
         if (specEl) specEl.setAttribute('value', data.prodSpec || data.spec || '');
 
-        const nomWeightVal = data.nominalWeight || data.weight || '6.00';
-        const lengthWeightVal = data.lengthWeight || `6M - ${nomWeightVal} Kg/Pc`;
+        const nomWeightVal = data.nominalWeight || data.weight || '0';
+        const savedPipeWeight = extractNominalWeight(data.lengthWeight) || parseFloat(nomWeightVal) || 0;
+        const lengthWeightVal = savedPipeWeight > 0 ? savedPipeWeight.toFixed(2) : 'Weight pending';
 
         const lenWtEl = clone.querySelector('#prodLengthWeight');
         if (lenWtEl) lenWtEl.setAttribute('value', lengthWeightVal);
@@ -3709,7 +3716,7 @@
       applyAppLanguage(localStorage.getItem('almanar_lang') || 'ar');
 
       // Ambient status listener on specs fields
-      ['prodSpec', 'prodLengthWeight', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity'].forEach(id => {
+      ['prodSpec', 'pipeLength', 'hourlyTargetMeta', 'toolbarRateInput', 'nomCapacity'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.addEventListener('input', () => setMachineReadinessState('draft'));
