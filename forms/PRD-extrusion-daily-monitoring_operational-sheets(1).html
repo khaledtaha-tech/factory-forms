@@ -318,9 +318,9 @@
 
       <div class="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-0.5">
         <span data-i18n="hourlyTarget" class="text-[11px] font-bold text-slate-600 px-2">Hourly Target (Pcs/Hr):</span>
-        <button type="button" onclick="stepHourlyRate(-1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Decrease rate">-</button>
-        <input type="number" id="toolbarRateInput" value="47" min="1" max="5000" class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums" oninput="syncHourlyRate(this.value)" title="Toolbar Target Rate">
-        <button type="button" onclick="stepHourlyRate(1)" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-700 font-bold rounded shadow-2xs text-xs transition" title="Increase rate">+</button>
+        <button type="button" disabled class="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-400 font-bold rounded shadow-2xs text-xs cursor-not-allowed" title="Derived from Excel rate and selected length">-</button>
+        <input type="number" id="toolbarRateInput" value="47" readonly class="w-12 text-center bg-transparent font-black text-xs text-slate-900 outline-none tabular-nums cursor-default" title="Calculated Pcs/Hr from Excel 6 m rate and selected length">
+        <button type="button" disabled class="w-6 h-6 flex items-center justify-center bg-slate-100 text-slate-400 font-bold rounded shadow-2xs text-xs cursor-not-allowed" title="Derived from Excel rate and selected length">+</button>
       </div>
 
       <button type="button" onclick="populateSampleData()" class="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1.5 rounded-lg transition" title="Fill sample operational data">
@@ -530,8 +530,9 @@
                 [7] Rate:
               </label>
             </div>
-            <input type="number" id="hourlyTargetMeta" value="47" min="1" max="5000" oninput="syncHourlyRate(this.value)" class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center" title="Hourly Target in Pcs/Hr">
+            <input type="number" id="hourlyTargetMeta" value="47" readonly class="w-full font-black text-[9px] text-amber-950 bg-transparent outline-none tabular-nums text-center cursor-default" title="Calculated Pcs/Hr from Excel 6 m rate and selected length">
             <input type="hidden" id="hourlyRate" value="47">
+            <input type="hidden" id="baseHourlyRateAtSixM" value="47">
             <input type="hidden" id="stdSpeed" value="">
           </div>
 
@@ -1312,7 +1313,7 @@
     }
 
     function updateLinearRates() {
-      const rate = parseFloat(document.getElementById('toolbarRateInput')?.value) || 0;
+      const rate = parseFloat(document.getElementById('hourlyRate')?.value) || 0;
       const length = getPipeLengthMeters();
       const metresPerMinute = (rate * length) / 60;
       const actualWeight = parseFloat(document.getElementById('nomWeight')?.value) || 0;
@@ -1323,6 +1324,20 @@
       if (meta) meta.textContent = metresPerMinute > 0 ? `${metresPerMinute.toFixed(2)} m/min` : '— m/min';
       const output = document.getElementById('nomCapacity');
       if (output) output.value = kilogramsPerHour > 0 ? `${kilogramsPerHour.toFixed(1)} Kg/h` : '— Kg/h';
+    }
+
+    function getBaseHourlyRateAtSixM() {
+      const base = parseFloat(document.getElementById('baseHourlyRateAtSixM')?.value);
+      return Number.isFinite(base) && base > 0 ? base : 0;
+    }
+
+    // Excel rate is always for a 6.00 m pipe. Changing length changes only
+    // pieces/hour; Kg/h and linear speed stay constant.
+    function syncRateForSelectedLength() {
+      const baseRate = getBaseHourlyRateAtSixM();
+      const length = getPipeLengthMeters();
+      const operatingRate = baseRate > 0 && length > 0 ? (baseRate * 6) / length : 0;
+      syncHourlyRate(operatingRate);
     }
 
     function hasApprovedWeight(data) {
@@ -1339,21 +1354,14 @@
       return false;
     }
 
-    // Step hourly rate via stepper buttons
-    function stepHourlyRate(delta) {
-      const current = parseInt(document.getElementById('toolbarRateInput').value) || 47;
-      const next = Math.max(1, current + delta);
-      syncHourlyRate(next);
-      showToast(`Hourly Target updated to ${next} Pcs/Hr`);
-    }
-
     // Synchronize toolbar and metadata rate inputs and recalculate cumulative columns
     function syncHourlyRate(value) {
-      const rate = parseInt(value) || 0;
+      const rate = parseFloat(value) || 0;
+      const displayRate = rate > 0 ? Number(rate.toFixed(2)) : 0;
       const toolbarInput = document.getElementById('toolbarRateInput');
-      if (toolbarInput) toolbarInput.value = rate;
+      if (toolbarInput) toolbarInput.value = displayRate;
       const metaInput = document.getElementById('hourlyTargetMeta');
-      if (metaInput) metaInput.value = rate;
+      if (metaInput) metaInput.value = displayRate;
       const hourlyRateHidden = document.getElementById('hourlyRate');
       if (hourlyRateHidden) hourlyRateHidden.value = rate;
 
@@ -1362,7 +1370,7 @@
       // Recalculate 24 hourly rows cumulative standard baseline
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
       rows.forEach((row, index) => {
-        const cumulative = (index + 1) * rate;
+        const cumulative = Math.round((index + 1) * rate);
         const stdCell = row.querySelector('.std-cell');
         if (stdCell) {
           stdCell.textContent = formatNumber(cumulative);
@@ -1370,9 +1378,9 @@
       });
 
       // Update Shift Targets (Shift 1 = 12 * Rate, Shift 2 = 12 * Rate, Total = 24 * Rate)
-      const s1Target = rate * 12;
-      const s2Target = rate * 12;
-      const totalTarget = rate * 24;
+      const s1Target = Math.round(rate * 12);
+      const s2Target = Math.round(rate * 12);
+      const totalTarget = Math.round(rate * 24);
 
       const s1El = document.getElementById('s1_target');
       if (s1El) s1El.textContent = formatNumber(s1Target);
@@ -1393,7 +1401,7 @@
 
     // Recalculate all shift summaries, scrap allowances, and efficiencies
     function recalcShiftSummaries() {
-      const rate = parseInt(document.getElementById('toolbarRateInput').value) || 47;
+      const rate = parseFloat(document.getElementById('hourlyRate').value) || 47;
       const nomWeight = parseNum(document.getElementById('nomWeight').value);
 
       let s1Good = 0, s1Downtime = 0, s1Reject = 0;
@@ -2059,9 +2067,12 @@
         // derives the 6.00 m piece weight and all length-dependent outputs.
         applyLengthAndWeight(6, getWeightPerMeterKg(primary));
 
-        // 3. Auto-calculate and display Hourly Rate / Target in Pcs/Hr
-        const targetRate = primary.hourlyRate || 47;
-        syncHourlyRate(targetRate);
+        // 3. The Excel rate is for 6.00 m. Keep it as the stable baseline,
+        // then derive the displayed Pcs/Hr for the selected pipe length.
+        const targetRate = parseFloat(primary.hourlyRate) || 47;
+        const baseRateEl = document.getElementById('baseHourlyRateAtSixM');
+        if (baseRateEl) baseRateEl.value = targetRate;
+        syncRateForSelectedLength();
 
         // 4. Recalculate shift targets (Shift 1 = 12 * Rate, Shift 2 = 12 * Rate, Total = 24 * Rate)
         recalcShiftSummaries();
@@ -2093,12 +2104,12 @@
         showToast('Enter a valid pipe length in metres, for example 5.85.');
         const weightPerMeter = (parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0) / 6;
         applyLengthAndWeight(getPipeLengthMeters(), weightPerMeter);
+        syncRateForSelectedLength();
         return;
       }
       const weightPerMeter = (parseFloat(document.getElementById('baseWeightAtSixM')?.value) || 0) / 6;
       applyLengthAndWeight(length, weightPerMeter);
-      recalcShiftSummaries();
-      saveToStorage();
+      syncRateForSelectedLength();
       setMachineReadinessState('draft');
     }
 
@@ -2766,11 +2777,13 @@
       const prodLenWt = document.getElementById('prodLengthWeight');
       const nomWt = document.getElementById('nomWeight');
       const baseWt = document.getElementById('baseWeightAtSixM');
+      const baseRate = document.getElementById('baseHourlyRateAtSixM');
       const pipeLength = document.getElementById('pipeLength');
 
       const data = {
         date: document.getElementById('reportDate').value,
-        rate: document.getElementById('toolbarRateInput').value,
+        rate: document.getElementById('hourlyRate').value,
+        baseHourlyRateAtSixM: baseRate ? baseRate.value : '',
         itemCode: itemSelect ? itemSelect.value : '',
         spec: prodSpec ? prodSpec.value : '',
         line: lineSelect ? lineSelect.value : '',
@@ -2849,11 +2862,13 @@
       if (data.nightLead !== undefined) document.getElementById('nightLeadName').value = data.nightLead;
       if (data.nightSign !== undefined) document.getElementById('nightSignature').value = data.nightSign;
 
-      if (data.rate) {
-        syncHourlyRate(data.rate);
-      } else {
-        handleItemCodeChange();
-      }
+      const baseRateEl = document.getElementById('baseHourlyRateAtSixM');
+      const savedBaseRate = parseFloat(data.baseHourlyRateAtSixM)
+        || ((parseFloat(data.rate) || 0) * savedLength / 6)
+        || parseFloat(catalogEntry?.hourlyRate)
+        || 47;
+      if (baseRateEl) baseRateEl.value = savedBaseRate;
+      syncRateForSelectedLength();
 
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
       rows.forEach((row, i) => {
@@ -2882,6 +2897,7 @@
       const cleanData = {
         date: date || (document.getElementById('reportDate') ? document.getElementById('reportDate').value : new Date().toISOString().split('T')[0]),
         rate: match ? match.hourlyRate : 47,
+        baseHourlyRateAtSixM: match ? match.hourlyRate : 47,
         itemCode: match ? match.itemCode : firstItemCode,
         spec: match ? match.itemName : '',
         line: line,
@@ -3001,6 +3017,7 @@
                 pipeLength: cloudData.pipeLength || '6.00',
                 weight: cloudData.nominalWeight || cloudData.weight || '',
                 rate: cloudData.hourlyRate || cloudData.rate || 47,
+                baseHourlyRateAtSixM: cloudData.baseHourlyRateAtSixM || '',
                 speed: cloudData.speed || '4 M/Min',
                 capacity: cloudData.capacity || '',
                 s1_remarks: cloudData.supervisorRemarks1 || cloudData.s1_remarks || '',
@@ -3223,6 +3240,7 @@
       const prodLenWt = document.getElementById('prodLengthWeight');
       const nomWt = document.getElementById('nomWeight');
       const baseWt = document.getElementById('baseWeightAtSixM');
+      const baseRate = document.getElementById('baseHourlyRateAtSixM');
       const pipeLength = document.getElementById('pipeLength');
 
       const hourlyData = [];
@@ -3254,7 +3272,8 @@
         weightPerMeterKg: baseWt && parseFloat(baseWt.value) > 0 ? (parseFloat(baseWt.value) / 6).toFixed(6) : '',
         pipeLength: pipeLength ? pipeLength.value : '6.00',
         lengthWeight: lengthWeightVal,
-        hourlyRate: parseInt(document.getElementById('toolbarRateInput').value) || 47,
+        hourlyRate: parseFloat(document.getElementById('hourlyRate').value) || 47,
+        baseHourlyRateAtSixM: baseRate ? baseRate.value : '',
         capacity: document.getElementById('nomCapacity') ? document.getElementById('nomCapacity').value : '— Kg/h',
         selectedDates: selectedDates,
         hourlyData: hourlyData,
@@ -3287,6 +3306,7 @@
             pipeLength: machinePayload.pipeLength,
             lengthWeight: machinePayload.lengthWeight,
             hourlyRate: machinePayload.hourlyRate,
+            baseHourlyRateAtSixM: machinePayload.baseHourlyRateAtSixM,
             capacity: machinePayload.capacity,
             selectedDates: machinePayload.selectedDates,
             timestamp: Date.now()
@@ -3356,6 +3376,7 @@
           pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
+          baseHourlyRateAtSixM: targetData.baseHourlyRateAtSixM || '',
           speed: targetData.speed || '4 M/Min',
           capacity: targetData.capacity || '— Kg/h',
           s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
@@ -3409,6 +3430,7 @@
           pipeLength: targetData.pipeLength || '6.00',
           weight: targetData.nominalWeight || targetData.weight || '',
           rate: targetData.hourlyRate || targetData.rate || 47,
+          baseHourlyRateAtSixM: targetData.baseHourlyRateAtSixM || '',
           speed: targetData.speed || '4 M/Min',
           capacity: targetData.capacity || '— Kg/h',
           s1_remarks: targetData.supervisorRemarks1 || targetData.s1_remarks || '',
@@ -3540,9 +3562,9 @@
         const capEl = clone.querySelector('#nomCapacity');
         if (capEl) capEl.setAttribute('value', data.capacity || '— Kg/h');
 
-        const rate = parseInt(data.hourlyRate || data.rate) || 47;
+        const rate = parseFloat(data.hourlyRate || data.rate) || 47;
         const rateEl = clone.querySelector('#hourlyTargetMeta');
-        if (rateEl) rateEl.setAttribute('value', rate);
+        if (rateEl) rateEl.setAttribute('value', Number(rate.toFixed(2)));
 
         const s1RemEl = clone.querySelector('#s1_remarks');
         if (s1RemEl) s1RemEl.textContent = data.supervisorRemarks1 || data.s1_remarks || '';
@@ -3569,7 +3591,7 @@
 
         cloneRows.forEach((row, i) => {
           const rowData = rowsData[i] || null;
-          const cumTarget = (i + 1) * rate;
+          const cumTarget = Math.round((i + 1) * rate);
           const stdCell = row.querySelector('.std-cell');
           if (stdCell) stdCell.textContent = formatNumber(cumTarget);
 
@@ -3604,9 +3626,9 @@
           }
         });
 
-        const s1Target = rate * 12;
-        const s2Target = rate * 12;
-        const totalTarget = rate * 24;
+        const s1Target = Math.round(rate * 12);
+        const s2Target = Math.round(rate * 12);
+        const totalTarget = Math.round(rate * 24);
 
         const s1TgtEl = clone.querySelector('#s1_target'); if (s1TgtEl) s1TgtEl.textContent = formatNumber(s1Target);
         const s2TgtEl = clone.querySelector('#s2_target'); if (s2TgtEl) s2TgtEl.textContent = formatNumber(s2Target);
