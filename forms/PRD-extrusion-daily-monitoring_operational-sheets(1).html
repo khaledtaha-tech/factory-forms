@@ -2523,9 +2523,11 @@
         const hasCombinedMachineLine = normalized.includes('machineline');
         const hasSplitMachineLine = normalized.includes('line') && normalized.includes('machine');
         const hasProductCode = normalized.some(value => ['productcode', 'product', 'itemcode', 'code'].includes(value));
-        const hasPrintedTarget = normalized.some(value => value === 'printedsoptarget85' || value === 'printedsoptarget');
+        const hasRateColumn = normalized.some(value => [
+          'pipesperhour6mlength', 'printedsoptarget85', 'printedsoptarget', 'actualratepcsh'
+        ].includes(value));
 
-        if ((hasCombinedMachineLine || hasSplitMachineLine) && hasProductCode && hasPrintedTarget) return rowIndex;
+        if ((hasCombinedMachineLine || hasSplitMachineLine) && hasProductCode && hasRateColumn) return rowIndex;
       }
 
       return null;
@@ -2619,11 +2621,12 @@
             ]);
             const weightPerMeterKg = parseFloat(String(weightStr).replace(',', '.')) || 0;
 
-            // IMPORTANT: The operating target is taken only from the green
-            // "Printed SOP Target (85%)" column. Actual/real rate is a
-            // reference-only field and is deliberately never imported.
+            // The current master uses Pipes per Hour (6m Length) as the
+            // baseline rate. Older workbooks remain supported as a fallback.
             const rateStr = findRowValue(row, [
-              'Printed SOP Target (85%)', 'Printed SOP Target', 'Printed_SOP_Target', 'PrintedSOPTarget', 'SOP Target'
+              'Pipes per Hour (6m Length)', 'Pipes Per Hour 6m Length', 'PipesPerHour6mLength',
+              'Printed SOP Target (85%)', 'Printed SOP Target', 'Printed_SOP_Target', 'PrintedSOPTarget', 'SOP Target',
+              'Actual Rate (Pcs/h)', 'Actual Rate Pcs/h', 'ActualRatePcsH'
             ]);
             const hourlyRate = Math.round(parseFloat(rateStr)) || parseInt(rateStr) || 0;
 
@@ -2632,7 +2635,7 @@
             ]);
 
             // A safe catalog record needs all three business keys. Do not
-            // silently invent a production target if the green column is blank.
+            // silently invent a production target if the rate column is blank.
             if (!itemCode || !machineLine || hourlyRate <= 0) {
               if (itemCode || itemName || machineLine) skippedRows++;
               return;
@@ -2650,7 +2653,7 @@
           });
 
           if (parsedCatalog.length === 0) {
-            alert('No valid catalog rows found. Each row needs Machine Line, Product Code, and Printed SOP Target (85%).');
+            alert('No valid catalog rows found. Each row needs Line, Machine, Product Code, and Pipes per Hour (6m Length).');
             event.target.value = '';
             return;
           }
@@ -2707,7 +2710,7 @@
           'Raw Description': String(item.itemName || ''),
           'Weight_Per_Meter_Kg': getWeightPerMeterKg(item) || '',
           'Actual Rate (Pcs/h)': '',
-          'Printed SOP Target (85%)': parseInt(item.hourlyRate) || 0,
+          'Pipes per Hour (6m Length)': parseInt(item.hourlyRate) || 0,
           'Updated / Created Timestamp': item.updatedAt || new Date().toISOString().slice(0, 10)
         };
       });
