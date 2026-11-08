@@ -32,6 +32,21 @@
       display: block;
     }
 
+    /* Language mode: the printed form remains bilingual; this controls the working UI. */
+    html[dir="ltr"] body,
+    html[dir="ltr"] input,
+    html[dir="ltr"] textarea,
+    html[dir="ltr"] select,
+    html[dir="ltr"] button {
+      font-family: 'Inter', 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html[dir="ltr"] .quick-input-copy,
+    html[dir="ltr"] .modal-copy {
+      direction: ltr;
+      text-align: left;
+    }
+
     /* ==============================================================================
        PRINT ENGINE: A4 PORTRAIT SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
        ============================================================================== */
@@ -492,9 +507,9 @@
           </svg>
         </div>
         <div>
-          <h1 class="text-base font-black text-slate-950 leading-tight">مصنع المنار للبلاستيك | نظام طلبات الشراء الذكي</h1>
+          <h1 id="appTitle" class="text-base font-black text-slate-950 leading-tight">مصنع المنار للبلاستيك | نظام طلبات الشراء الذكي</h1>
           <p class="text-xs text-slate-500 flex items-center gap-2">
-            <span>نظام الجودة المعتمد ISO 9001:2015</span>
+            <span id="appSubtitle">نظام الجودة المعتمد ISO 9001:2015</span>
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span id="headerDocRef" class="font-mono text-slate-800 font-bold">AMP-PR-F01 Rev.00</span>
           </p>
@@ -503,6 +518,9 @@
 
       <!-- Action Buttons -->
       <div class="flex flex-wrap items-center gap-2">
+        <button onclick="toggleLanguage()" id="languageToggle" title="التبديل بين العربية والإنجليزية" class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition">
+          <span>🌐</span><span id="languageToggleText">English</span>
+        </button>
         <button onclick="toggleQuickInputPanel()" id="btnToggleSmart" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
@@ -514,21 +532,21 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
-          <span>طلب جديد (+ سيريال)</span>
+          <span id="newPrText">طلب جديد (+ سيريال)</span>
         </button>
 
         <button onclick="window.print()" title="طباعة فورية في صفحة واحدة A4 دون انقسام" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
           </svg>
-          <span>طباعة / PDF (صفحة واحدة)</span>
+          <span id="printText">طباعة / PDF (صفحة واحدة)</span>
         </button>
 
         <button onclick="downloadSelfHTML()" title="تنزيل نسخة من هذه الصفحة ببياناتها لتعمل بدون إنترنت" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
           </svg>
-          <span>تنزيل ملف HTML</span>
+          <span id="downloadText">تنزيل ملف HTML</span>
         </button>
 
         <button onclick="toggleSettingsModal(true)" title="تعديل بيانات كود الجودة والسيريال" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold flex items-center gap-1 transition">
@@ -536,23 +554,23 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
-          <span>إعدادات الأيزو</span>
+          <span id="settingsText">إعدادات الأيزو</span>
         </button>
 
         <div class="flex items-center border border-slate-300 rounded-lg overflow-hidden bg-slate-50 shadow-sm">
           <button onclick="addRow()" title="إضافة صف جديد للجدول" class="px-3 py-2 hover:bg-slate-200 text-xs font-black text-emerald-700 transition flex items-center gap-1">
             <span class="text-sm font-black">+</span>
-            <span>إضافة صف</span>
+            <span id="addRowText">إضافة صف</span>
           </button>
           <span class="w-px h-5 bg-slate-300"></span>
           <button onclick="removeLastRow()" title="حذف آخر صف من الجدول" class="px-3 py-2 hover:bg-rose-50 text-xs font-black text-rose-600 transition flex items-center gap-1">
             <span class="font-black text-sm">−</span>
-            <span>حذف صف</span>
+            <span id="removeRowText">حذف صف</span>
           </button>
         </div>
 
         <button onclick="clearAllTableItems()" title="مسح محتويات الجدول بالكامل" class="px-2.5 py-2 hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold transition">
-          تفريغ الجدول
+          <span id="clearTableText">تفريغ الجدول</span>
         </button>
       </div>
     </div>
@@ -565,12 +583,12 @@
         <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-amber-300 font-black text-sm">
           ⚡
         </div>
-        <div>
+        <div class="quick-input-copy">
           <h2 class="text-xs font-extrabold flex items-center gap-2">
-            <span>لوحة الإدخال السريع الذكي للبنود</span>
+            <span id="quickPanelTitle">لوحة الإدخال السريع الذكي للبنود</span>
             <span class="text-[9px] bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2 py-0.5 rounded-full font-mono">Smart Parser AI-Ready</span>
           </h2>
-          <p class="text-[10.5px] text-slate-300">
+          <p id="quickPanelDescription" class="text-[10.5px] text-slate-300">
             اكتب الأصناف كما تشاء وسيقوم المحلل بفرز الصنف والكمية والوحدة وترتيبها تلقائياً بالجدول.
           </p>
         </div>
@@ -579,7 +597,7 @@
       <div class="flex items-center gap-2">
         <span class="bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs px-2 py-0.5 rounded-md font-bold flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>الأصناف المكتشفة: </span>
+          <span id="recognizedLabel">الأصناف المكتشفة: </span>
           <span id="recognizedCount" class="font-mono text-sm font-black text-white">3</span>
         </span>
         <button onclick="toggleQuickInputPanel()" class="text-slate-400 hover:text-white text-base px-1 font-bold">✕</button>
@@ -600,15 +618,15 @@
               <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
               </svg>
-              <span>⚡ تعبئة الطلب فوراً (استبدال الجدول)</span>
+              <span id="replaceTableText">⚡ تعبئة الطلب فوراً (استبدال الجدول)</span>
             </button>
 
             <button onclick="applySmartParse(false)" class="py-1.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center justify-center gap-1 transition">
-              <span>➕ إضافة للجدول الحالي</span>
+              <span id="appendTableText">➕ إضافة للجدول الحالي</span>
             </button>
 
             <button onclick="loadUserExamples()" class="py-1.5 px-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition">
-              <span>✨ إعادة كتابة أمثلتك</span>
+              <span id="examplesText">✨ إعادة كتابة أمثلتك</span>
             </button>
           </div>
         </div>
@@ -625,7 +643,7 @@
         
         <!-- Document Title (Right Side) -->
         <div class="col-span-4 text-right">
-          <h1 class="text-3xl font-black text-slate-950 tracking-tight leading-none mb-1">طلب شراء</h1>
+          <h1 id="documentTitle" class="text-3xl font-black text-slate-950 tracking-tight leading-none mb-1">طلب شراء</h1>
           <h2 class="text-xs font-black tracking-widest text-slate-700 uppercase" style="font-family: 'Inter', sans-serif;">PURCHASE REQUISITION</h2>
           
           <div class="mt-1.5 inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2.5 py-0.5 rounded text-[11px] font-mono">
@@ -800,22 +818,22 @@
         <div class="flex items-center gap-2">
           <button onclick="addRow()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-bold text-xs shadow-sm flex items-center gap-1.5 transition">
             <span class="text-sm font-black">+</span>
-            <span>إضافة صف جديد</span>
+            <span id="addNewRowText">إضافة صف جديد</span>
           </button>
           
           <button onclick="addMultipleRows(5)" class="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-md font-bold text-xs transition">
-            <span>+ 5 صفوف فارغة</span>
+            <span id="addFiveRowsText">+ 5 صفوف فارغة</span>
           </button>
 
           <button onclick="removeLastRow()" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-md font-bold text-xs transition flex items-center gap-1">
             <span class="text-sm font-black">−</span>
-            <span>حذف آخر صف</span>
+            <span id="removeLastRowText">حذف آخر صف</span>
           </button>
         </div>
 
         <div class="flex items-center gap-3 text-xs">
-          <span class="text-slate-600 font-medium">عدد البنود الحالية: <strong id="rowCountDisplay" class="font-mono text-slate-950 bg-white px-2 py-0.5 rounded border border-slate-300">10</strong></span>
-          <span class="text-[11px] text-slate-400">| عند الطباعة يخرج الجدول متناسقاً بدقة A4</span>
+          <span class="text-slate-600 font-medium"><span id="rowCountLabel">عدد البنود الحالية:</span> <strong id="rowCountDisplay" class="font-mono text-slate-950 bg-white px-2 py-0.5 rounded border border-slate-300">10</strong></span>
+          <span id="printHint" class="text-[11px] text-slate-400">| عند الطباعة يخرج الجدول متناسقاً بدقة A4</span>
         </div>
       </div>
 
@@ -979,7 +997,7 @@
           <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">
             ISO
           </div>
-          <h3 class="font-bold text-slate-900 text-sm">إعدادات نظام الجودة والترقيم التلقائي</h3>
+          <h3 id="settingsModalTitle" class="font-bold text-slate-900 text-sm">إعدادات نظام الجودة والترقيم التلقائي</h3>
         </div>
         <button onclick="toggleSettingsModal(false)" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
       </div>
@@ -987,50 +1005,50 @@
       <div class="mt-4 space-y-3 text-xs">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">كود الوثيقة (Doc No):</label>
+            <label id="settingDocCodeLabel" class="block font-semibold text-slate-700 mb-1">كود الوثيقة (Doc No):</label>
             <input type="text" id="settingDocCode" value="AMP-PR-F01" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">بادئة السيريال (Serial Prefix):</label>
+            <label id="settingPrefixLabel" class="block font-semibold text-slate-700 mb-1">بادئة السيريال (Serial Prefix):</label>
             <input type="text" id="settingPrefix" value="PR-2026-" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono">
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">رقم الإصدار (Issue):</label>
+            <label id="settingIssueLabel" class="block font-semibold text-slate-700 mb-1">رقم الإصدار (Issue):</label>
             <input type="text" id="settingIssue" value="01" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">رقم التعديل (Rev):</label>
+            <label id="settingRevLabel" class="block font-semibold text-slate-700 mb-1">رقم التعديل (Rev):</label>
             <input type="text" id="settingRev" value="00" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">السيريال الحالي (Counter):</label>
+            <label id="settingCounterLabel" class="block font-semibold text-slate-700 mb-1">السيريال الحالي (Counter):</label>
             <input type="number" id="settingCounter" value="42" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono font-bold">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">تاريخ الإصدار (Issue Date):</label>
+            <label id="settingDocDateLabel" class="block font-semibold text-slate-700 mb-1">تاريخ الإصدار (Issue Date):</label>
             <input type="text" id="settingDocDate" value="2026/10" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-mono">
           </div>
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">اسم المصنع (عربي):</label>
+            <label id="settingFactoryArLabel" class="block font-semibold text-slate-700 mb-1">اسم المصنع (عربي):</label>
             <input type="text" id="settingFactoryAr" value="مصنع المنار للبلاستيك" class="w-full border border-slate-300 rounded px-2.5 py-1.5">
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Factory Name (English):</label>
+          <label id="settingFactoryEnLabel" class="block font-semibold text-slate-700 mb-1">Factory Name (English):</label>
           <input type="text" id="settingFactoryEn" value="AL MANAR PLASTIC FACTORY" class="w-full border border-slate-300 rounded px-2.5 py-1.5 font-sans">
         </div>
       </div>
 
       <div class="mt-5 flex justify-end gap-2 border-t border-slate-200 pt-3">
-        <button onclick="toggleSettingsModal(false)" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-semibold">إلغاء</button>
-        <button onclick="saveISOSettings()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow">حفظ التغييرات</button>
+        <button onclick="toggleSettingsModal(false)" id="cancelSettingsText" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-semibold">إلغاء</button>
+        <button onclick="saveISOSettings()" id="saveSettingsText" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow">حفظ التغييرات</button>
       </div>
     </div>
   </div>
@@ -1042,7 +1060,93 @@
   <script>
     const CONFIG_KEY = 'almanar_iso_config_v3';
     const TABLE_KEY = 'almanar_table_items_v3';
+    const LANGUAGE_KEY = 'almanar_pr_language_v1';
     const DEFAULT_ROW_COUNT = 10;
+
+    const UI_TEXT = {
+      ar: {
+        appTitle: 'مصنع المنار للبلاستيك | نظام طلبات الشراء الذكي',
+        appSubtitle: 'نظام الجودة المعتمد ISO 9001:2015',
+        languageToggleText: 'English', smartBtnText: 'الإدخال السريع الذكي للبنود',
+        newPrText: 'طلب جديد (+ سيريال)', printText: 'طباعة / PDF (صفحة واحدة)',
+        downloadText: 'تنزيل ملف HTML', settingsText: 'إعدادات الأيزو',
+        addRowText: 'إضافة صف', removeRowText: 'حذف صف', clearTableText: 'تفريغ الجدول',
+        quickPanelTitle: 'لوحة الإدخال السريع الذكي للبنود',
+        quickPanelDescription: 'اكتب الأصناف كما تشاء وسيقوم المحلل بفرز الصنف والكمية والوحدة وترتيبها تلقائياً بالجدول.',
+        recognizedLabel: 'الأصناف المكتشفة: ', replaceTableText: '⚡ تعبئة الطلب فوراً (استبدال الجدول)',
+        appendTableText: '➕ إضافة للجدول الحالي', examplesText: '✨ إعادة كتابة أمثلتك',
+        documentTitle: 'طلب شراء', addNewRowText: 'إضافة صف جديد', addFiveRowsText: '+ 5 صفوف فارغة',
+        removeLastRowText: 'حذف آخر صف', rowCountLabel: 'عدد البنود الحالية:',
+        printHint: '| عند الطباعة يخرج الجدول متناسقاً بدقة A4',
+        settingsModalTitle: 'إعدادات نظام الجودة والترقيم التلقائي',
+        settingDocCodeLabel: 'كود الوثيقة (Doc No):', settingPrefixLabel: 'بادئة السيريال (Serial Prefix):',
+        settingIssueLabel: 'رقم الإصدار (Issue):', settingRevLabel: 'رقم التعديل (Rev):',
+        settingCounterLabel: 'السيريال الحالي (Counter):', settingDocDateLabel: 'تاريخ الإصدار (Issue Date):',
+        settingFactoryArLabel: 'اسم المصنع (عربي):', settingFactoryEnLabel: 'اسم المصنع (إنجليزي):',
+        cancelSettingsText: 'إلغاء', saveSettingsText: 'حفظ التغييرات',
+        smartOpen: 'فتح الإدخال الذكي', smartClose: 'إخفاء الإدخال الذكي',
+        toastSettingsSaved: '✓ تم تحديث إعدادات الأيزو بنجاح', toastWriteItems: '⚠️ اكتب الأصناف أولاً في المربع',
+        toastRowsAdded: '✓ تمت إضافة ({count}) صفوف', toastRowAdded: 'تمت إضافة الصف رقم ({count})',
+        toastLastRowRemoved: 'تم حذف الصف الأخير', toastRowRemoved: 'تم حذف الصف',
+        toastKeepRow: 'يجب الاحتفاظ بصف واحد على الأقل', toastTableCleared: 'تم تفريغ جميع الأصناف'
+      },
+      en: {
+        appTitle: 'AL MANAR PLASTIC FACTORY | Smart Purchase Requisition System',
+        appSubtitle: 'ISO 9001:2015 Certified Quality Management System',
+        languageToggleText: 'العربية', smartBtnText: 'Smart item entry',
+        newPrText: 'New request (+ serial)', printText: 'Print / PDF (one page)',
+        downloadText: 'Download HTML', settingsText: 'ISO settings',
+        addRowText: 'Add row', removeRowText: 'Remove row', clearTableText: 'Clear table',
+        quickPanelTitle: 'Smart item-entry panel',
+        quickPanelDescription: 'Enter items in any format and the parser will identify the item, quantity, and unit, then arrange them in the table.',
+        recognizedLabel: 'Items recognized: ', replaceTableText: '⚡ Fill request now (replace table)',
+        appendTableText: '➕ Add to current table', examplesText: '✨ Restore examples',
+        documentTitle: 'Purchase Requisition', addNewRowText: 'Add new row', addFiveRowsText: '+ 5 blank rows',
+        removeLastRowText: 'Remove last row', rowCountLabel: 'Current items:',
+        printHint: '| The table prints in a precise A4 layout',
+        settingsModalTitle: 'Quality system and automatic numbering settings',
+        settingDocCodeLabel: 'Document code:', settingPrefixLabel: 'Serial prefix:',
+        settingIssueLabel: 'Issue:', settingRevLabel: 'Revision:',
+        settingCounterLabel: 'Current counter:', settingDocDateLabel: 'Issue date:',
+        settingFactoryArLabel: 'Factory name (Arabic):', settingFactoryEnLabel: 'Factory name (English):',
+        cancelSettingsText: 'Cancel', saveSettingsText: 'Save changes',
+        smartOpen: 'Open smart entry', smartClose: 'Hide smart entry',
+        toastSettingsSaved: '✓ ISO settings updated successfully', toastWriteItems: '⚠️ Enter items in the box first',
+        toastRowsAdded: '✓ Added ({count}) rows', toastRowAdded: 'Added row ({count})',
+        toastLastRowRemoved: 'Last row removed', toastRowRemoved: 'Row removed',
+        toastKeepRow: 'At least one row must remain', toastTableCleared: 'All items were cleared'
+      }
+    };
+
+    let currentLanguage = localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'ar';
+
+    function textFor(key, replacements = {}) {
+      let value = UI_TEXT[currentLanguage][key] || key;
+      Object.entries(replacements).forEach(([name, replacement]) => {
+        value = value.replace(`{${name}}`, replacement);
+      });
+      return value;
+    }
+
+    function applyLanguage() {
+      const isEnglish = currentLanguage === 'en';
+      document.documentElement.lang = isEnglish ? 'en' : 'ar';
+      document.documentElement.dir = isEnglish ? 'ltr' : 'rtl';
+      document.title = isEnglish ? 'Purchase Requisition | AL MANAR PLASTIC FACTORY' : 'طلب شراء داخلي | مصنع المنار للبلاستيك';
+      Object.keys(UI_TEXT[currentLanguage]).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) element.textContent = textFor(key);
+      });
+      document.getElementById('languageToggle').title = isEnglish ? 'Switch to Arabic' : 'التبديل إلى الإنجليزية';
+      const panel = document.getElementById('quickInputPanel');
+      document.getElementById('smartBtnText').textContent = panel && panel.classList.contains('hidden') ? textFor('smartOpen') : textFor('smartBtnText');
+    }
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+      localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+      applyLanguage();
+    }
 
     let config = {
       prefix: 'PR-2026-',
@@ -1108,7 +1212,7 @@
       localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
       applyConfigToUI();
       toggleSettingsModal(false);
-      showToast('✓ تم تحديث إعدادات الأيزو بنجاح');
+      showToast(textFor('toastSettingsSaved'));
     }
 
     // --- SMART PARSER LOGIC ---
@@ -1223,21 +1327,21 @@
     function applySmartParse(replaceExisting = true) {
       const items = parseBulkInputText();
       if (items.length === 0) {
-        showToast('⚠️ اكتب الأصناف أولاً في المربع');
+        showToast(textFor('toastWriteItems'));
         return;
       }
 
       if (replaceExisting) {
         const totalRows = Math.max(DEFAULT_ROW_COUNT, items.length);
         renderTable(totalRows, items);
-        showToast(`⚡ تم تعبئة (${items.length}) أصناف بنجاح!`);
+        showToast(currentLanguage === 'en' ? `⚡ Filled ${items.length} item(s) successfully!` : `⚡ تم تعبئة (${items.length}) أصناف بنجاح!`);
       } else {
         const currentData = getCurrentTableData();
         const cleanCurrent = currentData.filter(i => i.desc || i.code || i.qty);
         const combined = cleanCurrent.concat(items);
         const totalRows = Math.max(DEFAULT_ROW_COUNT, combined.length);
         renderTable(totalRows, combined);
-        showToast(`➕ تم إضافة (${items.length}) أصناف للجدول!`);
+        showToast(currentLanguage === 'en' ? `➕ Added ${items.length} item(s) to the table!` : `➕ تم إضافة (${items.length}) أصناف للجدول!`);
       }
 
       saveTableToStorage();
@@ -1247,14 +1351,14 @@
       const sampleText = `سلة مهملات عدد 1\nأكياس نفايات 2 ربطة\nبطارية مقاس AA عدد 1`;
       document.getElementById('bulkTextarea').value = sampleText;
       updateLiveParseCount();
-      showToast('✨ تم إدراج الأمثلة! اضغط [تعبئة الطلب فوراً]');
+      showToast(currentLanguage === 'en' ? '✨ Examples restored. Click [Fill request now].' : '✨ تم إدراج الأمثلة! اضغط [تعبئة الطلب فوراً]');
     }
 
     function toggleQuickInputPanel() {
       const panel = document.getElementById('quickInputPanel');
       panel.classList.toggle('hidden');
       const isHidden = panel.classList.contains('hidden');
-      document.getElementById('smartBtnText').innerText = isHidden ? 'فتح الإدخال الذكي' : 'إخفاء الإدخال الذكي';
+      document.getElementById('smartBtnText').innerText = isHidden ? textFor('smartOpen') : textFor('smartClose');
     }
 
     // --- TABLE GENERATION ---
@@ -1288,7 +1392,7 @@
                  value="${data.remarks || ''}">
         </td>
         <td class="no-print action-col text-center">
-          <button onclick="deleteThisRow(this)" title="حذف هذا الصف" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">&times;</button>
+          <button onclick="deleteThisRow(this)" title="${currentLanguage === 'en' ? 'Delete this row' : 'حذف هذا الصف'}" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">&times;</button>
         </td>
       `;
       return tr;
@@ -1309,7 +1413,7 @@
       const count = tbody.children.length + 1;
       tbody.appendChild(createRow(count));
       updateRowCountDisplay();
-      showToast(`تمت إضافة الصف رقم (${count})`);
+      showToast(textFor('toastRowAdded', { count }));
     }
 
     function addMultipleRows(num = 5) {
@@ -1319,7 +1423,7 @@
         tbody.appendChild(createRow(count));
       }
       updateRowCountDisplay();
-      showToast(`✓ تمت إضافة (${num}) صفوف`);
+      showToast(textFor('toastRowsAdded', { count: num }));
     }
 
     function removeLastRow() {
@@ -1327,9 +1431,9 @@
       if (tbody.children.length > 1) {
         tbody.removeChild(tbody.lastChild);
         updateRowCountDisplay();
-        showToast('تم حذف الصف الأخير');
+        showToast(textFor('toastLastRowRemoved'));
       } else {
-        showToast('يجب الاحتفاظ بصف واحد على الأقل');
+        showToast(textFor('toastKeepRow'));
       }
     }
 
@@ -1340,9 +1444,9 @@
         tr.remove();
         renumberRows();
         updateRowCountDisplay();
-        showToast('تم حذف الصف');
+        showToast(textFor('toastRowRemoved'));
       } else {
-        showToast('يجب الاحتفاظ بصف واحد على الأقل');
+        showToast(textFor('toastKeepRow'));
       }
     }
 
@@ -1376,7 +1480,7 @@
     function clearAllTableItems() {
       renderTable(DEFAULT_ROW_COUNT);
       localStorage.removeItem(TABLE_KEY);
-      showToast('تم تفريغ جميع الأصناف');
+      showToast(textFor('toastTableCleared'));
     }
 
     function saveTableToStorage() {
@@ -1397,7 +1501,7 @@
       document.getElementById('justification').value = '';
       document.getElementById('requestedBy').value = '';
 
-      showToast(`🚀 تم فتح طلب جديد برقم: ${formatSerial(config.prefix, config.counter)}`);
+      showToast(currentLanguage === 'en' ? `🚀 New request opened: ${formatSerial(config.prefix, config.counter)}` : `🚀 تم فتح طلب جديد برقم: ${formatSerial(config.prefix, config.counter)}`);
     }
 
     function downloadSelfHTML() {
@@ -1428,7 +1532,7 @@
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      showToast(`📥 تم تنزيل الملف كاملاً: ${filename}`);
+      showToast(currentLanguage === 'en' ? `📥 File downloaded: ${filename}` : `📥 تم تنزيل الملف كاملاً: ${filename}`);
     }
 
     function showToast(message) {
@@ -1447,6 +1551,7 @@
     }
 
     window.onload = function() {
+      applyLanguage();
       loadSettings();
 
       const reqDateInput = document.getElementById('reqDate');
@@ -1471,11 +1576,3 @@
     };
 
     function initUserItems() {
-      const initialItems = [
-        { code: '', desc: 'دفاتر ادخال انتاج قسم الميكسر حسب العينة المرفقة', unit: 'عدد', qty: '5', stock: '', remarks: '' }
-      ];
-      renderTable(DEFAULT_ROW_COUNT, initialItems);
-    }
-  </script>
-</body>
-</html>
