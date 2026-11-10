@@ -399,7 +399,7 @@
         min-height: 202mm !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
       }
 
       /* ضبط الترويسة العلوية */
@@ -460,8 +460,22 @@
         background-color: #f1f5f9 !important;
         font-size: 9px !important;
       }
+      /* The items table absorbs all free vertical space, so the lower blocks never float. */
+      .requisition-sheet > .flex-grow {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        margin-top: 2px !important;
+      }
+      .requisition-sheet > .flex-grow > .table-bordered {
+        height: 100% !important;
+        margin-top: 0 !important;
+      }
+      .table-bordered tbody {
+        height: 100% !important;
+      }
       .table-bordered tbody tr {
-        height: 19px !important;
+        height: auto !important;
       }
       .table-input {
         font-size: 9px !important;
@@ -501,14 +515,21 @@
         border: 1px solid #000 !important;
       }
       .signature-section > div > div {
-        height: 16mm !important;
-        min-height: 16mm !important;
-        max-height: 16mm !important;
+        height: 23mm !important;
+        min-height: 23mm !important;
+        max-height: 23mm !important;
         padding: 1.5px 3px !important;
       }
       .signature-section h4 { font-size: 9.5px !important; margin: 0 !important; }
       .signature-section span, .signature-section input { font-size: 8px !important; }
       .signature-section input { height: 14px !important; }
+      .signature-section .digital-signature {
+        width: 30mm !important;
+        height: 11mm !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
+        object-position: right center !important;
+      }
 
       /* التذييل */
       .footer-section {
