@@ -902,6 +902,49 @@ foreach ($publicForms as $pf) {
         </div>
     </div>
 
+    <!-- Private Forms Picker: appears only after the master PIN is accepted. -->
+    <div id="modalAccessPicker" class="fixed inset-0 z-[55] hidden bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-7 flex flex-col max-h-[90vh]">
+            <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">اختر التطبيقات التي تريد إظهارها</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">لن تظهر إلا التطبيقات التي تختارها في هذه الجلسة.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAccessPicker()" class="w-8 h-8 shrink-0 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition" title="إلغاء">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2 py-3 border-b border-slate-100">
+                <button type="button" onclick="setAccessPickerSelection(true)" class="px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition">تحديد الكل</button>
+                <button type="button" onclick="setAccessPickerSelection(false)" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">إلغاء التحديد</button>
+            </div>
+
+            <div class="overflow-y-auto py-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 pr-1">
+                <?php foreach ($forms as $form): ?>
+                    <?php if (!$form['is_protected']) continue; ?>
+                    <label class="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-emerald-50/60 hover:border-emerald-200 cursor-pointer transition">
+                        <input type="checkbox" class="access-form-checkbox w-4 h-4 accent-emerald-600" data-filename="<?= htmlspecialchars($form['filename'], ENT_QUOTES, 'UTF-8') ?>">
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-xs font-extrabold text-slate-900 truncate"><?= htmlspecialchars($form['title'], ENT_QUOTES, 'UTF-8') ?></span>
+                            <span class="block mt-0.5 text-[10px] font-mono text-slate-400 truncate"><?= htmlspecialchars($form['code'], ENT_QUOTES, 'UTF-8') ?></span>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeAccessPicker()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">إلغاء</button>
+                <button type="button" onclick="applyAccessPicker()" class="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">إظهار التطبيقات المحددة</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Security Management Modal -->
     <div id="modalManageSecurity" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 flex flex-col max-h-[90vh]">
@@ -970,9 +1013,52 @@ foreach ($publicForms as $pf) {
 
     <!-- Client-Side Search, Filter & Security Logic -->
     <script>
+        const ACCESS_SELECTION_KEY = 'forms_portal_selected_protected_forms';
+
         // Check if portal is currently unlocked
         function isPortalUnlocked() {
             return sessionStorage.getItem('portal_unlocked') === 'true' || document.cookie.includes('vault_auth=1');
+        }
+
+        function getSelectedProtectedForms() {
+            try {
+                const saved = JSON.parse(sessionStorage.getItem(ACCESS_SELECTION_KEY) || '[]');
+                return Array.isArray(saved) ? saved : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function isProtectedFormSelected(card) {
+            if (card.getAttribute('data-protected') !== 'true') return true;
+            return isPortalUnlocked() && getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
+        }
+
+        function formatPortalBytes(bytes) {
+            if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' م.ب';
+            if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' ك.ب';
+            return bytes + ' بايت';
+        }
+
+        function updateAccessMetrics() {
+            const accessible = Array.from(document.querySelectorAll('.form-card')).filter(isProtectedFormSelected);
+            const categories = new Set(accessible.map(card => card.getAttribute('data-category')).filter(Boolean));
+            const size = accessible.reduce((sum, card) => sum + Number(card.getAttribute('data-size') || 0), 0);
+            const formsCount = document.getElementById('statFormsCount');
+            const categoriesCount = document.getElementById('statCategoriesCount');
+            const totalSize = document.getElementById('statTotalSize');
+            const allFilterCount = document.querySelector('.category-pill[data-filter="all"] .pill-count');
+
+            if (formsCount) formsCount.textContent = accessible.length;
+            if (categoriesCount) categoriesCount.textContent = categories.size;
+            if (totalSize) totalSize.textContent = formatPortalBytes(size);
+            if (allFilterCount) allFilterCount.textContent = accessible.length;
+
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                const count = accessible.filter(card => card.getAttribute('data-category') === pill.getAttribute('data-filter')).length;
+                const countEl = pill.querySelector('.pill-count');
+                if (countEl && pill.getAttribute('data-filter') !== 'all') countEl.textContent = count;
+            });
         }
 
         // Apply unlocked or locked state to cards and navigation
@@ -980,13 +1066,6 @@ foreach ($publicForms as $pf) {
             const btnManage = document.getElementById('btnManageSecurity');
             const lockBtnLabel = document.getElementById('lockButtonLabel');
             const lockBtn = document.getElementById('btnMasterLock');
-
-            const statForms = document.getElementById('statFormsCount');
-            const statCats = document.getElementById('statCategoriesCount');
-            const statSize = document.getElementById('statTotalSize');
-            const totalRef = document.getElementById('totalVisibleRef');
-            const allFilterCount = document.querySelector('.category-pill[data-filter="all"] .pill-count');
-            const categoryPills = document.querySelectorAll('.category-pill');
 
             if (unlocked) {
                 if (btnManage) btnManage.classList.remove('hidden');
@@ -996,16 +1075,6 @@ foreach ($publicForms as $pf) {
                     lockBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
                 }
 
-                if (statForms) statForms.textContent = statForms.getAttribute('data-all');
-                if (statCats) statCats.textContent = statCats.getAttribute('data-all');
-                if (statSize) statSize.textContent = statSize.getAttribute('data-all');
-                if (totalRef) totalRef.textContent = totalRef.getAttribute('data-all');
-                if (allFilterCount) allFilterCount.textContent = allFilterCount.getAttribute('data-all');
-
-                categoryPills.forEach(p => {
-                    const countEl = p.querySelector('.pill-count');
-                    if (countEl) countEl.textContent = countEl.getAttribute('data-all');
-                });
             } else {
                 if (btnManage) btnManage.classList.add('hidden');
                 if (lockBtnLabel) lockBtnLabel.textContent = '\u0642\u0641\u0644 \u0627\u0644\u0623\u0645\u0627\u0646';
@@ -1014,17 +1083,9 @@ foreach ($publicForms as $pf) {
                     lockBtn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
                 }
 
-                if (statForms) statForms.textContent = statForms.getAttribute('data-public');
-                if (statCats) statCats.textContent = statCats.getAttribute('data-public');
-                if (statSize) statSize.textContent = statSize.getAttribute('data-public');
-                if (totalRef) totalRef.textContent = totalRef.getAttribute('data-public');
-                if (allFilterCount) allFilterCount.textContent = allFilterCount.getAttribute('data-public');
-
-                categoryPills.forEach(p => {
-                    const countEl = p.querySelector('.pill-count');
-                    if (countEl) countEl.textContent = countEl.getAttribute('data-public');
-                });
             }
+
+            updateAccessMetrics();
 
             if (typeof window.filterForms === 'function') {
                 window.filterForms();
@@ -1034,6 +1095,7 @@ foreach ($publicForms as $pf) {
         function handleMasterLockClick() {
             if (isPortalUnlocked()) {
                 sessionStorage.removeItem('portal_unlocked');
+                sessionStorage.removeItem(ACCESS_SELECTION_KEY);
                 document.cookie = 'vault_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
                 applyUnlockedState(false);
                 showToast('\u2705 \u062a\u0645 \u0642\u0641\u0644 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0645\u062d\u0645\u064a\u0629');
@@ -1059,6 +1121,36 @@ foreach ($publicForms as $pf) {
             if (modal) modal.classList.add('hidden');
         }
 
+        function openAccessPicker() {
+            const modal = document.getElementById('modalAccessPicker');
+            const selected = getSelectedProtectedForms();
+            document.querySelectorAll('.access-form-checkbox').forEach(box => {
+                box.checked = selected.includes(box.getAttribute('data-filename'));
+            });
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAccessPicker() {
+            const modal = document.getElementById('modalAccessPicker');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setAccessPickerSelection(checked) {
+            document.querySelectorAll('.access-form-checkbox').forEach(box => { box.checked = checked; });
+        }
+
+        function applyAccessPicker() {
+            const selected = Array.from(document.querySelectorAll('.access-form-checkbox:checked'))
+                .map(box => box.getAttribute('data-filename'))
+                .filter(Boolean);
+            sessionStorage.setItem(ACCESS_SELECTION_KEY, JSON.stringify(selected));
+            closeAccessPicker();
+            applyUnlockedState(true);
+            showToast(selected.length
+                ? `✓ تم إظهار (${selected.length}) تطبيق مختار`
+                : 'لم يتم اختيار أي تطبيق محمي للعرض');
+        }
+
         async function submitMasterLock(e) {
             e.preventDefault();
             const input = document.getElementById('masterLockInput');
@@ -1079,8 +1171,7 @@ foreach ($publicForms as $pf) {
 
                 if (errBox) errBox.classList.add('hidden');
                 closeMasterLockModal();
-                applyUnlockedState(true);
-                showToast('\u2705 \u062a\u0645 \u0625\u0644\u063a\u0627\u0621 \u0627\u0644\u0642\u0641\u0644 \u0648\u0639\u0631\u0636 \u0643\u0627\u0641\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c');
+                openAccessPicker();
             } else {
                 if (errBox) errBox.classList.remove('hidden');
                 if (input) {
@@ -1188,7 +1279,7 @@ foreach ($publicForms as $pf) {
 
                 cards.forEach(card => {
                     const isProtected = card.getAttribute('data-protected') === 'true';
-                    if (isProtected && !unlocked) {
+                    if (isProtected && !isProtectedFormSelected(card)) {
                         card.style.display = 'none';
                         return;
                     }
@@ -1219,6 +1310,8 @@ foreach ($publicForms as $pf) {
                 if (visibleCounter) {
                     visibleCounter.textContent = visibleCount;
                 }
+
+                updateAccessMetrics();
 
                 if (noResults) {
                     if (visibleCount === 0 && cards.length > 0) {
@@ -1302,6 +1395,7 @@ foreach ($publicForms as $pf) {
                 }
                 if (e.key === 'Escape') {
                     closeMasterLockModal();
+                    closeAccessPicker();
                     closeSecurityModal();
                 }
             });
