@@ -600,7 +600,7 @@
             <span class="text-[9px] bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2 py-0.5 rounded-full font-mono">Smart Parser AI-Ready</span>
           </h2>
           <p id="quickPanelDescription" class="text-[10.5px] text-slate-300">
-            اكتب الأصناف كما تشاء وسيقوم المحلل بفرز الصنف والكمية والوحدة وترتيبها تلقائياً بالجدول.
+            اكتب بالعربية أو الإنجليزية؛ سيحوّل النظام المدخل العربي إلى الإنجليزية قبل وضعه في طلب الشراء.
           </p>
         </div>
       </div>
@@ -1084,7 +1084,7 @@
         downloadText: 'تنزيل ملف HTML', settingsText: 'إعدادات الأيزو',
         addRowText: 'إضافة صف', removeRowText: 'حذف صف', clearTableText: 'تفريغ الجدول',
         quickPanelTitle: 'لوحة الإدخال السريع الذكي للبنود',
-        quickPanelDescription: 'اكتب الأصناف كما تشاء وسيقوم المحلل بفرز الصنف والكمية والوحدة وترتيبها تلقائياً بالجدول.',
+        quickPanelDescription: 'اكتب بالعربية أو الإنجليزية؛ سيحوّل النظام المدخل العربي إلى الإنجليزية قبل وضعه في طلب الشراء.',
         recognizedLabel: 'الأصناف المكتشفة: ', replaceTableText: '⚡ تعبئة الطلب فوراً (استبدال الجدول)',
         appendTableText: '➕ إضافة للجدول الحالي', examplesText: '✨ إعادة كتابة أمثلتك',
         documentTitle: 'طلب شراء', addNewRowText: 'إضافة صف جديد', addFiveRowsText: '+ 5 صفوف فارغة',
@@ -1111,7 +1111,7 @@
         downloadText: 'Download HTML', settingsText: 'ISO settings',
         addRowText: 'Add row', removeRowText: 'Remove row', clearTableText: 'Clear table',
         quickPanelTitle: 'Smart item-entry panel',
-        quickPanelDescription: 'Enter items in any format and the parser will identify the item, quantity, and unit, then arrange them in the table.',
+        quickPanelDescription: 'Enter items in Arabic or English. Arabic item text is translated to English before it is placed in the purchase request.',
         recognizedLabel: 'Items recognized: ', replaceTableText: '⚡ Fill request now (replace table)',
         appendTableText: '➕ Add to current table', examplesText: '✨ Restore examples',
         documentTitle: 'Purchase Requisition', addNewRowText: 'Add new row', addFiveRowsText: '+ 5 blank rows',
@@ -1243,6 +1243,54 @@
       'pcs', 'pc', 'kg', 'ton', 'meter', 'm', 'roll', 'box', 'set', 'drum', 'liter', 'pack'
     ];
 
+    const SMART_UNIT_TRANSLATIONS = {
+      'عدد': 'Pc', 'حبة': 'Pc', 'حبه': 'Pc', 'قطعة': 'Pc', 'قطعه': 'Pc',
+      'ربطة': 'Bundle', 'ربطه': 'Bundle', 'كرتون': 'Box', 'كرتونة': 'Carton', 'كرتونه': 'Carton',
+      'علبة': 'Box', 'علبه': 'Box', 'لفة': 'Roll', 'لفه': 'Roll', 'رول': 'Roll',
+      'متر': 'Meter', 'سم': 'cm', 'طن': 'Ton', 'كيلو': 'Kg', 'كجم': 'Kg', 'جرام': 'g',
+      'برميل': 'Drum', 'دستة': 'Dozen', 'دسته': 'Dozen', 'طقم': 'Set', 'شيكارة': 'Bag',
+      'شيكاره': 'Bag', 'كيس': 'Bag', 'باكيت': 'Pack', 'بكت': 'Bucket', 'لتر': 'Liter',
+      'غالون': 'Gallon', 'جالون': 'Gallon', 'صندوق': 'Box', 'لوح': 'Sheet', 'أنبوبة': 'Tube', 'انبوبة': 'Tube'
+    };
+    const translationCache = new Map();
+
+    function hasArabicText(value) {
+      return /[\u0600-\u06FF]/.test(String(value || ''));
+    }
+
+    async function translateSmartTextToEnglish(value) {
+      const source = String(value || '').trim();
+      if (!source || !hasArabicText(source)) return source;
+      if (SMART_UNIT_TRANSLATIONS[source]) return SMART_UNIT_TRANSLATIONS[source];
+      if (translationCache.has(source)) return translationCache.get(source);
+
+      // The smart input uses the public translation endpoint only for Arabic text.
+      // Codes, quantities and already-English descriptions remain unchanged.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(source)}`;
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error('Translation service unavailable');
+        const result = await response.json();
+        const translated = Array.isArray(result?.[0]) ? result[0].map(part => part?.[0] || '').join('').trim() : '';
+        if (!translated) throw new Error('Translation service returned no result');
+        translationCache.set(source, translated);
+        return translated;
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function translateSmartItemToEnglish(item) {
+      return {
+        ...item,
+        desc: await translateSmartTextToEnglish(item.desc),
+        unit: await translateSmartTextToEnglish(item.unit),
+        remarks: await translateSmartTextToEnglish(item.remarks)
+      };
+    }
+
     function parseItemLine(rawLine) {
       let line = normalizeArabicNumerals(rawLine.trim());
       if (!line) return null;
@@ -1337,10 +1385,20 @@
       document.getElementById('recognizedCount').innerText = items.length;
     }
 
-    function applySmartParse(replaceExisting = true) {
-      const items = parseBulkInputText();
-      if (items.length === 0) {
+    async function applySmartParse(replaceExisting = true) {
+      const parsedItems = parseBulkInputText();
+      if (parsedItems.length === 0) {
         showToast(textFor('toastWriteItems'));
+        return;
+      }
+
+      let items;
+      try {
+        showToast(currentLanguage === 'en' ? 'Translating Arabic entries to English…' : 'جارٍ تحويل البنود العربية إلى الإنجليزية…');
+        items = await Promise.all(parsedItems.map(translateSmartItemToEnglish));
+      } catch (error) {
+        console.error('Smart translation failed:', error);
+        showToast(currentLanguage === 'en' ? '⚠ Translation failed. Check the internet connection and try again.' : '⚠ تعذرت الترجمة. راجع اتصال الإنترنت ثم أعد المحاولة.');
         return;
       }
 
