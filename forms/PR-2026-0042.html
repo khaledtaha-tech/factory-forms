@@ -48,11 +48,11 @@
     }
 
     /* ==============================================================================
-       PRINT ENGINE: A4 PORTRAIT SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
+       PRINT ENGINE: A4 LANDSCAPE SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
        ============================================================================== */
     @page {
-      size: A4 portrait;
-      margin: 6mm 5mm;
+      size: A4 landscape;
+      margin: 4mm;
     }
 
     @media print {
@@ -85,8 +85,8 @@
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         page-break-after: avoid !important;
-        height: auto !important;
-        min-height: 0 !important;
+        height: 202mm !important;
+        min-height: 202mm !important;
         max-height: none !important;
         display: flex !important;
         flex-direction: column !important;
@@ -323,11 +323,11 @@
     }
 
     /* ==============================================================================
-       BULLETPROOF PRINT ENGINE: EXACT A4 PORTRAIT - 100% ONE PAGE - ZERO CLIPPING
+       BULLETPROOF PRINT ENGINE: EXACT A4 LANDSCAPE - FULL-PAGE USE - ZERO CLIPPING
        ============================================================================== */
     @page {
-      size: A4 portrait;
-      margin: 5mm;
+      size: A4 landscape;
+      margin: 4mm;
     }
 
     @media print {
@@ -342,7 +342,8 @@
         padding: 0 !important;
         background: #fff !important;
         color: #000 !important;
-        height: auto !important;
+        height: 202mm !important;
+        min-height: 202mm !important;
         overflow: hidden !important; /* يمنع إنشاء صفحة ثانية نهائياً */
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -372,7 +373,11 @@
         box-sizing: border-box !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-        height: auto !important;
+        height: 202mm !important;
+        min-height: 202mm !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
       }
 
       /* ضبط الترويسة العلوية */
@@ -521,6 +526,12 @@
         <button onclick="toggleLanguage()" id="languageToggle" title="التبديل بين العربية والإنجليزية" class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition">
           <span>🌐</span><span id="languageToggleText">English</span>
         </button>
+        <button onclick="savePurchaseRequest()" id="savePurchaseRequestBtn" title="حفظ الطلب في قاعدة البيانات المركزية" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition">
+          <span>☁</span><span id="saveDatabaseText">حفظ في قاعدة البيانات</span>
+        </button>
+        <button onclick="window.location.href='../purchase-requests.php'" title="عرض كل طلبات الشراء المحفوظة" class="px-3 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition">
+          <span>▤</span><span id="purchaseHistoryText">سجل طلبات الشراء</span>
+        </button>
         <button onclick="toggleQuickInputPanel()" id="btnToggleSmart" class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
           <svg class="w-4 h-4 text-amber-300" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
@@ -535,7 +546,7 @@
           <span id="newPrText">طلب جديد (+ سيريال)</span>
         </button>
 
-        <button onclick="window.print()" title="طباعة فورية في صفحة واحدة A4 دون انقسام" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
+        <button onclick="saveAndPrint()" title="حفظ الطلب ثم طباعته فوراً في صفحة أفقية واحدة A4" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
           </svg>
@@ -1068,6 +1079,7 @@
         appTitle: 'مصنع المنار للبلاستيك | نظام طلبات الشراء الذكي',
         appSubtitle: 'نظام الجودة المعتمد ISO 9001:2015',
         languageToggleText: 'English', smartBtnText: 'الإدخال السريع الذكي للبنود',
+        saveDatabaseText: 'حفظ في قاعدة البيانات', purchaseHistoryText: 'سجل طلبات الشراء',
         newPrText: 'طلب جديد (+ سيريال)', printText: 'طباعة / PDF (صفحة واحدة)',
         downloadText: 'تنزيل ملف HTML', settingsText: 'إعدادات الأيزو',
         addRowText: 'إضافة صف', removeRowText: 'حذف صف', clearTableText: 'تفريغ الجدول',
@@ -1094,6 +1106,7 @@
         appTitle: 'AL MANAR PLASTIC FACTORY | Smart Purchase Requisition System',
         appSubtitle: 'ISO 9001:2015 Certified Quality Management System',
         languageToggleText: 'العربية', smartBtnText: 'Smart item entry',
+        saveDatabaseText: 'Save to database', purchaseHistoryText: 'Purchase request register',
         newPrText: 'New request (+ serial)', printText: 'Print / PDF (one page)',
         downloadText: 'Download HTML', settingsText: 'ISO settings',
         addRowText: 'Add row', removeRowText: 'Remove row', clearTableText: 'Clear table',
@@ -1477,6 +1490,93 @@
       return rows;
     }
 
+    // --- CENTRAL PURCHASE-REQUEST DATABASE ---
+    function getPurchaseRequestPayload() {
+      const allItems = getCurrentTableData();
+      const items = allItems.filter(item => item.code || item.desc || item.unit || item.qty || item.stock || item.remarks);
+      const prNumber = document.getElementById('prNoInput').value.trim() || formatSerial(config.prefix, config.counter);
+      const requestDate = document.getElementById('reqDate').value || new Date().toISOString().split('T')[0];
+      const neededDate = document.getElementById('neededDate').value || '';
+      const priority = document.querySelector('input[name="priority"]:checked')?.value || 'normal';
+
+      return {
+        pr_number: prNumber,
+        request_date: requestDate,
+        needed_date: neededDate,
+        department: document.getElementById('reqDept').value.trim(),
+        requested_by: document.getElementById('requestedBy').value.trim(),
+        priority,
+        items,
+        form_data: {
+          prNumber,
+          requestDate,
+          neededDate,
+          department: document.getElementById('reqDept').value.trim(),
+          requestedBy: document.getElementById('requestedBy').value.trim(),
+          priority,
+          justification: document.getElementById('justification').value.trim(),
+          items,
+          attachments: {
+            drawing: document.getElementById('attDrawing').checked,
+            quotation: document.getElementById('attQuotation').checked,
+            other: document.getElementById('attOther').checked,
+            otherText: document.getElementById('attOtherText').value.trim()
+          },
+          signatures: {
+            store: document.getElementById('storeName').value.trim(),
+            production: document.getElementById('pmName').value.trim(),
+            purchasing: document.getElementById('purchName').value.trim(),
+            management: document.getElementById('mgmtName').value.trim()
+          },
+          savedFrom: 'PR-2026-0042.html',
+          documentConfig: { ...config }
+        }
+      };
+    }
+
+    async function savePurchaseRequest(silent = false) {
+      const button = document.getElementById('savePurchaseRequestBtn');
+      const originalHtml = button?.innerHTML;
+      try {
+        if (button && !silent) {
+          button.disabled = true;
+          button.innerHTML = '<span>⌛</span><span>Saving...</span>';
+        }
+        const response = await fetch('../api.php?action=save_purchase_request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(getPurchaseRequestPayload())
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'success') {
+          throw new Error(result.message || 'Database save failed');
+        }
+        if (!silent) {
+          showToast(currentLanguage === 'en' ? '✓ Purchase request saved in the central database' : '✓ تم حفظ طلب الشراء في قاعدة البيانات المركزية');
+        }
+        return true;
+      } catch (error) {
+        console.error('Purchase request database save failed:', error);
+        if (!silent) {
+          showToast(currentLanguage === 'en' ? '⚠ Database save failed. Check the connection and save again.' : '⚠ تعذر الحفظ في قاعدة البيانات. راجع الاتصال ثم أعد الحفظ.');
+        }
+        return false;
+      } finally {
+        if (button && !silent) {
+          button.disabled = false;
+          button.innerHTML = originalHtml;
+        }
+      }
+    }
+
+    async function saveAndPrint() {
+      const saved = await savePurchaseRequest(true);
+      if (!saved) {
+        showToast(currentLanguage === 'en' ? '⚠ Not saved to the database. Printing the current copy.' : '⚠ لم يتم الحفظ بقاعدة البيانات؛ ستتم طباعة النسخة الحالية.');
+      }
+      window.print();
+    }
+
     function clearAllTableItems() {
       renderTable(DEFAULT_ROW_COUNT);
       localStorage.removeItem(TABLE_KEY);
@@ -1576,3 +1676,11 @@
     };
 
     function initUserItems() {
+      const initialItems = [
+        { code: '', desc: 'دفاتر ادخال انتاج قسم الميكسر حسب العينة المرفقة', unit: 'عدد', qty: '5', stock: '', remarks: '' }
+      ];
+      renderTable(DEFAULT_ROW_COUNT, initialItems);
+    }
+  </script>
+</body>
+</html>
