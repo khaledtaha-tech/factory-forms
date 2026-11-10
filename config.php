@@ -91,3 +91,28 @@ function ensureIqamaInstallmentsTableExists() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
     $pdo->exec($sql);
 }
+
+/**
+ * Central archive for purchase requisitions.  Each PR number is one durable
+ * record, independent of the browser or device that created it.
+ */
+function ensurePurchaseRequestsTableExists() {
+    $pdo = getDbConnection();
+    $sql = "CREATE TABLE IF NOT EXISTS purchase_requests (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        pr_number VARCHAR(64) NOT NULL,
+        request_date DATE NOT NULL,
+        needed_date DATE NULL,
+        department VARCHAR(160) NULL,
+        requested_by VARCHAR(160) NULL,
+        priority VARCHAR(32) NOT NULL DEFAULT 'normal',
+        item_count INT UNSIGNED NOT NULL DEFAULT 0,
+        form_data JSON NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_pr_number (pr_number),
+        INDEX idx_request_date (request_date),
+        INDEX idx_department (department)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+    $pdo->exec($sql);
+}
