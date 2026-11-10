@@ -106,9 +106,101 @@ try {
     // Ensure tables exist on first run
     ensureFormRecordsTableExists();
     ensureIqamaInstallmentsTableExists();
+    ensurePurchaseRequestsTableExists();
     $pdo = getDbConnection();
 
     switch ($action) {
+
+        /**
+         * Stores a complete, printable purchase-requisition snapshot. The PR
+         * number is unique so later edits update the same request, rather than
+         * creating duplicate records.
+         */
+        case 'save_purchase_request':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'The save_purchase_request action requires a POST request.'], 405);
+            }
+
+            $prNumber = trim($params['pr_number'] ?? '');
+            $requestDate = trim($params['request_date'] ?? '');
+            $neededDate = trim($params['needed_date'] ?? '');
+            $department = trim($params['department'] ?? '');
+            $requestedBy = trim($params['requested_by'] ?? '');
+            $priority = trim($params['priority'] ?? 'normal');
+            $items = $params['items'] ?? [];
+            $formData = $params['form_data'] ?? null;
+
+            if ($prNumber === '') {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing required parameter: pr_number'], 400);
+            }
+            if ($requestDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $requestDate)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Invalid or missing request_date. Expected YYYY-MM-DD.'], 400);
+            }
+            if ($neededDate !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $neededDate)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Invalid needed_date. Expected YYYY-MM-DD.'], 400);
+            }
+            if ($formData === null || $formData === '') {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing required parameter: form_data'], 400);
+            }
+
+            $jsonString = is_string($formData) ? $formData : json_encode($formData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($jsonString === false || (json_decode($jsonString) === null && json_last_error() !== JSON_ERROR_NONE)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Invalid JSON supplied for form_data'], 400);
+            }
+            $itemCount = is_array($items) ? count($items) : 0;
+            if ($itemCount === 0) {
+                $decodedPayload = json_decode($jsonString, true);
+                $itemCount = is_array($decodedPayload['items'] ?? null) ? count($decodedPayload['items']) : 0;
+            }
+
+            $stmt = $pdo->prepare(
+                'INSERT INTO purchase_requests (pr_number, request_date, needed_date, department, requested_by, priority, item_count, form_data)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE request_date = VALUES(request_date), needed_date = VALUES(needed_date),
+                    department = VALUES(department), requested_by = VALUES(requested_by), priority = VALUES(priority),
+                    item_count = VALUES(item_count), form_data = VALUES(form_data), updated_at = CURRENT_TIMESTAMP'
+            );
+            $stmt->execute([$prNumber, $requestDate, $neededDate ?: null, $department ?: null, $requestedBy ?: null, $priority, $itemCount, $jsonString]);
+
+            sendJsonResponse([
+                'status' => 'success',
+                'pr_number' => $prNumber,
+                'message' => 'Purchase request saved to the central database.'
+            ]);
+            break;
+
+        /** Returns the central PR register with optional text search. */
+        case 'list_purchase_requests':
+            $limit = isset($params['limit']) ? max(1, min(500, (int)$params['limit'])) : 200;
+            $search = trim($params['search'] ?? '');
+            $where = '';
+            $args = [];
+            if ($search !== '') {
+                $where = 'WHERE pr_number LIKE ? OR department LIKE ? OR requested_by LIKE ?';
+                $like = '%' . $search . '%';
+                $args = [$like, $like, $like];
+            }
+            $stmt = $pdo->prepare('SELECT id, pr_number, request_date, needed_date, department, requested_by, priority, item_count, created_at, updated_at FROM purchase_requests ' . $where . ' ORDER BY request_date DESC, id DESC LIMIT ' . $limit);
+            $stmt->execute($args);
+            $records = $stmt->fetchAll();
+            sendJsonResponse(['status' => 'success', 'total' => count($records), 'records' => $records]);
+            break;
+
+        /** Returns a full saved PR, including every line item, for review or reprint. */
+        case 'get_purchase_request':
+            $prNumber = trim($params['pr_number'] ?? '');
+            if ($prNumber === '') {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing required parameter: pr_number'], 400);
+            }
+            $stmt = $pdo->prepare('SELECT id, pr_number, request_date, needed_date, department, requested_by, priority, item_count, form_data, created_at, updated_at FROM purchase_requests WHERE pr_number = ? LIMIT 1');
+            $stmt->execute([$prNumber]);
+            $record = $stmt->fetch();
+            if (!$record) {
+                sendJsonResponse(['status' => 'not_found', 'message' => 'Purchase request not found.'], 404);
+            }
+            $record['form_data'] = json_decode($record['form_data'], true) ?: [];
+            sendJsonResponse(['status' => 'success', 'record' => $record]);
+            break;
 
         /**
          * --------------------------------------------------------------------------
