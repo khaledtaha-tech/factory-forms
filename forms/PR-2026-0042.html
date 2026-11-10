@@ -583,7 +583,7 @@
         </button>
 
         <!-- Intentionally discreet: a tiny pen in the screen corner, never printed. -->
-        <button onclick="toggleDigitalSignature()" id="signatureToggleBtn" title="إضافة أو إزالة توقيع الإدارة من نسخة الطباعة" aria-label="إضافة أو إزالة توقيع الإدارة" class="fixed bottom-1 left-1 z-50 w-5 h-5 p-0 bg-transparent hover:bg-slate-100 text-slate-300 hover:text-indigo-700 border border-transparent hover:border-slate-200 rounded-full text-[10px] font-black flex items-center justify-center opacity-30 hover:opacity-100 transition">
+        <button onclick="toggleDigitalSignature()" id="signatureToggleBtn" title="إضافة أو إزالة توقيع مدير الإنتاج من نسخة الطباعة" aria-label="إضافة أو إزالة توقيع مدير الإنتاج" class="fixed bottom-1 left-1 z-50 w-5 h-5 p-0 bg-transparent hover:bg-slate-100 text-slate-300 hover:text-indigo-700 border border-transparent hover:border-slate-200 rounded-full text-[10px] font-black flex items-center justify-center opacity-30 hover:opacity-100 transition">
           <span aria-hidden="true">✒</span><span id="signatureToggleText" class="sr-only">إضافة توقيعي</span>
         </button>
 
@@ -986,7 +986,8 @@
               </div>
               <div class="flex items-center gap-1">
                 <span class="font-bold text-slate-800">التوقيع:</span>
-                <span class="text-slate-400">........................</span>
+                <span id="productionSignaturePlaceholder" class="text-slate-400">........................</span>
+                <img id="productionDigitalSignature" class="digital-signature" src="../assets/khaled-signature.png" alt="Production manager signature">
               </div>
             </div>
           </div>
@@ -1022,8 +1023,7 @@
               </div>
               <div class="flex items-center gap-1">
                 <span class="font-bold text-slate-800">التوقيع:</span>
-                <span id="managementSignaturePlaceholder" class="text-slate-400">........................</span>
-                <img id="managementDigitalSignature" class="digital-signature" src="../assets/khaled-signature.png" alt="Management signature">
+                <span class="text-slate-400">........................</span>
               </div>
             </div>
           </div>
@@ -1209,8 +1209,8 @@
     }
 
     function updateDigitalSignatureUI() {
-      const signature = document.getElementById('managementDigitalSignature');
-      const placeholder = document.getElementById('managementSignaturePlaceholder');
+      const signature = document.getElementById('productionDigitalSignature');
+      const placeholder = document.getElementById('productionSignaturePlaceholder');
       const button = document.getElementById('signatureToggleBtn');
       const label = document.getElementById('signatureToggleText');
       if (signature) signature.classList.toggle('is-visible', digitalSignatureEnabled);
@@ -1233,7 +1233,7 @@
       digitalSignatureEnabled = !digitalSignatureEnabled;
       updateDigitalSignatureUI();
       showToast(digitalSignatureEnabled
-        ? (currentLanguage === 'en' ? '✓ Your signature will appear in Management Approval when printed' : '✓ سيظهر توقيعك في اعتماد الإدارة عند الطباعة')
+        ? (currentLanguage === 'en' ? '✓ Your signature will appear in Production Manager when printed' : '✓ سيظهر توقيعك في خانة مدير الإنتاج عند الطباعة')
         : (currentLanguage === 'en' ? 'Your signature was removed from this print copy' : 'تمت إزالة توقيعك من هذه النسخة'));
     }
 
@@ -1697,7 +1697,7 @@
             production: document.getElementById('pmName').value.trim(),
             purchasing: document.getElementById('purchName').value.trim(),
             management: document.getElementById('mgmtName').value.trim(),
-            managementDigitalSignature: digitalSignatureEnabled
+            productionDigitalSignature: digitalSignatureEnabled
           },
           savedFrom: 'PR-2026-0042.html',
           documentConfig: { ...config }
