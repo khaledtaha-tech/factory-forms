@@ -911,8 +911,8 @@ foreach ($publicForms as $pf) {
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-extrabold text-slate-900">اختر التطبيقات التي تريد إظهارها</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">لن تظهر إلا التطبيقات التي تختارها في هذه الجلسة.</p>
+                        <h3 id="accessPickerTitle" class="text-base font-extrabold text-slate-900">اختر التطبيقات التي تريد إظهارها</h3>
+                        <p id="accessPickerDescription" class="text-xs text-slate-500 mt-0.5">لن تظهر إلا التطبيقات التي تختارها في هذه الجلسة.</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeAccessPicker()" class="w-8 h-8 shrink-0 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition" title="إلغاء">
@@ -939,7 +939,7 @@ foreach ($publicForms as $pf) {
 
             <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button type="button" onclick="closeAccessPicker()" class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">إلغاء</button>
-                <button type="button" onclick="applyAccessPicker()" class="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">إظهار التطبيقات المحددة</button>
+                <button type="button" id="accessPickerApplyButton" onclick="applyAccessPicker()" class="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">إظهار التطبيقات المحددة</button>
             </div>
         </div>
     </div>
@@ -1012,11 +1012,17 @@ foreach ($publicForms as $pf) {
 
     <!-- Client-Side Search, Filter & Security Logic -->
     <script>
-        const ACCESS_SELECTION_KEY = 'forms_portal_selected_protected_forms';
+        const ACCESS_SELECTION_KEY = 'forms_portal_selected_forms';
+        const ACCESS_RESTRICTED_KEY = 'forms_portal_visibility_restricted';
+        let accessPickerMode = 'unlock';
 
         // Check if portal is currently unlocked
         function isPortalUnlocked() {
             return sessionStorage.getItem('portal_unlocked') === 'true' || document.cookie.includes('vault_auth=1');
+        }
+
+        function isPortalRestricted() {
+            return sessionStorage.getItem(ACCESS_RESTRICTED_KEY) === 'true';
         }
 
         function getSelectedProtectedForms() {
@@ -1029,8 +1035,7 @@ foreach ($publicForms as $pf) {
         }
 
         function isProtectedFormSelected(card) {
-            if (!isPortalUnlocked()) return card.getAttribute('data-protected') !== 'true';
-            return getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
+            return !isPortalRestricted() || getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
         }
 
         function formatPortalBytes(bytes) {
@@ -1061,27 +1066,27 @@ foreach ($publicForms as $pf) {
         }
 
         // Apply unlocked or locked state to cards and navigation
-        function applyUnlockedState(unlocked) {
+        function applyUnlockedState() {
             const btnManage = document.getElementById('btnManageSecurity');
             const lockBtnLabel = document.getElementById('lockButtonLabel');
             const lockBtn = document.getElementById('btnMasterLock');
+            const restricted = isPortalRestricted();
+            const unlocked = isPortalUnlocked();
 
             if (unlocked) {
                 if (btnManage) btnManage.classList.remove('hidden');
-                if (lockBtnLabel) lockBtnLabel.textContent = '\u0642\u0641\u0644 \u0627\u0644\u0646\u0645\u0627\u0630\u062c';
-                if (lockBtn) {
-                    lockBtn.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-200');
-                    lockBtn.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
-                }
-
             } else {
                 if (btnManage) btnManage.classList.add('hidden');
-                if (lockBtnLabel) lockBtnLabel.textContent = '\u0642\u0641\u0644 \u0627\u0644\u0623\u0645\u0627\u0646';
-                if (lockBtn) {
-                    lockBtn.classList.remove('bg-amber-50', 'text-amber-800', 'border-amber-200');
-                    lockBtn.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
-                }
+            }
 
+            if (lockBtnLabel) lockBtnLabel.textContent = restricted ? '\u0641\u062a\u062d \u0627\u0644\u0646\u0645\u0627\u0630\u062c' : '\u0642\u0641\u0644 \u0627\u0644\u0646\u0645\u0627\u0630\u062c';
+            if (lockBtn) {
+                lockBtn.classList.toggle('bg-amber-50', restricted);
+                lockBtn.classList.toggle('text-amber-800', restricted);
+                lockBtn.classList.toggle('border-amber-200', restricted);
+                lockBtn.classList.toggle('bg-white', !restricted);
+                lockBtn.classList.toggle('text-slate-700', !restricted);
+                lockBtn.classList.toggle('border-slate-200', !restricted);
             }
 
             updateAccessMetrics();
@@ -1092,18 +1097,10 @@ foreach ($publicForms as $pf) {
         }
 
         function handleMasterLockClick() {
-            if (isPortalUnlocked()) {
-                if (!sessionStorage.getItem(ACCESS_SELECTION_KEY)) {
-                    openAccessPicker();
-                    return;
-                }
-                sessionStorage.removeItem('portal_unlocked');
-                sessionStorage.removeItem(ACCESS_SELECTION_KEY);
-                document.cookie = 'vault_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-                applyUnlockedState(false);
-                showToast('\u2705 \u062a\u0645 \u0642\u0641\u0644 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0645\u062d\u0645\u064a\u0629');
-            } else {
+            if (isPortalRestricted()) {
                 openMasterLockModal();
+            } else {
+                openAccessPicker('lock');
             }
         }
 
@@ -1124,24 +1121,28 @@ foreach ($publicForms as $pf) {
             if (modal) modal.classList.add('hidden');
         }
 
-        function openAccessPicker() {
+        function openAccessPicker(mode = 'unlock') {
             const modal = document.getElementById('modalAccessPicker');
             const selected = getSelectedProtectedForms();
+            accessPickerMode = mode;
+            const title = document.getElementById('accessPickerTitle');
+            const description = document.getElementById('accessPickerDescription');
+            const applyButton = document.getElementById('accessPickerApplyButton');
+            const isLocking = mode === 'lock';
+            if (title) title.textContent = isLocking ? 'اختر التطبيقات التي ستظل ظاهرة' : 'اختر التطبيقات التي تريد إظهارها';
+            if (description) description.textContent = isLocking
+                ? 'سيتم إخفاء التطبيقات الأخرى حتى تضغط «فتح النماذج» وتدخل الرمز.'
+                : 'لن تظهر إلا التطبيقات التي تختارها في هذه الجلسة.';
+            if (applyButton) applyButton.textContent = isLocking ? 'قفل التطبيقات الأخرى' : 'إظهار التطبيقات المحددة';
             document.querySelectorAll('.access-form-checkbox').forEach(box => {
-                box.checked = selected.includes(box.getAttribute('data-filename'));
+                box.checked = isPortalRestricted() && selected.includes(box.getAttribute('data-filename'));
             });
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeAccessPicker(keepAccess = false) {
+        function closeAccessPicker() {
             const modal = document.getElementById('modalAccessPicker');
             if (modal) modal.classList.add('hidden');
-            if (!keepAccess) {
-                sessionStorage.removeItem('portal_unlocked');
-                sessionStorage.removeItem(ACCESS_SELECTION_KEY);
-                document.cookie = 'vault_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-                applyUnlockedState(false);
-            }
         }
 
         function setAccessPickerSelection(checked) {
@@ -1152,12 +1153,15 @@ foreach ($publicForms as $pf) {
             const selected = Array.from(document.querySelectorAll('.access-form-checkbox:checked'))
                 .map(box => box.getAttribute('data-filename'))
                 .filter(Boolean);
+            const total = document.querySelectorAll('.access-form-checkbox').length;
             sessionStorage.setItem(ACCESS_SELECTION_KEY, JSON.stringify(selected));
-            closeAccessPicker(true);
-            applyUnlockedState(true);
-            showToast(selected.length
-                ? `✓ تم إظهار (${selected.length}) تطبيق مختار`
-                : 'لم يتم اختيار أي تطبيق محمي للعرض');
+            if (selected.length === total) sessionStorage.removeItem(ACCESS_RESTRICTED_KEY);
+            else sessionStorage.setItem(ACCESS_RESTRICTED_KEY, 'true');
+            closeAccessPicker();
+            applyUnlockedState();
+            showToast(accessPickerMode === 'lock'
+                ? `✓ تم قفل التطبيقات الأخرى وإظهار (${selected.length}) تطبيق`
+                : `✓ تم إظهار (${selected.length}) تطبيق مختار`);
         }
 
         async function submitMasterLock(e) {
@@ -1180,7 +1184,7 @@ foreach ($publicForms as $pf) {
 
                 if (errBox) errBox.classList.add('hidden');
                 closeMasterLockModal();
-                openAccessPicker();
+                openAccessPicker('unlock');
             } else {
                 if (errBox) errBox.classList.remove('hidden');
                 if (input) {
@@ -1408,11 +1412,8 @@ foreach ($publicForms as $pf) {
                 }
             });
 
-            // Initialize unlocked state from storage/cookie
-            applyUnlockedState(isPortalUnlocked());
-            if (isPortalUnlocked() && !sessionStorage.getItem(ACCESS_SELECTION_KEY)) {
-                openAccessPicker();
-            }
+            // Initialize the dashboard in its current visibility mode.
+            applyUnlockedState();
 
             // Keep the header control synchronized with the theme applied before paint.
             setPortalTheme(document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
