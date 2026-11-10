@@ -1264,22 +1264,19 @@
       if (SMART_UNIT_TRANSLATIONS[source]) return SMART_UNIT_TRANSLATIONS[source];
       if (translationCache.has(source)) return translationCache.get(source);
 
-      // The smart input uses the public translation endpoint only for Arabic text.
-      // Codes, quantities and already-English descriptions remain unchanged.
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(source)}`;
-        const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error('Translation service unavailable');
-        const result = await response.json();
-        const translated = Array.isArray(result?.[0]) ? result[0].map(part => part?.[0] || '').join('').trim() : '';
-        if (!translated) throw new Error('Translation service returned no result');
-        translationCache.set(source, translated);
-        return translated;
-      } finally {
-        clearTimeout(timeout);
-      }
+      // The request stays same-origin; the server performs translation and
+      // avoids browser CORS restrictions on Arabic smart entries.
+      const response = await fetch('../api.php?action=translate_purchase_text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: source })
+      });
+      const result = await response.json();
+      if (!response.ok || result.status !== 'success') throw new Error(result.message || 'Translation service unavailable');
+      const translated = String(result.translation || '').trim();
+      if (!translated) throw new Error('Translation service returned no result');
+      translationCache.set(source, translated);
+      return translated;
     }
 
     async function translateSmartItemToEnglish(item) {
