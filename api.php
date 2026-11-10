@@ -26,6 +26,59 @@ function sendJsonResponse(array $payload, int $statusCode = 200) {
     exit;
 }
 
+/**
+ * Translates Arabic purchase-item text through the server, so browsers never
+ * depend on a cross-origin translation request. It deliberately accepts only
+ * short plain text values used by the Smart Item Entry panel.
+ */
+function translatePurchaseTextToEnglish(string $text): string {
+    $text = trim($text);
+    if ($text === '' || !preg_match('/[\x{0600}-\x{06FF}]/u', $text)) {
+        return $text;
+    }
+
+    $url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' . rawurlencode($text);
+    $raw = false;
+
+    if (function_exists('curl_init')) {
+        $curl = curl_init($url);
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_HTTPHEADER => ['Accept: application/json']
+        ]);
+        $raw = curl_exec($curl);
+        $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        if ($status < 200 || $status >= 300) {
+            $raw = false;
+        }
+    }
+
+    if ($raw === false && ini_get('allow_url_fopen')) {
+        $context = stream_context_create(['http' => ['timeout' => 10, 'header' => "Accept: application/json\r\n"]]);
+        $raw = @file_get_contents($url, false, $context);
+    }
+    if ($raw === false || $raw === '') {
+        throw new RuntimeException('Translation service is unavailable.');
+    }
+
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded) || !is_array($decoded[0] ?? null)) {
+        throw new RuntimeException('Translation response is invalid.');
+    }
+    $translated = '';
+    foreach ($decoded[0] as $part) {
+        $translated .= is_array($part) ? ($part[0] ?? '') : '';
+    }
+    $translated = trim($translated);
+    if ($translated === '') {
+        throw new RuntimeException('Translation service returned no text.');
+    }
+    return $translated;
+}
+
 // Parse request input (supports JSON payload or standard form-data)
 $rawInput = file_get_contents('php://input');
 $inputData = [];
@@ -110,6 +163,26 @@ try {
     $pdo = getDbConnection();
 
     switch ($action) {
+
+        /** Server-side Arabic-to-English translation for Smart Item Entry. */
+        case 'translate_purchase_text':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($inputData)) {
+                sendJsonResponse(['status' => 'error', 'message' => 'The translate_purchase_text action requires a POST request.'], 405);
+            }
+            $text = trim((string)($params['text'] ?? ''));
+            if ($text === '') {
+                sendJsonResponse(['status' => 'error', 'message' => 'Missing text to translate.'], 400);
+            }
+            $textLength = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+            if ($textLength > 1200) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Text is too long to translate.'], 400);
+            }
+            try {
+                sendJsonResponse(['status' => 'success', 'translation' => translatePurchaseTextToEnglish($text)]);
+            } catch (Throwable $translationError) {
+                sendJsonResponse(['status' => 'error', 'message' => 'Translation service is currently unavailable.'], 503);
+            }
+            break;
 
         /**
          * Stores a complete, printable purchase-requisition snapshot. The PR
