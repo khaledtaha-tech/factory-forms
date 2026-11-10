@@ -561,9 +561,9 @@
           <span id="smartBtnText">الإدخال السريع الذكي للبنود</span>
         </button>
 
-        <!-- Visible in the working screen only; never printed as a control. -->
-        <button onclick="toggleDigitalSignature()" id="signatureToggleBtn" title="إضافة أو إزالة توقيع الإدارة من نسخة الطباعة" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-lg text-xs font-black flex items-center gap-1.5 shadow-sm transition">
-          <span>✒</span><span id="signatureToggleText">إضافة توقيعي</span>
+        <!-- Intentionally discreet: a tiny pen in the screen corner, never printed. -->
+        <button onclick="toggleDigitalSignature()" id="signatureToggleBtn" title="إضافة أو إزالة توقيع الإدارة من نسخة الطباعة" aria-label="إضافة أو إزالة توقيع الإدارة" class="fixed bottom-1 left-1 z-50 w-5 h-5 p-0 bg-transparent hover:bg-slate-100 text-slate-300 hover:text-indigo-700 border border-transparent hover:border-slate-200 rounded-full text-[10px] font-black flex items-center justify-center opacity-30 hover:opacity-100 transition">
+          <span aria-hidden="true">✒</span><span id="signatureToggleText" class="sr-only">إضافة توقيعي</span>
         </button>
 
         <button onclick="createNewPR()" title="زيادة السيريال تلقائياً وتجهيز نموذج جديد" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
@@ -1199,10 +1199,6 @@
         button.classList.toggle('hover:bg-emerald-700', digitalSignatureEnabled);
         button.classList.toggle('text-white', digitalSignatureEnabled);
         button.classList.toggle('border-emerald-600', digitalSignatureEnabled);
-        button.classList.toggle('bg-indigo-50', !digitalSignatureEnabled);
-        button.classList.toggle('hover:bg-indigo-100', !digitalSignatureEnabled);
-        button.classList.toggle('text-indigo-800', !digitalSignatureEnabled);
-        button.classList.toggle('border-indigo-200', !digitalSignatureEnabled);
         button.title = digitalSignatureEnabled
           ? (currentLanguage === 'en' ? 'Remove my signature from the print copy' : 'إزالة توقيعي من نسخة الطباعة')
           : (currentLanguage === 'en' ? 'Add my signature to the print copy' : 'إضافة توقيعي إلى نسخة الطباعة');
