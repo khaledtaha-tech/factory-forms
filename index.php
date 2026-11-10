@@ -902,7 +902,7 @@ foreach ($publicForms as $pf) {
         </div>
     </div>
 
-    <!-- Private Forms Picker: appears only after the master PIN is accepted. -->
+    <!-- App picker: appears only after the master PIN is accepted. -->
     <div id="modalAccessPicker" class="fixed inset-0 z-[55] hidden bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-7 flex flex-col max-h-[90vh]">
             <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-100">
@@ -927,7 +927,6 @@ foreach ($publicForms as $pf) {
 
             <div class="overflow-y-auto py-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 pr-1">
                 <?php foreach ($forms as $form): ?>
-                    <?php if (!$form['is_protected']) continue; ?>
                     <label class="flex items-center gap-3 p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-emerald-50/60 hover:border-emerald-200 cursor-pointer transition">
                         <input type="checkbox" class="access-form-checkbox w-4 h-4 accent-emerald-600" data-filename="<?= htmlspecialchars($form['filename'], ENT_QUOTES, 'UTF-8') ?>">
                         <span class="min-w-0 flex-1">
@@ -1030,8 +1029,8 @@ foreach ($publicForms as $pf) {
         }
 
         function isProtectedFormSelected(card) {
-            if (card.getAttribute('data-protected') !== 'true') return true;
-            return isPortalUnlocked() && getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
+            if (!isPortalUnlocked()) return card.getAttribute('data-protected') !== 'true';
+            return getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
         }
 
         function formatPortalBytes(bytes) {
@@ -1094,6 +1093,10 @@ foreach ($publicForms as $pf) {
 
         function handleMasterLockClick() {
             if (isPortalUnlocked()) {
+                if (!sessionStorage.getItem(ACCESS_SELECTION_KEY)) {
+                    openAccessPicker();
+                    return;
+                }
                 sessionStorage.removeItem('portal_unlocked');
                 sessionStorage.removeItem(ACCESS_SELECTION_KEY);
                 document.cookie = 'vault_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
@@ -1130,9 +1133,15 @@ foreach ($publicForms as $pf) {
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeAccessPicker() {
+        function closeAccessPicker(keepAccess = false) {
             const modal = document.getElementById('modalAccessPicker');
             if (modal) modal.classList.add('hidden');
+            if (!keepAccess) {
+                sessionStorage.removeItem('portal_unlocked');
+                sessionStorage.removeItem(ACCESS_SELECTION_KEY);
+                document.cookie = 'vault_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+                applyUnlockedState(false);
+            }
         }
 
         function setAccessPickerSelection(checked) {
@@ -1144,7 +1153,7 @@ foreach ($publicForms as $pf) {
                 .map(box => box.getAttribute('data-filename'))
                 .filter(Boolean);
             sessionStorage.setItem(ACCESS_SELECTION_KEY, JSON.stringify(selected));
-            closeAccessPicker();
+            closeAccessPicker(true);
             applyUnlockedState(true);
             showToast(selected.length
                 ? `✓ تم إظهار (${selected.length}) تطبيق مختار`
@@ -1278,8 +1287,7 @@ foreach ($publicForms as $pf) {
                 let visibleCount = 0;
 
                 cards.forEach(card => {
-                    const isProtected = card.getAttribute('data-protected') === 'true';
-                    if (isProtected && !isProtectedFormSelected(card)) {
+                    if (!isProtectedFormSelected(card)) {
                         card.style.display = 'none';
                         return;
                     }
@@ -1402,6 +1410,9 @@ foreach ($publicForms as $pf) {
 
             // Initialize unlocked state from storage/cookie
             applyUnlockedState(isPortalUnlocked());
+            if (isPortalUnlocked() && !sessionStorage.getItem(ACCESS_SELECTION_KEY)) {
+                openAccessPicker();
+            }
 
             // Keep the header control synchronized with the theme applied before paint.
             setPortalTheme(document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
