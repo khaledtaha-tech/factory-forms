@@ -10,6 +10,7 @@
  */
 
 $formsDir = __DIR__ . DIRECTORY_SEPARATOR . 'forms';
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
 
 // Handle AJAX PR Generation Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_pr') {
@@ -91,6 +92,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
 
+    // Store the same request in the central database so it is visible to every
+    // department and device in the purchase-request register.
+    $databaseSaved = false;
+    try {
+        ensurePurchaseRequestsTableExists();
+        $payload = [
+            'prNumber' => $prNumber,
+            'requestDate' => $reqDate,
+            'neededDate' => $neededDate,
+            'department' => $dept,
+            'requestedBy' => $requestedBy,
+            'priority' => $priority,
+            'justification' => $justification,
+            'items' => $validItems,
+            'generatedFile' => 'forms/' . $targetFilename,
+            'savedFrom' => 'create-pr.php'
+        ];
+        $stmt = getDbConnection()->prepare(
+            'INSERT INTO purchase_requests (pr_number, request_date, needed_date, department, requested_by, priority, item_count, form_data)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE request_date = VALUES(request_date), needed_date = VALUES(needed_date),
+                department = VALUES(department), requested_by = VALUES(requested_by), priority = VALUES(priority),
+                item_count = VALUES(item_count), form_data = VALUES(form_data), updated_at = CURRENT_TIMESTAMP'
+        );
+        $stmt->execute([
+            $prNumber,
+            $reqDate,
+            $neededDate ?: null,
+            $dept,
+            $requestedBy ?: null,
+            $priority,
+            count($validItems),
+            json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        ]);
+        $databaseSaved = true;
+    } catch (Throwable $e) {
+        error_log('Purchase request database archive failed for ' . $prNumber . ': ' . $e->getMessage());
+    }
+
     echo json_encode([
         'success'     => true,
         'pr_number'   => $prNumber,
@@ -98,7 +138,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         'url'         => 'forms/' . rawurlencode($targetFilename),
         'department'  => $dept,
         'date'        => $reqDate,
-        'items_count' => count($validItems)
+        'items_count' => count($validItems),
+        'database_saved' => $databaseSaved
     ]);
     exit;
 }
@@ -199,11 +240,11 @@ ROW;
     }
 
     /* ==============================================================================
-       PRINT ENGINE: A4 PORTRAIT SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
+       PRINT ENGINE: A4 LANDSCAPE SINGLE-PAGE FIT WITH FULL BORDERS & ZERO RTL CLIPPING
        ============================================================================== */
     @page {
-      size: A4 portrait;
-      margin: 6mm 5mm;
+      size: A4 landscape;
+      margin: 4mm;
     }
 
     @media print {
@@ -236,8 +277,8 @@ ROW;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         page-break-after: avoid !important;
-        height: auto !important;
-        min-height: 0 !important;
+        height: 202mm !important;
+        min-height: 202mm !important;
         max-height: none !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1048,6 +1089,10 @@ $today = date('Y-m-d');
 
                 <!-- Central Dashboard Shortcut -->
                 <div class="flex items-center gap-2.5">
+                    <a href="purchase-requests.php" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-xs font-bold text-white transition shadow-2xs">
+                        <span>▤</span>
+                        <span>سجل طلبات الشراء</span>
+                    </a>
                     <a href="index.php" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs">
                         <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
