@@ -1252,10 +1252,38 @@
       'شيكاره': 'Bag', 'كيس': 'Bag', 'باكيت': 'Pack', 'بكت': 'Bucket', 'لتر': 'Liter',
       'غالون': 'Gallon', 'جالون': 'Gallon', 'صندوق': 'Box', 'لوح': 'Sheet', 'أنبوبة': 'Tube', 'انبوبة': 'Tube'
     };
+    const SMART_ARABIC_GLOSSARY = {
+      'فلتر مياه': 'Water filter', 'فلتر زيت': 'Oil filter', 'فلتر هواء': 'Air filter',
+      'مثل العينة': 'as per sample', 'حسب العينة المرفقة': 'as per attached sample',
+      'دفاتر ادخال انتاج قسم الميكسر': 'Mixer Department production entry logbooks',
+      'أكياس نفايات': 'Waste bags', 'سلة مهملات': 'Waste basket', 'بطارية مقاس': 'Battery size',
+      'رولمان بلي': 'Ball bearing', 'قاطع كهربائي': 'Circuit breaker', 'مفتاح كهربائي': 'Electrical switch',
+      'مضخة مياه': 'Water pump', 'صمام مياه': 'Water valve', 'خرطوم مياه': 'Water hose',
+      'قطعة غيار': 'Spare part', 'مادة خام': 'Raw material', 'معدات سلامة': 'Safety equipment',
+      'فلتر': 'Filter', 'مياه': 'Water', 'زيت': 'Oil', 'هواء': 'Air', 'مضخة': 'Pump',
+      'صمام': 'Valve', 'خرطوم': 'Hose', 'وصلة': 'Fitting', 'كوع': 'Elbow', 'فلنجة': 'Flange',
+      'ماسورة': 'Pipe', 'مواسير': 'Pipes', 'محرك': 'Motor', 'سير': 'Belt', 'بكرة': 'Pulley',
+      'حساس': 'Sensor', 'كونتاكتور': 'Contactor', 'كابل': 'Cable', 'سلك': 'Wire', 'لمبة': 'Lamp',
+      'بطارية': 'Battery', 'شاحن': 'Charger', 'جهاز': 'Device', 'طابعة': 'Printer', 'حبر': 'Ink',
+      'ورق': 'Paper', 'قلم': 'Pen', 'دفتر': 'Notebook', 'عينة': 'Sample', 'مرفقة': 'attached',
+      'نفايات': 'Waste', 'مهملات': 'Waste', 'كيس': 'Bag', 'أكياس': 'Bags', 'قفاز': 'Glove',
+      'كمامة': 'Mask', 'حذاء': 'Safety shoes', 'نظارات': 'Safety goggles', 'شحم': 'Grease',
+      'مادة': 'Material', 'خامة': 'Material', 'مقاس': 'Size', 'إنتاج': 'Production', 'قسم': 'Department'
+    };
     const translationCache = new Map();
 
     function hasArabicText(value) {
       return /[\u0600-\u06FF]/.test(String(value || ''));
+    }
+
+    function translateFromSmartGlossary(value) {
+      let translated = String(value || '').trim();
+      const entries = Object.entries(SMART_ARABIC_GLOSSARY).sort((a, b) => b[0].length - a[0].length);
+      entries.forEach(([arabic, english]) => {
+        translated = translated.replace(new RegExp(arabic, 'g'), english);
+      });
+      translated = translated.replace(/\s{2,}/g, ' ').trim();
+      return hasArabicText(translated) ? '' : translated;
     }
 
     async function translateSmartTextToEnglish(value) {
@@ -1263,6 +1291,11 @@
       if (!source || !hasArabicText(source)) return source;
       if (SMART_UNIT_TRANSLATIONS[source]) return SMART_UNIT_TRANSLATIONS[source];
       if (translationCache.has(source)) return translationCache.get(source);
+      const glossaryTranslation = translateFromSmartGlossary(source);
+      if (glossaryTranslation) {
+        translationCache.set(source, glossaryTranslation);
+        return glossaryTranslation;
+      }
 
       // The request stays same-origin; the server performs translation and
       // avoids browser CORS restrictions on Arabic smart entries.
