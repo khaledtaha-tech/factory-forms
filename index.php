@@ -1028,14 +1028,17 @@ foreach ($publicForms as $pf) {
         function getSelectedProtectedForms() {
             try {
                 const saved = JSON.parse(sessionStorage.getItem(ACCESS_SELECTION_KEY) || '[]');
-                return Array.isArray(saved) ? saved : [];
+                return Array.isArray(saved)
+                    ? saved.map(filename => String(filename || '').toLowerCase())
+                    : [];
             } catch (e) {
                 return [];
             }
         }
 
         function isProtectedFormSelected(card) {
-            return !isPortalRestricted() || getSelectedProtectedForms().includes(card.getAttribute('data-filename'));
+            const filename = String(card.getAttribute('data-filename') || '').toLowerCase();
+            return !isPortalRestricted() || getSelectedProtectedForms().includes(filename);
         }
 
         function formatPortalBytes(bytes) {
@@ -1135,7 +1138,7 @@ foreach ($publicForms as $pf) {
                 : 'لن تظهر إلا التطبيقات التي تختارها في هذه الجلسة.';
             if (applyButton) applyButton.textContent = isLocking ? 'قفل التطبيقات الأخرى' : 'إظهار التطبيقات المحددة';
             document.querySelectorAll('.access-form-checkbox').forEach(box => {
-                box.checked = isPortalRestricted() && selected.includes(box.getAttribute('data-filename'));
+                box.checked = isPortalRestricted() && selected.includes(String(box.getAttribute('data-filename') || '').toLowerCase());
             });
             if (modal) modal.classList.remove('hidden');
         }
@@ -1151,7 +1154,7 @@ foreach ($publicForms as $pf) {
 
         function applyAccessPicker() {
             const selected = Array.from(document.querySelectorAll('.access-form-checkbox:checked'))
-                .map(box => box.getAttribute('data-filename'))
+                .map(box => String(box.getAttribute('data-filename') || '').toLowerCase())
                 .filter(Boolean);
             const total = document.querySelectorAll('.access-form-checkbox').length;
             sessionStorage.setItem(ACCESS_SELECTION_KEY, JSON.stringify(selected));
