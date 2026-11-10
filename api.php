@@ -46,6 +46,8 @@ function translatePurchaseTextToEnglish(string $text): string {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => 5,
             CURLOPT_TIMEOUT => 10,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT => 'AlManarPurchaseRequisition/1.0',
             CURLOPT_HTTPHEADER => ['Accept: application/json']
         ]);
         $raw = curl_exec($curl);
