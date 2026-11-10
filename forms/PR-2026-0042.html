@@ -666,9 +666,7 @@
     <div class="p-3 bg-slate-50">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
         <div class="lg:col-span-8">
-          <textarea id="bulkTextarea" rows="3" oninput="updateLiveParseCount()" class="w-full text-xs p-2.5 font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-inner outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">سلة مهملات عدد 1
-أكياس نفايات 2 ربطة
-بطارية مقاس AA عدد 1</textarea>
+          <textarea id="bulkTextarea" rows="3" oninput="updateLiveParseCount()" class="w-full text-xs p-2.5 font-medium text-slate-900 bg-white border border-slate-300 rounded-lg shadow-inner outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"></textarea>
         </div>
 
         <div class="lg:col-span-4 flex flex-col justify-between space-y-2">
@@ -684,9 +682,6 @@
               <span id="appendTableText">➕ إضافة للجدول الحالي</span>
             </button>
 
-            <button onclick="loadUserExamples()" class="py-1.5 px-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition">
-              <span id="examplesText">✨ إعادة كتابة أمثلتك</span>
-            </button>
           </div>
         </div>
       </div>
@@ -758,7 +753,7 @@
                 القسم الطالب
                 <span class="en-sub">Requesting department</span>
               </label>
-              <input type="text" id="reqDept" value="الإنتاج / Production" class="field-input font-black text-blue-900">
+              <input type="text" id="reqDept" class="field-input font-black text-blue-900">
             </div>
           </div>
 
@@ -778,7 +773,7 @@
                 تاريخ الطلب
                 <span class="en-sub">Request date</span>
               </label>
-              <input type="date" id="reqDate" class="field-input font-mono font-black text-slate-900" value="2026-10-25">
+              <input type="date" id="reqDate" class="field-input font-mono font-black text-slate-900">
             </div>
           </div>
 
@@ -813,7 +808,7 @@
             </span>
             <div class="flex items-center gap-4 pr-1 text-[11.5px]">
               <label class="custom-check">
-                <input type="radio" name="priority" value="normal" checked="checked">
+                <input type="radio" name="priority" value="normal">
                 <span class="font-bold text-slate-800">عادي <span class="en-sub inline">Normal</span></span>
               </label>
               <label class="custom-check">
@@ -936,7 +931,7 @@
             <span class="font-bold">رسم أو عينة <span class="en-sub inline">Drawing or sample</span></span>
           </label>
           <label class="custom-check">
-            <input type="checkbox" id="attQuotation" checked="checked">
+            <input type="checkbox" id="attQuotation">
             <span class="font-black text-slate-900">عرض سعر <span class="en-sub inline">Quotation</span></span>
           </label>
           <label class="custom-check">
@@ -1530,13 +1525,6 @@
       saveTableToStorage();
     }
 
-    function loadUserExamples() {
-      const sampleText = `سلة مهملات عدد 1\nأكياس نفايات 2 ربطة\nبطارية مقاس AA عدد 1`;
-      document.getElementById('bulkTextarea').value = sampleText;
-      updateLiveParseCount();
-      showToast(currentLanguage === 'en' ? '✨ Examples restored. Click [Fill request now].' : '✨ تم إدراج الأمثلة! اضغط [تعبئة الطلب فوراً]');
-    }
-
     function toggleQuickInputPanel() {
       const panel = document.getElementById('quickInputPanel');
       panel.classList.toggle('hidden');
@@ -1665,9 +1653,9 @@
       const allItems = getCurrentTableData();
       const items = allItems.filter(item => item.code || item.desc || item.unit || item.qty || item.stock || item.remarks);
       const prNumber = document.getElementById('prNoInput').value.trim() || formatSerial(config.prefix, config.counter);
-      const requestDate = document.getElementById('reqDate').value || new Date().toISOString().split('T')[0];
+      const requestDate = document.getElementById('reqDate').value;
       const neededDate = document.getElementById('neededDate').value || '';
-      const priority = document.querySelector('input[name="priority"]:checked')?.value || 'normal';
+      const priority = document.querySelector('input[name="priority"]:checked')?.value || '';
 
       return {
         pr_number: prNumber,
@@ -1767,12 +1755,21 @@
       renderTable(DEFAULT_ROW_COUNT);
       localStorage.removeItem(TABLE_KEY);
 
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('reqDate').value = today;
+      document.getElementById('reqDept').value = '';
+      document.getElementById('reqDate').value = '';
+      document.getElementById('neededDate').value = '';
       document.getElementById('justification').value = '';
       document.getElementById('requestedBy').value = '';
+      document.getElementById('bulkTextarea').value = '';
+      document.getElementById('attDrawing').checked = false;
+      document.getElementById('attQuotation').checked = false;
+      document.getElementById('attOther').checked = false;
+      document.getElementById('attOtherText').value = '';
+      document.querySelectorAll('input[name="priority"]').forEach(input => { input.checked = false; });
+      ['storeName', 'pmName', 'purchName', 'mgmtName'].forEach(id => { document.getElementById(id).value = ''; });
       digitalSignatureEnabled = false;
       updateDigitalSignatureUI();
+      updateLiveParseCount();
 
       showToast(currentLanguage === 'en' ? `🚀 New request opened: ${formatSerial(config.prefix, config.counter)}` : `🚀 تم فتح طلب جديد برقم: ${formatSerial(config.prefix, config.counter)}`);
     }
@@ -1827,11 +1824,6 @@
       applyLanguage();
       loadSettings();
 
-      const reqDateInput = document.getElementById('reqDate');
-      if (!reqDateInput.value) {
-        reqDateInput.value = new Date().toISOString().split('T')[0];
-      }
-
       const savedItems = localStorage.getItem(TABLE_KEY);
       if (savedItems) {
         try {
@@ -1844,15 +1836,12 @@
         initUserItems();
       }
 
-      document.getElementById('bulkTextarea').value = `سلة مهملات عدد 1\nأكياس نفايات 2 ربطة\nبطارية مقاس AA عدد 1`;
+      document.getElementById('bulkTextarea').value = '';
       updateLiveParseCount();
     };
 
     function initUserItems() {
-      const initialItems = [
-        { code: '', desc: 'دفاتر ادخال انتاج قسم الميكسر حسب العينة المرفقة', unit: 'عدد', qty: '5', stock: '', remarks: '' }
-      ];
-      renderTable(DEFAULT_ROW_COUNT, initialItems);
+      renderTable(DEFAULT_ROW_COUNT);
     }
   </script>
 </body>
