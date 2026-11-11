@@ -468,23 +468,6 @@ foreach ($publicForms as $pf) {
                         <span>\u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0634\u0631\u0627\u0621</span>
                     </a>
 
-                    <!-- Security Manager Button (Revealed after Master PIN unlock) -->
-                    <button type="button" id="btnManageSecurity" onclick="openSecurityModal()" 
-                            class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white transition shadow-sm border border-slate-700"
-                            title="\u0625\u062f\u0627\u0631\u0629 \u062d\u0645\u0627\u064a\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c">
-                        <span>\ud83d\udee1\ufe0f \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062d\u0645\u0627\u064a\u0629</span>
-                    </button>
-
-                    <!-- Master Lock Button -->
-                    <button type="button" id="btnMasterLock" onclick="handleMasterLockClick()" 
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
-                            title="\u0642\u0641\u0644 \u0627\u0644\u0623\u0645\u0627\u0646 / \u0641\u062a\u062d \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0645\u062d\u0645\u064a\u0629">
-                        <svg id="lockIconSvg" class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                        <span id="lockButtonLabel">\u0642\u0641\u0644 \u0627\u0644\u0623\u0645\u0627\u0646</span>
-                    </button>
-
                     <!-- Light / dark portal theme -->
                     <button type="button" id="themeToggle" onclick="togglePortalTheme()"
                             class="theme-toggle inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
@@ -1425,7 +1408,11 @@ foreach ($publicForms as $pf) {
                 }
             });
 
-            // Initialize the dashboard in its current visibility mode.
+            // This public portal contains one shared purchasing form only: never retain an old per-session lock.
+            sessionStorage.removeItem(ACCESS_SELECTION_KEY);
+            sessionStorage.removeItem(ACCESS_RESTRICTED_KEY);
+
+            // Initialize the dashboard in its public visibility mode.
             applyUnlockedState();
 
             // Keep the header control synchronized with the theme applied before paint.
