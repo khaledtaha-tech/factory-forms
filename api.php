@@ -63,7 +63,40 @@ function translatePurchaseTextToEnglish(string $text): string {
         $raw = @file_get_contents($url, false, $context);
     }
     if ($raw === false || $raw === '') {
-        throw new RuntimeException('Translation service is unavailable.');
+        // Some shared-hosting networks block Google Translate. Keep a second
+        // server-side translator so Smart Item Entry remains usable there.
+        $fallbackUrl = 'https://api.mymemory.translated.net/get?q=' . rawurlencode($text) . '&langpair=ar%7Cen';
+        $fallbackRaw = false;
+
+        if (function_exists('curl_init')) {
+            $curl = curl_init($fallbackUrl);
+            curl_setopt_array($curl, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_USERAGENT => 'AlManarPurchaseRequisition/1.0',
+                CURLOPT_HTTPHEADER => ['Accept: application/json']
+            ]);
+            $fallbackRaw = curl_exec($curl);
+            $status = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            curl_close($curl);
+            if ($status < 200 || $status >= 300) {
+                $fallbackRaw = false;
+            }
+        }
+
+        if ($fallbackRaw === false && ini_get('allow_url_fopen')) {
+            $context = stream_context_create(['http' => ['timeout' => 10, 'header' => "Accept: application/json\r\n"]]);
+            $fallbackRaw = @file_get_contents($fallbackUrl, false, $context);
+        }
+
+        $fallbackData = json_decode((string)$fallbackRaw, true);
+        $fallbackTranslation = trim((string)($fallbackData['responseData']['translatedText'] ?? ''));
+        if ($fallbackTranslation === '') {
+            throw new RuntimeException('Translation service is unavailable.');
+        }
+        return $fallbackTranslation;
     }
 
     $decoded = json_decode($raw, true);
