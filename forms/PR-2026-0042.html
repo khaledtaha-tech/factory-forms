@@ -1193,7 +1193,7 @@
         downloadText: 'تنزيل ملف HTML', settingsText: 'إعدادات الأيزو',
         addRowText: 'إضافة صف', removeRowText: 'حذف صف', clearTableText: 'تفريغ الجدول',
         quickPanelTitle: 'لوحة الإدخال السريع الذكي للبنود',
-        quickPanelDescription: 'اكتب بالعربية أو الإنجليزية؛ سيحوّل النظام المدخل العربي إلى الإنجليزية قبل وضعه في طلب الشراء.',
+        quickPanelDescription: 'اكتب بالعربية أو الإنجليزية؛ وعند استخدام الواجهة الإنجليزية تُحوّل البنود العربية تلقائياً إلى الإنجليزية.',
         recognizedLabel: 'الأصناف المكتشفة: ', replaceTableText: '⚡ تعبئة الطلب فوراً (استبدال الجدول)',
         appendTableText: '➕ إضافة للجدول الحالي', examplesText: '✨ إعادة كتابة أمثلتك',
         documentTitle: 'طلب شراء', addNewRowText: 'إضافة صف جديد', addFiveRowsText: '+ 5 صفوف فارغة',
@@ -1381,7 +1381,7 @@
       'علبة', 'علبه', 'لفة', 'لفه', 'رول', 'متر', 'سم', 'طن', 'كيلو', 'كجم', 'جرام', 
       'برميل', 'دستة', 'دسته', 'طقم', 'شيكارة', 'شيكاره', 'كيس', 'باكيت', 'بكت', 
       'لتر', 'غالون', 'جالون', 'صندوق', 'لوح', 'أنبوبة', 'انبوبة',
-      'pcs', 'pc', 'kg', 'ton', 'meter', 'm', 'roll', 'box', 'set', 'drum', 'liter', 'pack'
+      'pcs', 'pc', 'piece', 'pieces', 'kg', 'ton', 'meter', 'm', 'roll', 'box', 'set', 'drum', 'liter', 'pack', 'packet', 'packets'
     ];
 
     const SMART_UNIT_TRANSLATIONS = {
@@ -1390,7 +1390,7 @@
       'علبة': 'Box', 'علبه': 'Box', 'لفة': 'Roll', 'لفه': 'Roll', 'رول': 'Roll',
       'متر': 'Meter', 'سم': 'cm', 'طن': 'Ton', 'كيلو': 'Kg', 'كجم': 'Kg', 'جرام': 'g',
       'برميل': 'Drum', 'دستة': 'Dozen', 'دسته': 'Dozen', 'طقم': 'Set', 'شيكارة': 'Bag',
-      'شيكاره': 'Bag', 'كيس': 'Bag', 'باكيت': 'Pack', 'بكت': 'Bucket', 'لتر': 'Liter',
+      'شيكاره': 'Bag', 'كيس': 'Bag', 'باكيت': 'Pack', 'باكت': 'Pack', 'بكت': 'Bucket', 'لتر': 'Liter',
       'غالون': 'Gallon', 'جالون': 'Gallon', 'صندوق': 'Box', 'لوح': 'Sheet', 'أنبوبة': 'Tube', 'انبوبة': 'Tube'
     };
     const SMART_ARABIC_GLOSSARY = {
@@ -1409,7 +1409,10 @@
       'ورق': 'Paper', 'قلم': 'Pen', 'دفتر': 'Notebook', 'عينة': 'Sample', 'مرفقة': 'attached',
       'نفايات': 'Waste', 'مهملات': 'Waste', 'كيس': 'Bag', 'أكياس': 'Bags', 'قفاز': 'Glove',
       'كمامة': 'Mask', 'حذاء': 'Safety shoes', 'نظارات': 'Safety goggles', 'شحم': 'Grease',
-      'مادة': 'Material', 'خامة': 'Material', 'مقاس': 'Size', 'إنتاج': 'Production', 'قسم': 'Department'
+      'مادة': 'Material', 'خامة': 'Material', 'مقاس': 'Size', 'إنتاج': 'Production', 'قسم': 'Department',
+      'مسمار': 'Screw', 'مسامير': 'Screws', 'صامولة': 'Nut', 'صواميل': 'Nuts',
+      'وردة': 'Washer', 'ورد': 'Washers', 'واشر': 'Washer', 'واشرات': 'Washers',
+      'مم': 'mm', 'مليمتر': 'mm', 'سنتيمتر': 'cm', 'بوصة': 'Socket', 'بوش': 'Bushing'
     };
     const translationCache = new Map();
 
@@ -1438,22 +1441,38 @@
         return glossaryTranslation;
       }
 
-      // The request stays same-origin; the server performs translation and
-      // avoids browser CORS restrictions on Arabic smart entries.
-      const response = await fetch('../api.php?action=translate_purchase_text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: source })
-      });
-      const result = await response.json();
-      if (!response.ok || result.status !== 'success') throw new Error(result.message || 'Translation service unavailable');
-      const translated = String(result.translation || '').trim();
-      if (!translated) throw new Error('Translation service returned no result');
-      translationCache.set(source, translated);
-      return translated;
+      try {
+        // Preferred route: same-origin server translation.
+        const response = await fetch('../api.php?action=translate_purchase_text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: source })
+        });
+        const result = await response.json();
+        if (!response.ok || result.status !== 'success') throw new Error(result.message || 'Translation service unavailable');
+        const translated = String(result.translation || '').trim();
+        if (!translated) throw new Error('Translation service returned no result');
+        translationCache.set(source, translated);
+        return translated;
+      } catch (serverError) {
+        // Hostinger may block an outgoing request. In that case the browser uses
+        // the same public translation endpoint directly as a reliable fallback.
+        const fallbackUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=' + encodeURIComponent(source);
+        const fallbackResponse = await fetch(fallbackUrl);
+        const fallbackData = await fallbackResponse.json();
+        const translated = Array.isArray(fallbackData?.[0])
+          ? fallbackData[0].map(part => Array.isArray(part) ? (part[0] || '') : '').join('').trim()
+          : '';
+        if (!fallbackResponse.ok || !translated) throw serverError;
+        translationCache.set(source, translated);
+        return translated;
+      }
     }
 
     async function translateSmartItemToEnglish(item) {
+      // Arabic requests remain Arabic. Translation is required only when the
+      // operator is preparing the English request from Arabic entry text.
+      if (currentLanguage !== 'en') return item;
       return {
         ...item,
         desc: await translateSmartTextToEnglish(item.desc),
@@ -1525,6 +1544,17 @@
         }
       }
 
+      // Supports phrases such as "باكت مسامير 3" even when the unit is not
+      // adjacent to the quantity. If no quantity was supplied it stays as 1.
+      if (!unit || unit === 'عدد' || unit === 'حبة' || unit === 'حبه') {
+        const standaloneUnitRegex = new RegExp(`(?:^|\\s)(${knownUnits.join('|')})(?=\\s|$)`, 'i');
+        const standaloneUnitMatch = desc.match(standaloneUnitRegex);
+        if (standaloneUnitMatch && !['عدد', 'حبة', 'حبه'].includes(standaloneUnitMatch[1])) {
+          unit = standaloneUnitMatch[1];
+          desc = desc.replace(standaloneUnitMatch[0], ' ').trim();
+        }
+      }
+
       desc = desc.replace(/^[\-–•*,\s]+|[\-–•*,\s]+$/g, '').trim();
       if (unit === 'عدد' || unit === 'حبة' || unit === 'حبه') unit = 'عدد';
 
@@ -1565,7 +1595,7 @@
 
       let items;
       try {
-        showToast(currentLanguage === 'en' ? 'Translating Arabic entries to English…' : 'جارٍ تحويل البنود العربية إلى الإنجليزية…');
+        showToast(currentLanguage === 'en' ? 'Translating Arabic entries to English…' : 'جارِ تجهيز البنود العربية…');
         items = await Promise.all(parsedItems.map(translateSmartItemToEnglish));
       } catch (error) {
         console.error('Smart translation failed:', error);
