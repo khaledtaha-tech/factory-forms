@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * Electronic Forms Portal - Al-Manar Plastic Factory
+ * Private Forms Portal
  * ==============================================================================
  * Central Dynamic Forms Dashboard with Per-Form Security Shield
  * ==============================================================================
@@ -239,7 +239,7 @@ foreach ($publicForms as $pf) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629 | \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643</title>
+    <title>\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u062e\u0627\u0635\u0629</title>
     
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
@@ -437,12 +437,12 @@ foreach ($publicForms as $pf) {
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629</h1>
+                            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u062e\u0627\u0635\u0629</h1>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                 \u0646\u0638\u0627\u0645 \u0630\u0643\u064a
                             </span>
                         </div>
-                        <p class="text-xs font-medium text-slate-500">\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643 | \u0646\u0638\u0627\u0645 \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0648\u062b\u0627\u0626\u0642 \u0648\u0627\u0644\u0639\u0645\u0644\u064a\u0627\u062a</p>
+                        <p class="text-xs font-medium text-slate-500">\u0645\u0646\u0638\u0648\u0645\u0629 \u0645\u0633\u062a\u0642\u0644\u0629 \u0644\u0644\u0646\u0645\u0627\u0630\u062c \u0648\u0627\u0644\u0623\u062f\u0648\u0627\u062a \u0627\u0644\u062e\u0627\u0635\u0629</p>
                     </div>
                 </div>
 
@@ -523,10 +523,10 @@ foreach ($publicForms as $pf) {
                         \ud83d\ude80 \u0627\u0633\u062a\u0636\u0627\u0641\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u062c\u0627\u0647\u0632\u0629 (Hostinger)
                     </span>
                     <h2 class="text-2xl sm:text-3xl font-black text-white leading-tight">
-                        \u0625\u062f\u0627\u0631\u0629 \u0648\u0627\u0633\u062a\u0639\u0631\u0627\u0636 \u0646\u0645\u0627\u0630\u062c \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643
+                        \u0625\u062f\u0627\u0631\u0629 \u0648\u0627\u0633\u062a\u0639\u0631\u0627\u0636 \u0646\u0645\u0627\u0630\u062c\u064a \u0627\u0644\u062e\u0627\u0635\u0629
                     </h2>
                     <p class="text-sm text-slate-300 leading-relaxed max-w-2xl font-normal">
-                        \u0645\u0646\u0638\u0648\u0645\u0629 \u0645\u0631\u0643\u0632\u064a\u0629 \u062f\u064a\u0646\u0627\u0645\u064a\u0643\u064a\u0629 \u062a\u0642\u0631\u0623 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0645\u0646 \u0645\u062c\u0644\u062f <code class="px-1.5 py-0.5 rounded bg-white/15 text-emerald-300 font-mono text-xs">forms/</code> \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0639 \u0646\u0638\u0627\u0645 \u062d\u0645\u0627\u064a\u0629 \u0645\u0631\u0643\u0632\u064a.
+                        \u0628\u0648\u0627\u0628\u0629 \u0645\u0633\u062a\u0642\u0644\u0629 \u0644\u0646\u0645\u0627\u0630\u062c\u0643 \u0627\u0644\u062e\u0627\u0635\u0629\u060c \u0645\u0646\u0641\u0635\u0644\u0629 \u062a\u0645\u0627\u0645\u0627\u064b \u0639\u0646 \u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0645\u0635\u0646\u0639.
                     </p>
                     <div class="pt-2 flex flex-wrap items-center gap-3">
                         <a href="create-pr.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg shadow-emerald-900/30">
@@ -845,7 +845,7 @@ foreach ($publicForms as $pf) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
                 <div class="flex items-center gap-2">
-                    <span class="font-bold text-slate-700">\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643</span>
+                    <span class="font-bold text-slate-700">\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u062e\u0627\u0635\u0629</span>
                     <span>&bull;</span>
                     <span>\u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0642 \u0645\u062d\u0641\u0648\u0638\u0629 &copy; <?= date('Y') ?></span>
                 </div>
