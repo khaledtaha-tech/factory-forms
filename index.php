@@ -458,16 +458,6 @@ foreach ($publicForms as $pf) {
                         <span>\u0641\u062d\u0635 \u0627\u0644\u0645\u062c\u0644\u062f \u0646\u0634\u0637</span>
                     </div>
 
-                    <!-- Create PR Button -->
-                    <a href="create-pr.php" 
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white transition shadow-sm"
-                       title="\u0627\u0644\u0627\u0646\u062a\u0642\u0627\u0644 \u0625\u0644\u0649 \u0628\u0648\u0627\u0628\u0629 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628\u0627\u062a \u0627\u0644\u0634\u0631\u0627\u0621">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>\u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0634\u0631\u0627\u0621</span>
-                    </a>
-
                     <!-- Security Manager Button (Revealed after Master PIN unlock) -->
                     <button type="button" id="btnManageSecurity" onclick="openSecurityModal()" 
                             class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white transition shadow-sm border border-slate-700"
@@ -528,14 +518,6 @@ foreach ($publicForms as $pf) {
                     <p class="text-sm text-slate-300 leading-relaxed max-w-2xl font-normal">
                         \u0628\u0648\u0627\u0628\u0629 \u0645\u0633\u062a\u0642\u0644\u0629 \u0644\u0646\u0645\u0627\u0630\u062c\u0643 \u0627\u0644\u062e\u0627\u0635\u0629\u060c \u0645\u0646\u0641\u0635\u0644\u0629 \u062a\u0645\u0627\u0645\u0627\u064b \u0639\u0646 \u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0645\u0635\u0646\u0639.
                     </p>
-                    <div class="pt-2 flex flex-wrap items-center gap-3">
-                        <a href="create-pr.php" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg shadow-emerald-900/30">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            <span>+ \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0634\u0631\u0627\u0621 \u0631\u0633\u0645\u064a \u062c\u062f\u064a\u062f</span>
-                        </a>
-                    </div>
                 </div>
 
                 <!-- Live Metrics Counters (Adjusts on Lock/Unlock) -->
