@@ -1623,7 +1623,8 @@ foreach ($publicForms as $pf) {
         function translatePortalNode(node) {
             if (node.nodeType === Node.TEXT_NODE) {
                 if (node.parentElement && !['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) {
-                    node.nodeValue = translatePortalText(node.nodeValue);
+                    const translated = translatePortalText(node.nodeValue);
+                    if (translated !== node.nodeValue) node.nodeValue = translated;
                 }
                 return;
             }
@@ -1645,7 +1646,8 @@ foreach ($publicForms as $pf) {
                         record.addedNodes.forEach(translatePortalNode);
                     } else if (record.type === 'attributes') {
                         const value = record.target.getAttribute(record.attributeName);
-                        if (value) record.target.setAttribute(record.attributeName, translatePortalText(value));
+                        const translated = value ? translatePortalText(value) : value;
+                        if (translated && translated !== value) record.target.setAttribute(record.attributeName, translated);
                     }
                 });
                 portalTranslationApplying = false;
