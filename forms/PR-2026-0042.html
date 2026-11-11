@@ -539,12 +539,76 @@
         border-top: 1px solid #000 !important;
       }
     }
+
+    /* Desktop workspace: use the available screen space without changing A4/PDF output. */
+    @media screen and (min-width: 1280px) {
+      body {
+        padding: 24px 32px !important;
+      }
+
+      .app-workspace {
+        width: min(100%, 1760px) !important;
+        max-width: 1760px !important;
+      }
+
+      .requisition-sheet {
+        max-width: 1700px !important;
+        padding: 24px 28px !important;
+      }
+
+      /* Larger, more comfortable working view. The print rules above override these values. */
+      .requisition-sheet .field-input {
+        font-size: 15px;
+        padding: 3px 5px;
+      }
+
+      .requisition-sheet .table-input {
+        font-size: 14px;
+        padding: 3px 5px;
+      }
+
+      .requisition-sheet .table-bordered th,
+      .requisition-sheet .table-bordered td {
+        padding: 5px 7px;
+      }
+
+      .requisition-sheet .table-bordered tbody tr {
+        height: 34px;
+      }
+
+      .requisition-sheet .text-xs {
+        font-size: 0.875rem !important;
+      }
+
+      .requisition-sheet .text-\[10px\] {
+        font-size: 12px !important;
+      }
+
+      .requisition-sheet .text-\[11px\],
+      .requisition-sheet .text-\[11\.5px\] {
+        font-size: 13px !important;
+      }
+
+      .requisition-sheet .text-\[12px\] {
+        font-size: 14px !important;
+      }
+
+      .requisition-sheet .en-sub {
+        font-size: 10px;
+      }
+
+      .no-print.app-workspace .text-xs,
+      .no-print.app-workspace textarea,
+      .no-print.app-workspace button {
+        font-size: 0.875rem;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-900 antialiased p-2 md:p-5">
 
   <!-- ================= TOP TOOLBAR (Hidden in Print) ================= -->
-  <header class="no-print max-w-[1240px] mx-auto mb-3 bg-white rounded-xl shadow-sm border border-slate-200 p-3">
+  <header class="no-print app-workspace mx-auto mb-3 bg-white rounded-xl shadow-sm border border-slate-200 p-3">
     <div class="flex flex-wrap items-center justify-between gap-3">
       
       <!-- Brand & Document Code -->
@@ -636,7 +700,7 @@
   </header>
 
   <!-- ================= SMART BULK-INPUT PANEL (Hidden in Print) ================= -->
-  <section id="quickInputPanel" class="no-print max-w-[1240px] mx-auto mb-3 bg-white border-2 border-indigo-200 rounded-xl shadow-lg overflow-hidden transition-all">
+  <section id="quickInputPanel" class="no-print app-workspace mx-auto mb-3 bg-white border-2 border-indigo-200 rounded-xl shadow-lg overflow-hidden transition-all">
     <div class="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 text-white p-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-amber-300 font-black text-sm">
@@ -689,8 +753,8 @@
   </section>
 
   <!-- ================= MAIN DOCUMENT (A4 Purchase Requisition) ================= -->
-  <main class="page-container max-w-[1240px] mx-auto overflow-x-auto pb-4">
-    <div class="requisition-sheet bg-white border-[2px] border-slate-950 rounded-sm shadow-xl p-4 md:p-5 mx-auto w-full max-w-[1200px] text-slate-950 transition-all">
+  <main class="page-container app-workspace mx-auto overflow-x-auto pb-4">
+    <div class="requisition-sheet bg-white border-[2px] border-slate-950 rounded-sm shadow-xl p-4 md:p-5 mx-auto w-full max-w-[1700px] text-slate-950 transition-all">
       
       <!-- ================= 1. HEADER SECTION ================= -->
       <div class="header-section grid grid-cols-12 pb-2 border-b-[2px] border-slate-950 items-center gap-2">
