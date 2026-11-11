@@ -241,8 +241,8 @@ foreach ($publicForms as $pf) {
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u062e\u0627\u0635\u0629</title>
     
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="alternate icon" type="image/x-icon" href="favicon.ico">
+    <!-- Versioned private favicon prevents the factory icon from being reused from browser cache. -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=private-20261111">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
