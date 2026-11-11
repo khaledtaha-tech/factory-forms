@@ -495,6 +495,16 @@ foreach ($publicForms as $pf) {
                         <span id="themeLabel">\u062b\u064a\u0645 \u062f\u0627\u0643\u0646</span>
                     </button>
 
+                    <!-- Portal language: affects the parent portal only, never the child forms. -->
+                    <button type="button" id="portalLanguageToggle" onclick="togglePortalLanguage()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
+                            title="Switch portal language">
+                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.05 4.05A18.25 18.25 0 016 19m4.05-9.95A18.25 18.25 0 0115 17m-5 0h7m-3.5-3.5L17 21m0 0 3-7.5M17 21l-3-7.5"/>
+                        </svg>
+                        <span id="portalLanguageLabel">English</span>
+                    </button>
+
                     <!-- GitHub Repository Link -->
                     <a href="https://github.com/khaledtaha-tech/factory-forms" target="_blank" rel="noopener noreferrer" 
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition shadow-2xs"
@@ -1420,6 +1430,7 @@ foreach ($publicForms as $pf) {
 
             // Keep the header control synchronized with the theme applied before paint.
             setPortalTheme(document.documentElement.classList.contains('theme-dark') ? 'dark' : 'light');
+            setPortalLanguage(getPortalLanguage());
         });
 
         function copyFormLink(relativeUrl) {
@@ -1494,6 +1505,160 @@ foreach ($publicForms as $pf) {
                 });
             });
         }
+
+        const PORTAL_LANGUAGE_KEY = 'forms_portal_language';
+        const portalTextCache = new WeakMap();
+        const portalAttributeCache = new WeakMap();
+        const portalEnglish = {
+            '\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629': 'Electronic Forms Portal',
+            '\u0646\u0638\u0627\u0645 \u0630\u0643\u064a': 'Smart System',
+            '\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643 | \u0646\u0638\u0627\u0645 \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0648\u062b\u0627\u0626\u0642 \u0648\u0627\u0644\u0639\u0645\u0644\u064a\u0627\u062a': 'Al Manar Plastic Factory | Documents & Operations Management',
+            '\u0641\u062d\u0635 \u0627\u0644\u0645\u062c\u0644\u062f \u0646\u0634\u0637': 'Folder scan active',
+            '\u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0634\u0631\u0627\u0621': 'Create purchase request',
+            '\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u062d\u0645\u0627\u064a\u0629': 'Security manager',
+            '\u0625\u062f\u0627\u0631\u0629 \u0648\u0627\u0633\u062a\u0639\u0631\u0627\u0636 \u0646\u0645\u0627\u0630\u062c \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643': 'Manage & view Al Manar Plastic Factory forms',
+            '\ud83d\ude80 \u0627\u0633\u062a\u0636\u0627\u0641\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u062c\u0627\u0647\u0632\u0629 (Hostinger)': '\ud83d\ude80 Cloud hosting ready (Hostinger)',
+            '\u0645\u0646\u0638\u0648\u0645\u0629 \u0645\u0631\u0643\u0632\u064a\u0629 \u062f\u064a\u0646\u0627\u0645\u064a\u0643\u064a\u0629 \u062a\u0642\u0631\u0623 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0645\u0646 \u0645\u062c\u0644\u062f': 'A centralized dynamic portal that reads forms directly from',
+            '\u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0639 \u0646\u0638\u0627\u0645 \u062d\u0645\u0627\u064a\u0629 \u0645\u0631\u0643\u0632\u064a.': 'with a central protection system.',
+            '+ \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0634\u0631\u0627\u0621 \u0631\u0633\u0645\u064a \u062c\u062f\u064a\u062f': '+ Create new official purchase request',
+            '\u0646\u0645\u0627\u0630\u062c \u0645\u062a\u0627\u062d\u0629': 'Available forms',
+            '\u0623\u0642\u0633\u0627\u0645 \u0648\u062a\u0635\u0646\u064a\u0641\u0627\u062a': 'Categories',
+            '\u0627\u0644\u062d\u062c\u0645 \u0627\u0644\u0643\u0644\u064a': 'Total size',
+            '\u0627\u0644\u0646\u062a\u0627\u0626\u062c:': 'Results:',
+            '\u0627\u0644\u0623\u062d\u062f\u062b \u062a\u0639\u062f\u064a\u0644\u0627\u064b': 'Latest updated',
+            '\u0627\u0644\u0623\u0642\u062f\u0645 \u062a\u0639\u062f\u064a\u0644\u0627\u064b': 'Oldest updated',
+            '\u0627\u0644\u0627\u0633\u0645 \u0623\u0628\u062c\u062f\u064a\u0627\u064b': 'Name A–Z',
+            '\u062d\u062c\u0645 \u0627\u0644\u0645\u0644\u0641': 'File size',
+            '\u0627\u0644\u062a\u0635\u0646\u064a\u0641:': 'Category:',
+            '\u0627\u0644\u0643\u0644': 'All',
+            '\u0627\u0644\u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0648\u0627\u0644\u0637\u0644\u0628\u0627\u062a': 'Purchasing & Requests',
+            '\u0627\u0644\u0645\u0648\u0627\u0631\u062f \u0627\u0644\u0628\u0634\u0631\u064a\u0629 \u0648\u0634\u0624\u0648\u0646 \u0627\u0644\u0645\u0648\u0638\u0641\u064a\u0646': 'Human Resources',
+            '\u0627\u0644\u0625\u0646\u062a\u0627\u062c \u0648\u0627\u0644\u062a\u0634\u063a\u064a\u0644 \u0627\u0644\u0641\u0646\u064a': 'Production & Operations',
+            '\u0646\u0645\u0627\u0630\u062c \u0639\u0627\u0645\u0629 \u0648\u0625\u062f\u0627\u0631\u064a\u0629': 'General & Administrative',
+            '\u0637\u0644\u0628 \u0634\u0631\u0627\u0621 \u062f\u0627\u062e\u0644\u064a': 'Internal Purchase Request',
+            '\u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643': 'Al Manar Plastic Factory',
+            '\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b:': 'Last updated:',
+            '\u062d\u062c\u0645 \u0627\u0644\u0645\u0644\u0641:': 'File size:',
+            '\u0641\u062a\u062d \u0648\u0645\u0639\u0627\u064a\u0646\u0629': 'Open & Preview',
+            '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0645\u0627\u0630\u062c \u0645\u0636\u0627\u0641\u0629 \u062d\u062a\u0649 \u0627\u0644\u0622\u0646': 'No forms have been added yet',
+            '\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0623\u064a \u0646\u062a\u0627\u0626\u062c \u0645\u0637\u0627\u0628\u0642\u0629': 'No matching results found',
+            '\u0625\u0639\u0627\u062f\u0629 \u0636\u0628\u0637 \u0627\u0644\u0628\u062d\u062b \u0648\u0639\u0631\u0636 \u0627\u0644\u0643\u0644': 'Reset search and show all',
+            '\u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0642\u0648\u0642 \u0645\u062d\u0641\u0648\u0638\u0629': 'All rights reserved',
+            '\u0645\u062c\u0647\u0632\u0629 \u0644\u0644\u0627\u0633\u062a\u0636\u0627\u0641\u0629 \u0639\u0644\u0649 Hostinger': 'Ready for Hostinger hosting'
+        };
+
+        function getPortalLanguage() {
+            try { return localStorage.getItem(PORTAL_LANGUAGE_KEY) === 'en' ? 'en' : 'ar'; } catch (e) { return 'ar'; }
+        }
+
+        function translatePortalText(source) {
+            const match = String(source || '').match(/^(\s*)([\s\S]*?)(\s*)$/);
+            const core = match ? match[2] : String(source || '');
+            let translated = portalEnglish[core] || core;
+            const months = {
+                '\u064a\u0646\u0627\u064a\u0631': 'January', '\u0641\u0628\u0631\u0627\u064a\u0631': 'February', '\u0645\u0627\u0631\u0633': 'March',
+                '\u0623\u0628\u0631\u064a\u0644': 'April', '\u0645\u0627\u064a\u0648': 'May', '\u064a\u0648\u0646\u064a\u0648': 'June',
+                '\u064a\u0648\u0644\u064a\u0648': 'July', '\u0623\u063a\u0633\u0637\u0633': 'August', '\u0633\u0628\u062a\u0645\u0628\u0631': 'September',
+                '\u0623\u0643\u062a\u0648\u0628\u0631': 'October', '\u0646\u0648\u0641\u0645\u0628\u0631': 'November', '\u062f\u064a\u0633\u0645\u0628\u0631': 'December'
+            };
+            Object.entries(months).forEach(([arabic, english]) => { translated = translated.replaceAll(arabic, english); });
+            translated = translated
+                .replace(/\u0635\u0628\u0627\u062d\u0627\u064b/g, 'AM')
+                .replace(/\u0645\u0633\u0627\u0621\u064b/g, 'PM')
+                .replace(/\u0645\.\u0628/g, 'MB')
+                .replace(/\u0643\.\u0628/g, 'KB')
+                .replace(/\u0628\u0627\u064a\u062a/g, 'bytes');
+            return `${match ? match[1] : ''}${translated}${match ? match[3] : ''}`;
+        }
+
+        function setPortalLanguage(language) {
+            const english = language === 'en';
+            ensurePortalTranslationObserver();
+            document.documentElement.lang = english ? 'en' : 'ar';
+            document.documentElement.dir = english ? 'ltr' : 'rtl';
+            document.title = english ? 'Electronic Forms Portal | Al Manar Plastic Factory' : '\u0628\u0648\u0627\u0628\u0629 \u0627\u0644\u0646\u0645\u0627\u0630\u062c \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a\u0629 | \u0645\u0635\u0646\u0639 \u0627\u0644\u0645\u0646\u0627\u0631 \u0644\u0644\u0628\u0644\u0627\u0633\u062a\u064a\u0643';
+
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            const nodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                if (!node.parentElement || ['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) continue;
+                nodes.push(node);
+            }
+            nodes.forEach(textNode => {
+                if (!portalTextCache.has(textNode)) portalTextCache.set(textNode, textNode.nodeValue);
+                const arabic = portalTextCache.get(textNode);
+                textNode.nodeValue = english ? translatePortalText(arabic) : arabic;
+            });
+
+            document.querySelectorAll('[placeholder], [title], [aria-label]').forEach(el => {
+                if (!portalAttributeCache.has(el)) {
+                    portalAttributeCache.set(el, new Map());
+                }
+                const attributes = portalAttributeCache.get(el);
+                ['placeholder', 'title', 'aria-label'].forEach(attr => {
+                    if (!el.hasAttribute(attr)) return;
+                    if (!attributes.has(attr)) attributes.set(attr, el.getAttribute(attr));
+                    const arabic = attributes.get(attr);
+                    el.setAttribute(attr, english ? translatePortalText(arabic) : arabic);
+                });
+            });
+
+            const languageLabel = document.getElementById('portalLanguageLabel');
+            const languageButton = document.getElementById('portalLanguageToggle');
+            if (languageLabel) languageLabel.textContent = english ? '\u0627\u0644\u0639\u0631\u0628\u064a\u0629' : 'English';
+            if (languageButton) languageButton.title = english ? 'التبديل إلى العربية' : 'Switch to English';
+        }
+
+        function togglePortalLanguage() {
+            const next = getPortalLanguage() === 'en' ? 'ar' : 'en';
+            try { localStorage.setItem(PORTAL_LANGUAGE_KEY, next); } catch (e) {}
+            setPortalLanguage(next);
+            if (typeof applyUnlockedState === 'function') applyUnlockedState();
+        }
+
+        let portalTranslationObserver;
+        let portalTranslationApplying = false;
+
+        function translatePortalNode(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                if (node.parentElement && !['SCRIPT', 'STYLE'].includes(node.parentElement.tagName)) {
+                    node.nodeValue = translatePortalText(node.nodeValue);
+                }
+                return;
+            }
+            if (node.nodeType !== Node.ELEMENT_NODE || ['SCRIPT', 'STYLE'].includes(node.tagName)) return;
+            const childWalker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null, false);
+            let child;
+            while (child = childWalker.nextNode()) translatePortalNode(child);
+        }
+
+        function ensurePortalTranslationObserver() {
+            if (portalTranslationObserver || !document.body) return;
+            portalTranslationObserver = new MutationObserver(records => {
+                if (getPortalLanguage() !== 'en' || portalTranslationApplying) return;
+                portalTranslationApplying = true;
+                records.forEach(record => {
+                    if (record.type === 'characterData') {
+                        translatePortalNode(record.target);
+                    } else if (record.type === 'childList') {
+                        record.addedNodes.forEach(translatePortalNode);
+                    } else if (record.type === 'attributes') {
+                        const value = record.target.getAttribute(record.attributeName);
+                        if (value) record.target.setAttribute(record.attributeName, translatePortalText(value));
+                    }
+                });
+                portalTranslationApplying = false;
+            });
+            portalTranslationObserver.observe(document.body, {
+                subtree: true,
+                childList: true,
+                characterData: true,
+                attributes: true,
+                attributeFilter: ['title', 'placeholder', 'aria-label']
+            });
+        }
+
         decodeUnicodeText();
     </script>
 </body>
