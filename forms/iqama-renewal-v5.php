@@ -147,6 +147,8 @@ if ($remaining < 0) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        /* صفحة إدارة؛ تستفيد من كامل عرض الشاشة على أجهزة المكتب. */
+        .iqama-page { width: 100%; max-width: none; }
         .stat-card { border-radius: 10px; padding: 20px; text-align: center; color: white; transition: 0.3s; }
         .card-info { background-color: #0dcaf0; color: #333; }
         .card-success { background-color: #20c997; }
@@ -155,11 +157,14 @@ if ($remaining < 0) {
         .card-warning { background-color: #ffc107; color: #333; }
         .table-responsive { max-height: 500px; overflow-y: auto; }
         .cycle-badge { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
+        @media (min-width: 1200px) {
+            .iqama-page { padding-right: 2rem !important; padding-left: 2rem !important; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="container-fluid iqama-page px-3 px-lg-4 mt-3 mb-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="text-success fw-bold"><i class="fa-solid fa-id-card me-2"></i>متابعة تجديد إقامة الزوجة</h3>
