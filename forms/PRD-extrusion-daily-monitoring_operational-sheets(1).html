@@ -2884,11 +2884,14 @@
       if (data.nightSign !== undefined) document.getElementById('nightSignature').value = data.nightSign;
 
       const baseRateEl = document.getElementById('baseHourlyRateAtSixM');
-      const savedBaseRate = parseFloat(data.baseHourlyRateAtSixM)
+      // The active catalog (Excel/imported data) is authoritative for the
+      // exact machine line + item code. Saved sheets remain a fallback only
+      // when that exact catalog entry is unavailable.
+      const baseRate = parseFloat(catalogEntry?.hourlyRate)
+        || parseFloat(data.baseHourlyRateAtSixM)
         || ((parseFloat(data.rate) || 0) * savedLength / 6)
-        || parseFloat(catalogEntry?.hourlyRate)
         || 47;
-      if (baseRateEl) baseRateEl.value = savedBaseRate;
+      if (baseRateEl) baseRateEl.value = baseRate;
       syncRateForSelectedLength();
 
       const rows = document.querySelectorAll('#tableBody tr.hourly-row');
