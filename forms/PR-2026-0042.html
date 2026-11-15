@@ -603,6 +603,22 @@
         font-size: 0.875rem;
       }
     }
+
+    /* Purchase item descriptions are deliberately prominent on screen and PDF. */
+    .table-input.item-desc {
+      font-size: 22px !important;
+      line-height: 1.2 !important;
+      font-weight: 800 !important;
+    }
+
+    @media print {
+      .table-input.item-desc {
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+        height: auto !important;
+        padding: 1px 2px !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-900 antialiased p-2 md:p-5">
@@ -950,7 +966,7 @@
         </div>
 
         <div class="flex items-center gap-3 text-xs">
-          <span class="text-slate-600 font-medium"><span id="rowCountLabel">عدد البنود الحالية:</span> <strong id="rowCountDisplay" class="font-mono text-slate-950 bg-white px-2 py-0.5 rounded border border-slate-300">10</strong></span>
+          <span class="text-slate-600 font-medium"><span id="rowCountLabel">عدد البنود الحالية:</span> <strong id="rowCountDisplay" class="font-mono text-slate-950 bg-white px-2 py-0.5 rounded border border-slate-300">6</strong></span>
           <span id="printHint" class="text-[11px] text-slate-400">| عند الطباعة يخرج الجدول متناسقاً بدقة A4</span>
         </div>
       </div>
@@ -1180,7 +1196,7 @@
     const CONFIG_KEY = 'almanar_iso_config_v3';
     const TABLE_KEY = 'almanar_table_items_v3';
     const LANGUAGE_KEY = 'almanar_pr_language_v1';
-    const DEFAULT_ROW_COUNT = 10;
+    const DEFAULT_ROW_COUNT = 6;
 
     const UI_TEXT = {
       ar: {
@@ -1920,7 +1936,15 @@
       if (savedItems) {
         try {
           const items = JSON.parse(savedItems);
-          renderTable(Math.max(DEFAULT_ROW_COUNT, items.length), items);
+          const lastUsedIndex = Array.isArray(items)
+            ? items.reduce((last, item, index) => (
+                item && (item.code || item.desc || item.unit || item.qty || item.stock || item.remarks)
+                  ? index
+                  : last
+              ), -1)
+            : -1;
+          const rowCount = Math.max(DEFAULT_ROW_COUNT, lastUsedIndex + 1);
+          renderTable(rowCount, Array.isArray(items) ? items.slice(0, rowCount) : []);
         } catch (e) {
           initUserItems();
         }
