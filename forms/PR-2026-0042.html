@@ -604,15 +604,19 @@
       }
     }
 
-    /* Purchase item descriptions are deliberately prominent on screen and PDF. */
-    .table-input.item-desc {
+    /* Purchase item values are deliberately prominent on screen and PDF. */
+    .table-input.item-desc,
+    .table-input.item-unit,
+    .table-input.item-qty {
       font-size: 22px !important;
       line-height: 1.2 !important;
       font-weight: 800 !important;
     }
 
     @media print {
-      .table-input.item-desc {
+      .table-input.item-desc,
+      .table-input.item-unit,
+      .table-input.item-qty {
         font-size: 20px !important;
         line-height: 1.15 !important;
         height: auto !important;
