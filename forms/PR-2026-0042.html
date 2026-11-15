@@ -430,15 +430,15 @@
       /* بيانات الطلب */
       .meta-grid-section {
         margin-top: 2px !important;
-        font-size: 10px !important;
+        font-size: 9px !important;
       }
       .meta-grid-section .field-input {
-        font-size: 10px !important;
+        font-size: 9px !important;
         padding: 0 2px !important;
         border-bottom: 1px solid #000 !important;
       }
       .meta-grid-section .en-sub {
-        font-size: 7px !important;
+        font-size: 6.5px !important;
       }
 
       /* هندسة الجدول */
@@ -458,7 +458,12 @@
       }
       .table-bordered th {
         background-color: #f1f5f9 !important;
-        font-size: 9px !important;
+        font-size: 12px !important;
+        line-height: 1.1 !important;
+      }
+      .table-bordered th .en-sub {
+        font-size: 8px !important;
+        line-height: 1.05 !important;
       }
       /* The items table absorbs all free vertical space, so the lower blocks never float. */
       .requisition-sheet > .flex-grow {
@@ -604,23 +609,39 @@
       }
     }
 
-    /* Purchase item values are deliberately prominent on screen and PDF. */
-    .table-input.item-desc,
+    /* Balanced reading hierarchy for purchase items on screen and PDF. */
+    .table-input.item-desc {
+      font-size: 18px !important;
+      line-height: 1.2 !important;
+      font-weight: 800 !important;
+    }
     .table-input.item-unit,
     .table-input.item-qty {
-      font-size: 22px !important;
-      line-height: 1.2 !important;
+      font-size: 20px !important;
+      line-height: 1.15 !important;
       font-weight: 800 !important;
     }
 
     @media print {
-      .table-input.item-desc,
-      .table-input.item-unit,
-      .table-input.item-qty {
-        font-size: 20px !important;
+      .table-input.item-desc {
+        font-size: 16px !important;
         line-height: 1.15 !important;
         height: auto !important;
         padding: 1px 2px !important;
+      }
+      .table-bordered tbody td.row-index {
+        font-size: 16px !important;
+        font-weight: 800 !important;
+      }
+      .table-bordered tbody td:nth-child(4) .table-input,
+      .table-bordered tbody td:nth-child(5) .table-input,
+      .table-input.item-unit,
+      .table-input.item-qty {
+        font-size: 18px !important;
+        line-height: 1.15 !important;
+        height: auto !important;
+        padding: 1px 2px !important;
+        font-weight: 800 !important;
       }
     }
   </style>
