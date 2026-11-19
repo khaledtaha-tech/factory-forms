@@ -357,6 +357,11 @@
 
         const STORAGE_KEY = 'monjez_tasks_data_v3';
         const THEME_KEY = 'monjez_theme_mode';
+        // One shared cloud record: the database is authoritative across devices.
+        const CLOUD_FORM_TYPE = 'monjez_tasks_v3';
+        const CLOUD_FORM_REF = 'MONJEZ-TASKS-V3';
+        const CLOUD_ENTRY_DATE = '2026-01-01';
+        const CLOUD_MACHINE_LINE = 'MONJEZ_TASKS_V3';
 
         const INITIAL_TASKS = [
             {
@@ -406,11 +411,13 @@
         let tasks = [];
         let currentStatusFilter = 'all';
         let modalSubtasksTemp = [];
+        let cloudReady = false;
+        let cloudSaveTimer = null;
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             initTheme();
             populateCategorySelects();
-            loadTasks();
+            await loadTasks();
             updatePeopleDatalistAndFilter();
             renderTasks();
         });
@@ -458,26 +465,87 @@
             });
         }
 
-        function loadTasks() {
+        function getLocalTasks() {
             try {
-                let stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    tasks = JSON.parse(stored);
-                } else {
-                    tasks = [...INITIAL_TASKS];
-                    saveTasks();
-                }
+                const stored = localStorage.getItem(STORAGE_KEY);
+                const parsed = stored ? JSON.parse(stored) : null;
+                return Array.isArray(parsed) ? parsed : [];
             } catch (e) {
-                tasks = [...INITIAL_TASKS];
+                return [];
             }
         }
 
-        function saveTasks() {
+        async function loadTasks() {
+            const localTasks = getLocalTasks();
+
+            try {
+                const url = '../api.php?action=load'
+                    + '&form_type=' + encodeURIComponent(CLOUD_FORM_TYPE)
+                    + '&entry_date=' + encodeURIComponent(CLOUD_ENTRY_DATE)
+                    + '&machine_line=' + encodeURIComponent(CLOUD_MACHINE_LINE);
+                const response = await fetch(url, { cache: 'no-store' });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const cloudTasks = result?.record?.form_data?.tasks;
+                    tasks = Array.isArray(cloudTasks) ? cloudTasks : [];
+                    cloudReady = true;
+                    saveTasks(false);
+                    return;
+                }
+
+                if (response.status !== 404) throw new Error('Cloud load failed');
+            } catch (error) {
+                console.warn('Cloud tasks load unavailable; using this device cache.', error);
+                tasks = localTasks.length ? localTasks : [...INITIAL_TASKS];
+                return;
+            }
+
+            // First cloud use: safely migrate this browser's existing task list.
+            tasks = localTasks.length ? localTasks : [...INITIAL_TASKS];
+            cloudReady = true;
+            saveTasks(true);
+        }
+
+        function saveTasks(syncToCloud = true) {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-                updateStats();
-                updatePeopleDatalistAndFilter();
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Local task cache unavailable.', e);
+            }
+            updateStats();
+            updatePeopleDatalistAndFilter();
+            if (syncToCloud && cloudReady) queueCloudSave();
+        }
+
+        function queueCloudSave() {
+            clearTimeout(cloudSaveTimer);
+            cloudSaveTimer = setTimeout(syncTasksToCloud, 350);
+        }
+
+        async function syncTasksToCloud() {
+            try {
+                const response = await fetch('../api.php?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        form_type: CLOUD_FORM_TYPE,
+                        form_ref: CLOUD_FORM_REF,
+                        entry_date: CLOUD_ENTRY_DATE,
+                        machine_line: CLOUD_MACHINE_LINE,
+                        form_data: {
+                            schema_version: 1,
+                            saved_at: new Date().toISOString(),
+                            tasks: tasks
+                        }
+                    })
+                });
+                if (!response.ok) throw new Error('Cloud save failed');
+                const result = await response.json();
+                if (result.status !== 'success') throw new Error(result.message || 'Cloud save failed');
+            } catch (error) {
+                console.warn('Cloud task save deferred; local cache kept.', error);
+            }
         }
 
         function getUniquePeople() {
