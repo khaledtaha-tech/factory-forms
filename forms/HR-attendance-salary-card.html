@@ -11,13 +11,14 @@
     body {
       background-color: #525659;
       margin: 0;
-      padding: 20px 0;
+      padding: 20px 24px;
     }
     .controls-panel {
-      max-width: 850px;
+      width: min(1500px, 100%);
+      max-width: none;
       margin: 0 auto 20px auto;
       background: #ffffff;
-      padding: 15px 20px;
+      padding: 18px 24px;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
@@ -38,11 +39,26 @@
     }
     .controls-panel input[type="text"],
     .controls-panel input[type="month"],
-    .controls-panel input[type="date"] {
-      padding: 6px 10px;
-      border: 1px solid #ccc;
+    .controls-panel input[type="date"],
+    .controls-panel select {
+      padding: 7px 10px;
+      border: 1px solid #c7d2df;
       border-radius: 4px;
       font-size: 14px;
+      background: #fff;
+    }
+    .shift-time {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f4f8ff;
+      border: 1px solid #d5e2f1;
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+    .shift-time small {
+      color: #486581;
+      white-space: nowrap;
     }
     .btn-print {
       background-color: #007bff;
@@ -81,7 +97,7 @@
 
     /* صفحة التقرير A4 */
     .sheet {
-      width: 210mm;
+      width: min(1500px, 100%);
       min-height: 297mm;
       background: white;
       margin: 0 auto;
@@ -216,7 +232,8 @@
       .sheet {
         box-shadow: none;
         margin: 0;
-        width: 100%;
+        width: 210mm;
+        min-height: 297mm;
         padding: 8mm;
       }
       .sheet-border {
@@ -240,6 +257,17 @@
       <div>
         <label for="lastAttendanceDate">آخر يوم في كشف الحضور: </label>
         <input type="date" id="lastAttendanceDate">
+      </div>
+      <div class="shift-time">
+        <label for="arrivalTime">وقت الحضور:</label>
+        <select id="arrivalTime" aria-label="وقت الحضور">
+          <option value="07:00">7:00 AM</option>
+          <option value="08:00">8:00 AM</option>
+          <option value="09:00">9:00 AM</option>
+        </select>
+        <label for="departureTime">الانصراف:</label>
+        <input type="text" id="departureTime" value="4:00 PM" readonly aria-label="وقت الانصراف">
+        <small>الدوام الرسمي: 8 ساعات</small>
       </div>
       <div>
         <label>رابط LinkedIn: </label>
@@ -309,6 +337,13 @@
     const linkedinInput = document.getElementById("linkedinInput");
     const linkedinDisplay = document.getElementById("linkedinDisplay");
     const chipsContainer = document.getElementById("chipsContainer");
+    const arrivalTime = document.getElementById("arrivalTime");
+    const departureTime = document.getElementById("departureTime");
+    const shiftTimes = {
+      "07:00": { arrival: "7:00 AM", departure: "4:00 PM" },
+      "08:00": { arrival: "8:00 AM", departure: "5:00 PM" },
+      "09:00": { arrival: "9:00 AM", departure: "6:00 PM" }
+    };
 
     let absentDays = new Set();
 
@@ -342,6 +377,8 @@
     });
 
     function generateMonthData() {
+      const selectedShift = shiftTimes[arrivalTime.value] || shiftTimes["07:00"];
+      departureTime.value = selectedShift.departure;
       const [yearStr, monthStr] = monthPicker.value.split("-");
       const year = parseInt(yearStr);
       const monthIndex = parseInt(monthStr) - 1;
@@ -389,8 +426,8 @@
           <td>${serialIndex++}</td>
           <td style="direction: ltr;">${formattedDate}</td>
           <td>${dayName}</td>
-          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : '7:00 AM'}</td>
-          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : '4:00 PM'}</td>
+          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : selectedShift.arrival}</td>
+          <td contenteditable="true" style="direction: ltr;">${isAbsent ? '-' : selectedShift.departure}</td>
           <td contenteditable="true"></td>
           <td contenteditable="true" class="${isAbsent ? 'absent-cell' : ''}">${isAbsent ? 'غياب' : 'خالد طه'}</td>
         `;
@@ -405,6 +442,7 @@
     });
 
     lastAttendanceDate.addEventListener("change", generateMonthData);
+    arrivalTime.addEventListener("change", generateMonthData);
 
     setDefaultLastAttendanceDate();
     generateMonthData();
