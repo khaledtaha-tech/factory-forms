@@ -610,6 +610,17 @@
     }
 
     /* Balanced reading hierarchy for purchase items on screen and PDF. */
+    /* Long item descriptions behave like Word's Wrap Text: the row grows instead of clipping. */
+    textarea.table-input.item-desc {
+      display: block;
+      min-height: 30px;
+      height: 30px;
+      resize: none;
+      overflow: hidden;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .table-input.item-desc {
       font-size: 18px !important;
       line-height: 1.2 !important;
@@ -623,6 +634,10 @@
     }
 
     @media print {
+      textarea.table-input.item-desc {
+        min-height: 0 !important;
+        overflow: visible !important;
+      }
       .table-input.item-desc {
         font-size: 16px !important;
         line-height: 1.15 !important;
@@ -1676,8 +1691,7 @@
                  value="${data.code || ''}">
         </td>
         <td class="text-right">
-          <input type="text" class="table-input font-bold text-slate-950 item-desc" 
-                 value="${data.desc || ''}">
+          <textarea rows="1" class="table-input font-bold text-slate-950 item-desc">${data.desc || ''}</textarea>
         </td>
         <td>
           <input type="text" list="unitsList" class="table-input text-center font-bold text-slate-900 item-unit" 
@@ -1699,7 +1713,15 @@
           <button onclick="deleteThisRow(this)" title="${currentLanguage === 'en' ? 'Delete this row' : 'حذف هذا الصف'}" class="text-slate-300 hover:text-rose-600 font-black text-base px-1 transition">&times;</button>
         </td>
       `;
+      const descriptionField = tr.querySelector('.item-desc');
+      descriptionField.addEventListener('input', () => autoResizeItemDescription(descriptionField));
+      requestAnimationFrame(() => autoResizeItemDescription(descriptionField));
       return tr;
+    }
+
+    function autoResizeItemDescription(field) {
+      field.style.height = 'auto';
+      field.style.height = Math.max(field.scrollHeight, 30) + 'px';
     }
 
     function renderTable(rowCount = DEFAULT_ROW_COUNT, itemsData = []) {
